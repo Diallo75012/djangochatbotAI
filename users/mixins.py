@@ -13,9 +13,13 @@ class JSONFieldValidationMixin:
     '''
     data = self.cleaned_data.get('question_answer_data')
 
+    if isinstance(data, dict):
+      # If data is already a dictionary, no need to parse it as JSON.
+      return data
+
     try:
       # check if it is valid JSON data by just loading it
-      json.loads(data)
+      data = json.loads(data)
     except json.JSONDecodeError:
       raise ValidationError("Invalid JSON format. Please enter valid JSON data")
     # return cleaned data if it is valid

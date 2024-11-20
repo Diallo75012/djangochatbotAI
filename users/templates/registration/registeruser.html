@@ -8,7 +8,7 @@
     <title>Register</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
+    <script src="{% static '/users/assets/js/theme-toggle.js' %}"></script>
     <style>
         body {
             background-color: var(--background-color);
@@ -94,7 +94,7 @@
     </div>
   {% endif %}
 
-    <button class="btn btn-secondary toggle-container" onclick="toggleTheme()">Toggle Dark/Light Mode</button>
+    <button class="btn btn-secondary toggle-container toggle-theme" onclick="toggleTheme()">Toggle Dark/Light Mode</button>
     <div class="container">
         <div class="d-flex justify-content-center">
             <div class="user_card">
@@ -148,38 +148,6 @@
         </div>
     </div>
 
-    <script>
-        // Theme Toggle Functionality
-        function toggleTheme() {
-            if (document.body.hasAttribute("data-theme")) {
-                document.body.removeAttribute("data-theme");
-                localStorage.removeItem("theme");
-            } else {
-                document.body.setAttribute("data-theme", "dark");
-                localStorage.setItem("theme", "dark");
-            }
-        }
-
-        // Set theme on load based on user preference
-        document.addEventListener("DOMContentLoaded", function () {
-            if (localStorage.getItem("theme") === "dark") {
-                document.body.setAttribute("data-theme", "dark");
-            }
-        });
-
-        // Add placeholders to input fields using JavaScript
-        document.addEventListener("DOMContentLoaded", function () {
-            var form_fields = document.querySelectorAll("input[type='text'], input[type='email'], input[type='password']");
-            form_fields[0].placeholder = 'Username';
-            form_fields[1].placeholder = 'Email';
-            form_fields[2].placeholder = 'Enter password';
-            form_fields[3].placeholder = 'Re-enter password';
-
-            form_fields.forEach(function (field) {
-                field.classList.add('form-control');
-            });
-        });
-    </script>
 </body>
 
 </html>

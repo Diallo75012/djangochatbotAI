@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 # no custom User model but use it directly in our first model
 class BusinessUserData(models.Model):
-  user = models.OneToOneField(
+  user = models.ForeignKey(
     User,
     null=True,
     on_delete=models.CASCADE

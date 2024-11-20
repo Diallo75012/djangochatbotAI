@@ -1,13 +1,18 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
+from django.contrib import messages
 from .models import BusinessUserData
 from .forms import (
   CreateUserForm,
+  UpdateUserForm,
   BusinessUserDataForm,
   BusinessUserDataUpdateForm
 )
+
 
 
 # user index page
@@ -50,7 +55,7 @@ def registerUser(request):
 
       if user:
         login(request, user)
-        message.success(request, f"Account has been created for {username}")
+        messages.success(request, f"Account has been created for {username}")
         # this will pass the login page and redirect to the opened interface for business users
         # as this route will check if user is logged in or notm if user is logged in it won't show the login form but login page
         return redirect('users:loginuser')
@@ -64,7 +69,7 @@ def registerUser(request):
     # otherwise by default we present user form empty to be registred
     form = CreateUserForm()
 
-  context = {'usercreationform': form}
+  context = {'form': form}
   return render(request, 'registration/registeruser.html', context)
 
 # update user
@@ -94,12 +99,12 @@ def loginUser(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
 
-    user = authenticate(request, username, password=password)
-    if iser is not None:
+    user = authenticate(request=request, username=username, password=password)
+    if user is not None:
       login(request, user)
       return redirect('users:index')
     else:
-      message.info(request, 'Username OR Password is incorrect')
+      messages.info(request, 'Username OR Password is incorrect')
 
   context = {}
   return render(request, 'accounts/loginuser.html', context)
@@ -120,20 +125,21 @@ def addBusinessData(request):
   if request.method == 'POST':
     form = BusinessUserDataForm(request.POST)
     if form.is_valid():
-      form.save()
+      business_data = form.save(commit=False)
+      business_data.user = request.user
+      print("Business user: ", request.user)
+      business_data.save()
       messages.success(
         request,
         "Business data added successfully!"
       )
-      # we just return to same page if user need to add more 
-      # otherwise user will use navigation to go somewhere else
-      return redirect("users:addbusinessdata")
+      return redirect("users:index")
     else:
       messages.error(
         request,
         "Form submission incorrect. Please enter correct information (JSON) {'question':'answer',...}"
       )
-  context = {'adddatafrom': form}
+  context = {'form': form}
   # JSON validation should be handled at the form level, no need to submit if it is not good JSON/Dict
   return render(request, 'business/addbusinessdata.html', context)
 
@@ -157,14 +163,14 @@ def updateBusinessData(request, pk):
         request,
         "Form submission incorrect. Please enter correct information respecting the data. eg: JSON format or DICT"
       )
-  context = {'businessdataupdateform': form}
+  context = {'form': form}
   return render(request, "business/updatebusinessdata.html", context)
 
 
 # delete business data
 @login_required(login_url="users:loginuser")
 def deleteBusinessData(request, pk):
-  business_data_to_delete = get_objects_or_404(BusinessUserData, id=pk, user=request.user)
+  business_data_to_delete = get_object_or_404(BusinessUserData, id=pk, user=request.user)
   if request.method == "POST":
     business_data_to_delete.delete()
     messages.success(

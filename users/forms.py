@@ -38,7 +38,7 @@ class UpdateUserForm(forms.ModelForm):
 class BusinessUserDataForm(ModelForm, JSONFieldValidationMixin):
   class Meta:
     model = BusinessUserData
-    fields = '__all__'
+    fields = ['document_title', 'question_answer_data'] 
 
 # BusinessUserData Update data records
 class BusinessUserDataUpdateForm(ModelForm, JSONFieldValidationMixin):

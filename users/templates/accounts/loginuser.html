@@ -8,7 +8,7 @@
     <title>Login</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
+    <script src="{% static '/users/assets/js/theme-toggle.js' %}"></script>
     <style>
         body {
             background-color: var(--background-color);
@@ -94,7 +94,7 @@
     </div>
   {% endif %}
 
-    <button class="btn btn-secondary toggle-container" onclick="toggleTheme()">Toggle Dark/Light Mode</button>
+    <button class="btn btn-secondary toggle-container toggle-theme" onclick="toggleTheme()">Toggle Dark/Light Mode</button>
     <div class="container">
         <div class="d-flex justify-content-center">
             <div class="user_card">
@@ -131,32 +131,12 @@
                 {% endif %}
                 <div class="mt-4">
                     <div class="d-flex justify-content-center links">
-                        Don't have an account? <a href="{% url 'users:registerUser' %}" class="ml-2">Sign Up Here</a>
+                        Don't have an account? <a href="{% url 'users:registeruser' %}" class="ml-2">Sign Up Here</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <script>
-        // Theme Toggle Functionality
-        function toggleTheme() {
-            if (document.body.hasAttribute("data-theme")) {
-                document.body.removeAttribute("data-theme");
-                localStorage.removeItem("theme");
-            } else {
-                document.body.setAttribute("data-theme", "dark");
-                localStorage.setItem("theme", "dark");
-            }
-        }
-
-        // Set theme on load based on user preference
-        document.addEventListener("DOMContentLoaded", function () {
-            if (localStorage.getItem("theme") === "dark") {
-                document.body.setAttribute("data-theme", "dark");
-            }
-        });
-    </script>
 </body>
 
 </html>
