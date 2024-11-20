@@ -48,20 +48,18 @@ jobs:
 
       - name: Wait for PostgreSQL to be ready
         run: |
-          until pg_isready -h localhost -p 5432; do
-            echo "Waiting for PostgreSQL to be ready..."
-            sleep 10
-          done
+          echo "Waiting for PostgreSQL to be ready..."
+          sleep 60  # Increase waiting time to ensure Postgres is ready
 
       - name: Run migrations
         env:
-          DATABASE_URL: postgresql://user:password@localhost:5432/test_db
+          DATABASE_URL: postgresql://user:password@postgres:5432/test_db
         run: |
           python manage.py migrate
 
       - name: Run tests with coverage
         env:
-          DATABASE_URL: postgresql://user:password@localhost:5432/test_db
+          DATABASE_URL: postgresql://user:password@postgres:5432/test_db
         run: |
           coverage run --source='.' manage.py test
 
