@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Data Management</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        :root {
+            --background-color: #f0f0f0;
+            --text-color: #000000;
+        }
+
+        [data-theme="dark"] {
+            --background-color: #121212;
+            --text-color: #ffffff;
+        }
+
+        .table-container {
+            margin-top: 50px;
+        }
+
+        .btn-theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
+        .btn-action {
+            margin-right: 5px;
+        }
+
+        .btn-add {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+  {% if messages %}
+    <div class="container mt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <button class="btn btn-secondary btn-theme-toggle" onclick="toggleTheme()">Toggle Dark/Light Mode</button>
+  <div class="container table-container">
+    <h1 class="text-center">Welcome, {{ user.username }}!</h1>
+    <h2 class="text-center">Manage Your Business Data</h2>
+
+    <!-- Add New Data Button -->
+    <div class="d-flex justify-content-end">
+        <button class="btn btn-success btn-add" onclick="location.href='{% url 'users:addbusinessdata' %}'">
+            <i class="fas fa-plus"></i> Add New Data
+        </button>
+    </div>
+
+    <!-- Data Table -->
+    <table class="table table-bordered table-hover table-dark" id="businessDataTable">
+      <thead class="thead-light">
+        <tr>
+          <th>ID</th>
+          <th>Document Title</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in data %}
+          <tr>
+            <td>{{ item.id }}</td>
+            <td>{{ item.document_title }}</td>
+            <td>
+              <!-- Update Button -->
+              <a href="{% url 'users:updatebusinessdata' item.id %}" class="btn btn-primary btn-action">
+                <i class="fas fa-edit"></i> Update
+              </a>
+
+              <!-- Delete Button -->
+              <form method="POST" action="{% url 'users:deletebusinessdata' item.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-action" onclick="return confirm('Are you sure you want to delete this item?');">
+                  <i class="fas fa-trash-alt"></i> Delete
+                </button>
+              </form>
+            </td>
+          </tr>
+       {% endfor %}
+       </tbody>
+    </table>
+  </div>
+
+  <script>
+  // Theme Toggle Functionality
+  function toggleTheme() {
+    if (document.body.hasAttribute("data-theme")) {
+      document.body.removeAttribute("data-theme");
+      localStorage.removeItem("theme");
+    } else {
+      document.body.setAttribute("data-theme", "dark");
+      localStorage.setItem("theme", "dark");
+    }
+  }
+
+  // Set theme on load based on user preference
+  document.addEventListener(
+    "DOMContentLoaded", 
+     function () {
+       if (localStorage.getItem("theme") === "dark") {
+       document.body.setAttribute("data-theme", "dark");
+       }
+     }
+  );
+ </script>
+</body>
+
+</html>

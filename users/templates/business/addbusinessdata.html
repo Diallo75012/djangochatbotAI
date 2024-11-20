@@ -1,0 +1,183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Business Data</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Arial', sans-serif;
+        }
+
+        :root {
+            --background-color: #f0f0f0;
+            --text-color: #000000;
+        }
+
+        [data-theme="dark"] {
+            --background-color: #121212;
+            --text-color: #ffffff;
+        }
+
+        .business_card {
+            max-width: 600px;
+            margin-top: 5%;
+            background: var(--card-background);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            padding: 30px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+        }
+
+        .business_card[data-theme="dark"] {
+            --card-background: #1e1e1e;
+        }
+
+        .form_container {
+            margin-top: 20px;
+        }
+
+        #form-title {
+            color: var(--text-color);
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .action_btn {
+            width: 100%;
+            background: #007bff !important;
+            color: white !important;
+            padding: 10px;
+            font-weight: bold;
+        }
+
+        .action_btn:focus {
+            box-shadow: none !important;
+            outline: 0px !important;
+        }
+
+        .toggle-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
+        .input-group-text {
+            background: #007bff !important;
+            color: white !important;
+            border: 0 !important;
+            border-radius: 0.25rem 0 0 0.25rem !important;
+        }
+
+        .input_user,
+        .input_pass:focus {
+            box-shadow: none !important;
+            outline: 0px !important;
+        }
+
+        .links a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .form-control {
+            height: 45px;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+  {% if messages %}
+    <div class="container mt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }>
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+    <button class="btn btn-secondary toggle-container" onclick="toggleTheme()">Toggle Dark/Light Mode</button>
+    <div class="container">
+        <div class="d-flex justify-content-center">
+            <div class="business_card">
+                <div class="d-flex justify-content-center">
+                    <h3 id="form-title">Add Business Data</h3>
+                </div>
+                <div class="d-flex justify-content-center form_container">
+                    <form method="POST" action="">
+                        {% csrf_token %}
+                        <div class="input-group mb-4">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-file-alt"></i></span>
+                            </div>
+                            {{ form.document_title|add_class:"form-control" }}
+                        </div>
+                        <div class="input-group mb-4">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-clipboard-list"></i></span>
+                            </div>
+                            {{ form.question_answer_data|add_class:"form-control" }}
+                        </div>
+                        <div class="d-flex justify-content-center mt-4">
+                            <input class="btn action_btn" type="submit" value="Add Data">
+                        </div>
+                    </form>
+                </div>
+                {% if form.errors %}
+                <div class="alert alert-danger mt-4">
+                    {{ form.errors }}
+                </div>
+                {% endif %}
+                <div class="mt-4">
+                    <div class="d-flex justify-content-center links">
+                        <a href="{% url 'users:index' %}" class="btn btn-link">Back to Index</a>
+                    </div>
+                    <div class="d-flex justify-content-center links">
+                        <a href="{% url 'users:logoutuser' %}" class="btn btn-link">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle Functionality
+        function toggleTheme() {
+            if (document.body.hasAttribute("data-theme")) {
+                document.body.removeAttribute("data-theme");
+                localStorage.removeItem("theme");
+            } else {
+                document.body.setAttribute("data-theme", "dark");
+                localStorage.setItem("theme", "dark");
+            }
+        }
+
+        // Set theme on load based on user preference
+        document.addEventListener("DOMContentLoaded", function () {
+            if (localStorage.getItem("theme") === "dark") {
+                document.body.setAttribute("data-theme", "dark");
+            }
+        });
+    </script>
+</body>
+
+</html>
+
