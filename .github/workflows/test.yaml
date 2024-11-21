@@ -23,61 +23,71 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd pg_isready
-          --health-interval 15s
-          --health-timeout 10s
-          --health-retries 20
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
+      # Step 1: Check out the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Step 2: Set up Python environment
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
 
+      # Step 3: Install system dependencies
       - name: Install system dependencies
         run: |
-          sudo apt update
-          sudo apt install -y build-essential python3.11-dev libpq-dev
+          sudo apt-get update
+          sudo apt-get install -y build-essential python3.11-dev libpq-dev
 
+      # Step 4: Install Python dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # Step 5: Wait for PostgreSQL to be ready
       - name: Wait for PostgreSQL to be ready
         run: |
-          RETRY_COUNT=20
-          until [ $RETRY_COUNT -le 0 ] || docker inspect --format='{{.State.Health.Status}}' $(docker ps -q --filter "ancestor=postgres:latest") | grep -q 'healthy'; do
-            echo "Waiting for PostgreSQL to be healthy..."
-            sleep 10
-            RETRY_COUNT=$((RETRY_COUNT-1))
+          until pg_isready -h localhost -p 5432; do
+            echo "Waiting for PostgreSQL to be ready..."
+            sleep 5
           done
-          if [ $RETRY_COUNT -le 0 ]; then
-            echo "PostgreSQL did not become healthy in time." >&2
-            exit 1
-          fi
 
+      # Step 6: Run migrations
       - name: Run migrations
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          DBNAME: test_db
+          DBUSER: postgres
+          DBPASSWORD: postgres
+          DBHOST: localhost
+          DBPORT: 5432
         run: |
           python manage.py migrate
 
+      # Step 7: Run tests with coverage
       - name: Run tests with coverage
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          DBNAME: test_db
+          DBUSER: postgres
+          DBPASSWORD: postgres
+          DBHOST: localhost
+          DBPORT: 5432
         run: |
           coverage run --source='.' -m pytest --ds=chatbotAI.settings
+
+      # Step 8: Generate and upload coverage report
+      - name: Generate coverage report
+        run: |
+          coverage report
+          coverage html
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v3
         with:
           name: coverage-report
           path: htmlcov
-
-      - name: Display coverage report
-        run: |
-          coverage report
-          coverage html
