@@ -87,3 +87,8 @@ Total Estimated Test Functions to Add or Update:
 - Mixins: 2-3 additional tests.
 - Template Tags: 1-2 new tests.
 - Models: 1-2 additional tests.
+
+
+# Github Action
+if you dan't want to run CI at every push just add this to your commit message:
+- **`[skip ci]` or `[ci skip]`**
