@@ -1,5 +1,14 @@
 from django.urls import path, include
 from . import views
+from . import viewsets
+# FOR API
+from rest_framework import routers
+
+# FOR API
+# wiring up with automatic routing URLS
+router = routers.DefaultRouter()
+router.register(r'users', viewsets.UserViewSet)
+router.register(r'groups', viewsets.GroupViewSet)
 
 
 app_name = 'users'
@@ -18,4 +27,8 @@ urlpatterns = [
 
   # index
   path('index', views.index, name='index'),
+
+  # FOR API
+  path('', include(router.urls)),
 ]
+
