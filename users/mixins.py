@@ -12,6 +12,9 @@ class JSONFieldValidationMixin:
       validate that the 'question_answer_data' field is a proper JSON field
     '''
     data = self.cleaned_data.get('question_answer_data')
+    
+    if data is None:
+        raise ValidationError("No data provided for question_answer_data")
 
     if isinstance(data, dict):
       # If data is already a dictionary, no need to parse it as JSON.

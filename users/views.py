@@ -35,20 +35,23 @@ def index(request):
 # register user
 def registerUser(request):
   '''
-    This route will present by default empty registration form
-    When the user post the form it will use this same route to create user
+  This route will present by default empty registration form.
+  When the user posts the form, it will use this same route to create the user.
   '''
   if request.method == 'POST':
     form = CreateUserForm(request.POST)
+
+    # Check if the username already exists before form validation
+    username = request.POST.get('username')
+    if User.objects.filter(username=username).exists():
+      messages.error(request, f"A user with the username '{username}' already exists.")
+      form.add_error("username", f"A user with the username '{username}' already exists.")
+      context = {'form': form}
+      return render(request, 'registration/registeruser.html', context)
+
+    # Proceed with validating the form
     if form.is_valid():
-      username = form.cleaned_data['username']
-
-      # check if user already exists
-      if form._meta.model.objects.filter(username=username).exists():
-        messages.error(request, f"A user with the username '{username}' already exists.\nPlease try login page if it is you with you password.")
-        return redirect('user:registeruser')
-
-      # save the user and log them in
+      # Save the user and log them in
       user = form.save()
       password = form.cleaned_data['password1']
       user = authenticate(username=username, password=password)
@@ -56,21 +59,18 @@ def registerUser(request):
       if user:
         login(request, user)
         messages.success(request, f"Account has been created for {username}")
-        # this will pass the login page and redirect to the opened interface for business users
-        # as this route will check if user is logged in or notm if user is logged in it won't show the login form but login page
         return redirect('users:loginuser')
       else:
         messages.error(request, "Authentication failed after registration.")
-
-    # here if form is not valid
     else:
-      messages.error(request, "Invalid form subnission.Please correct the errors.")
+      messages.error(request, "Invalid form submission. Please correct the errors.")
   else:
-    # otherwise by default we present user form empty to be registred
+    # Present an empty registration form by default
     form = CreateUserForm()
 
   context = {'form': form}
   return render(request, 'registration/registeruser.html', context)
+
 
 # update user
 @login_required(login_url='users:loginuser')
@@ -95,6 +95,10 @@ def updateUser(request):
 
 # login user
 def loginUser(request):
+  # making sure user is redirected to index page when already logged in
+  if request.user.is_authenticated:
+    return redirect('users:index')
+
   if request.method == 'POST':
     username = request.POST.get('username')
     password = request.POST.get('password')
@@ -137,7 +141,7 @@ def addBusinessData(request):
     else:
       messages.error(
         request,
-        "Form submission incorrect. Please enter correct information (JSON) {'question':'answer',...}"
+        "Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format)."
       )
   context = {'form': form}
   # JSON validation should be handled at the form level, no need to submit if it is not good JSON/Dict
