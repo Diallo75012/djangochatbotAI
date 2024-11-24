@@ -92,3 +92,57 @@ Total Estimated Test Functions to Add or Update:
 # Github Action
 if you dan't want to run CI at every push just add this to your commit message:
 - **`[skip ci]` or `[ci skip]`**
+
+# curl notes
+
+- GET and POST (Option `-X`)
+```bash
+# Option `-X` for `--request`
+curl -X GET URL
+curl -X POST URL
+```
+- header in URL
+```bash
+-H header_key: header_value
+```
+- json data in URL.
+```bash
+# `-d` for data
+-d json format data.
+```
+- Option to check the response in terminal
+```bash
+-v
+```
+- Example of command
+```bash
+curl -v -X POST https://<your_url> -H "Content-Type: application/json" -H "Authorization: bearer junkotokenshibuyamangakissafdkjfjdre" -d '{"identifier": "value", "events": "value", "use case": "value"}' 
+```
+- `?` at the end of URL
+```bash
+# here to have query parameter that limits results to `7` for example
+curl -X GET YOU_URL/?limit=7
+```
+
+# diagram v1: Higher level view
+[Diagram V1: high level view of app](https://excalidraw.com/#json=HPUEbE0K-4allRPKxBRUO,8dUZv2OYLOPVMn0HHFkSNw)
+
+# Next
+- from Django normal to Django API: decide all route needed and names
+- create React App and connect frontend to backend for each route
+- we won't use REACT but just Full Django HTML/JS/CSS/JINJA and chatgpt for improvements of UI with screenshots after having done boilerplate
+- therefore we are going to use django routes normal ones for forms and everything and if needed to show data easily we can use the DjangoRestFramework ViewSets just to show the data from database to user
+
+
+
+
+
+
+
+
+
+
+
+
+
+

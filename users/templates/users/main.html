@@ -8,42 +8,7 @@
     <title>Business Data Management</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script src="{% static '/users/assets/js/theme-toggle.js' %}"></script>
-    <style>
-        body {
-            background-color: var(--background-color);
-            color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        :root {
-            --background-color: #f0f0f0;
-            --text-color: #000000;
-        }
-
-        [data-theme="dark"] {
-            --background-color: #121212;
-            --text-color: #ffffff;
-        }
-
-        .table-container {
-            margin-top: 50px;
-        }
-
-        .btn-theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-        }
-
-        .btn-action {
-            margin-right: 5px;
-        }
-
-        .btn-add {
-            margin-bottom: 15px;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static '/users/assets/css/styles.css' %}">
 </head>
 
 <body>
@@ -58,6 +23,11 @@
   {% endif %}
 
   <button class="btn btn-secondary toggle-container toggle-theme" onclick="toggleTheme()">Toggle Dark/Light Mode</button>
+  <div class="mt-4">
+    <div class="d-flex justify-content-right links">
+        <a href="{% url 'users:logoutuser' %}" class="btn btn-link">Logout</a>
+    </div>
+  </div>
   <div class="container table-container">
     <h1 class="text-center">Welcome, {{ user.username }}!</h1>
     <h2 class="text-center">Manage Your Business Data</h2>
@@ -102,7 +72,7 @@
        </tbody>
     </table>
   </div>
-
+  <script src="{% static 'users/assets/js/theme-toggle.js' %}"></script>
 </body>
 
 </html>

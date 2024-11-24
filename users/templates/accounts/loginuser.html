@@ -8,79 +8,7 @@
     <title>Login</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script src="{% static '/users/assets/js/theme-toggle.js' %}"></script>
-    <style>
-        body {
-            background-color: var(--background-color);
-            color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        :root {
-            --background-color: #f0f0f0;
-            --text-color: #000000;
-        }
-
-        [data-theme="dark"] {
-            --background-color: #121212;
-            --text-color: #ffffff;
-        }
-
-        .user_card {
-            width: 400px;
-            margin-top: 10%;
-            background: var(--card-background);
-            position: relative;
-            display: flex;
-            justify-content: center;
-            flex-direction: column;
-            padding: 20px;
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-            border-radius: 10px;
-        }
-
-        .user_card[data-theme="dark"] {
-            --card-background: #1e1e1e;
-        }
-
-        .form_container {
-            margin-top: 20px;
-        }
-
-        #form-title {
-            color: var(--text-color);
-        }
-
-        .login_btn {
-            width: 100%;
-            background: #33ccff !important;
-            color: white !important;
-        }
-
-        .login_btn:focus {
-            box-shadow: none !important;
-            outline: 0px !important;
-        }
-
-        .toggle-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-        }
-
-        .input-group-text {
-            background: #f7ba5b !important;
-            color: white !important;
-            border: 0 !important;
-            border-radius: 0.25rem 0 0 0.25rem !important;
-        }
-
-        .input_user,
-        .input_pass:focus {
-            box-shadow: none !important;
-            outline: 0px !important;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static '/users/assets/css/styles.css' %}">
 </head>
 
 <body>
@@ -137,6 +65,7 @@
             </div>
         </div>
     </div>
+    <script src="{% static 'users/assets/js/theme-toggle.js' %}"></script>
 </body>
 
 </html>
