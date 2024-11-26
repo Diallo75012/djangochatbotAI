@@ -54,6 +54,14 @@ body {
     font-size: 24px;
 }
 
+/* Form Styles */
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
 input[type="text"],
 input[type="password"],
 input[type="email"],
@@ -153,62 +161,6 @@ table th {
     font-weight: bold;
 }
 
-/* Improve table header visibility */
-.table thead th {
-    background-color: #e0e0e0; /* Light gray to differentiate from white background */
-    color: #000000; /* Black text for better contrast */
-}
-
-/* Improve table row hover visibility */
-.table tbody tr:hover {
-    background-color: #f8f9fa; /* Light gray background on hover to maintain visibility */
-}
-
-/* Ensure table text color remains visible on hover in light mode */
-[data-theme="light"] .table tbody tr:hover {
-    background-color: #e9ecef; /* Light gray on hover for visibility */
-    color: #000; /* Keep the text color black */
-}
-
-/* Update Delete button shadow */
-.btn-action .btn-danger {
-    box-shadow: none; /* Remove the unwanted shadow */
-}
-
-/* Center and space the action buttons */
-.table td {
-    vertical-align: middle;
-}
-
-.table .btn-action {
-    margin-right: 5px; /* Space between buttons */
-}
-
-
-/* Remove the white border and properly center align the buttons in the actions column */
-.table-container .action-buttons-cell {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.action-buttons-cell .btn {
-    margin: 0 5px; /* Adds equal spacing between buttons */
-}
-
-/* Fix background for table rows in light/dark themes */
-.table-container .table {
-    color: var(--text-color);
-}
-
-.table-container .table tbody tr {
-    background-color: #333; /* Default for dark mode */
-}
-
-[data-theme="light"] .table-container .table tbody tr {
-    background-color: #f8f9fa; /* Default for light mode */
-}
-
 /* Navigation Menu */
 .nav {
     background-color: #333;
@@ -251,33 +203,9 @@ a:focus {
 
 
 /* Form Field Specific Styles */
-form {
-    background-color: var(--background-color);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
 
-/* General label styling */
 .form-label {
     font-weight: bold;
-    margin-bottom: 5px;
-    display: block;
-}
-
-/* Light mode labels */
-[data-theme="light"] .form-label {
-    color: #000000; /* Black color for labels in light mode */
-}
-
-/* Dark mode labels */
-[data-theme="dark"] .form-label {
-    color: #ffffff;
-}
-
-/* Adjust the input fields to align better */
-.form-group {
-    margin-bottom: 15px; /* Space between fields */
 }
 
 /* Card Styles */
@@ -297,7 +225,7 @@ form {
         padding: 10px;
     }
 
-    /* Reduce margin-top for user_card and business_card on small screens */
+    /* Reduce margin-top for user_card on small screens */
     .user_card,
     .business_card {
         margin-top: 5%;
@@ -329,7 +257,6 @@ form {
         font-size: 0.85rem;
     }
 
-    /* Table adjustments for small screens */
     table, th, td {
         font-size: 14px;
         padding: 6px;  /* Reduce padding to fit smaller screens */
@@ -343,30 +270,16 @@ form {
 
     th, td {
         white-space: nowrap;  /* Prevent wrapping of table content */
-        vertical-align: middle;  /* Ensure better alignment of text */
     }
 
-    /* Make the table header sticky for better readability */
+    /* Optional: make the table header sticky for better readability */
     thead th {
         position: sticky;
         top: 0;
-        background-color: #e0e0e0;  /* Keep header background consistent with the recent change */
+        background-color: #f2f2f2;  /* Keep header background different for contrast */
         z-index: 1;  /* Keep header on top */
     }
-
-    /* Adjust hover state for table rows */
-    tbody tr:hover {
-        background-color: #f8f9fa; /* Maintain hover visibility */
-    }
-
-    /* Adjust the alignment and spacing of action buttons */
-    .table .btn-action {
-        margin: 5px 0;  /* Consistent spacing between action buttons */
-        width: 100%;    /* Stack buttons vertically on smaller screens */
-    }
 }
-
-
 
 /* Utility Classes */
 .text-center {
@@ -493,7 +406,7 @@ form {
 .business_card {
     max-width: 600px;
     margin-top: 5%;
-    background: var(--card-background, #ffffff); /* Default to white if var isn't set */
+    background: var(--card-background);
     position: relative;
     display: flex;
     justify-content: center;
@@ -501,12 +414,10 @@ form {
     padding: 30px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
     border-radius: 15px;
-    color: var(--text-color);
 }
 
-/* Apply dark mode changes to business card */
-[data-theme="dark"] .business_card {
-    background: #1e1e1e; /* Dark background color for the card */
-    color: #ffffff; /* White text color for the card content */
+.business_card[data-theme="dark"] {
+    --card-background: #1e1e1e;
+    color: var(--text-color);
 }
 

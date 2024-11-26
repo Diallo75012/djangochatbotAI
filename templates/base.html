@@ -11,7 +11,9 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 
-<body>
+<body data-theme="light">
+    <!-- Theme Toggle Script -->
+    <button class="btn btn-secondary toggle-container toggle-theme">Toggle Dark/Light Mode</button>
     <!-- Header -->
     <header class="header">
         <div class="container">
@@ -21,9 +23,16 @@
 
     <!-- Navigation Bar -->
     <nav class="nav">
+      {% if user.is_authenticated %}
         <a href="{% url 'businessdata:businessdatamanagement' %}">Home</a>
+        <a href="" >Bot Settings</a>
+        <a href="{% url 'users:logoutbusinessuser' %}" >Logout</a>
+        {% if user.group.business %}
+        {% endif %}
+      {% else %}
         <a href="{% url 'users:loginbusinessuser' %}">Login Business User</a>
         <a href="{% url 'users:registerbusinessuser' %}">Register Business User</a>
+      {% endif %}
     </nav>
 
     <!-- Messages -->
@@ -48,9 +57,6 @@
             <p>&copy; 2024 CreditizensAI. All rights reserved.</p>
         </div>
     </footer>
-
-    <!-- Theme Toggle Script -->
-    <button class="btn btn-secondary toggle-container toggle-theme" onclick="toggleTheme()">Toggle Dark/Light Mode</button>
     <script src="{% static 'js/theme-toggle.js' %}"></script>
 </body>
 

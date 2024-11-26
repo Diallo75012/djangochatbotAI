@@ -3,28 +3,13 @@
 {% block title %}Business Data Management{% endblock %}
 
 {% block content %}
-  {% if messages %}
-    <div class="container mt-3">
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  <button class="btn btn-secondary toggle-container toggle-theme" onclick="toggleTheme()">Toggle Dark/Light Mode</button>
-  <div class="mt-4">
-    <div class="d-flex justify-content-right links">
-        <a href="{% url 'users:logoutbusinessuser' %}" class="btn btn-link">Logout</a>
-    </div>
-  </div>
-  <div class="container table-container">
+<div class="mt-4"></div>
+<div class="container table-container">
     <h1 class="text-center">Welcome, {{ user.username }}!</h1>
     <h2 class="text-center">Manage Your Business Data</h2>
 
     <!-- Add New Data Button -->
-    <div class="d-flex justify-content-end">
+    <div class="d-flex justify-content-end mb-3">
         <button class="btn btn-success btn-add" onclick="location.href='{% url 'businessdata:addbusinessdata' %}'">
             <i class="fas fa-plus"></i> Add New Data
         </button>
@@ -32,36 +17,36 @@
 
     <!-- Data Table -->
     <table class="table table-bordered table-hover table-dark" id="businessDataTable">
-      <thead class="thead-light">
-        <tr>
-          <th>ID</th>
-          <th>Document Title</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in data %}
-          <tr>
-            <td>{{ item.id }}</td>
-            <td>{{ item.document_title }}</td>
-            <td>
-              <!-- Update Button -->
-              <a href="{% url 'businessdata:updatebusinessdata' item.id %}" class="btn btn-primary btn-action">
-                <i class="fas fa-edit"></i> Update
-              </a>
+        <thead class="thead-light">
+            <tr>
+                <th>Document Title</th>
+                <th>Default ChatBot</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data %}
+                <tr>
+                    <td>{{ item.document_title }}</td>
+                    <td>BOT_NAME_HERE</td>
+                    <td class="action-buttons-cell">
+                        <!-- Update Button -->
+                        <a href="{% url 'businessdata:updatebusinessdata' item.id %}" class="btn btn-primary btn-action mx-1">
+                            <i class="fas fa-edit"></i> Update Data
+                        </a>
 
-              <!-- Delete Button -->
-              <form method="POST" action="{% url 'businessdata:deletebusinessdata' item.id %}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger btn-action" onclick="return confirm('Are you sure you want to delete this item?');">
-                  <i class="fas fa-trash-alt"></i> Delete
-                </button>
-              </form>
-            </td>
-          </tr>
-       {% endfor %}
-       </tbody>
+                        <!-- Delete Button -->
+                        <form method="POST" action="{% url 'businessdata:deletebusinessdata' item.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-action mx-1" onclick="return confirm('Are you sure you want to delete this item?');">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
     </table>
-  </div>
-  <script src="{% static 'js/theme-toggle.js' %}"></script>
+</div>
 {% endblock %}
+

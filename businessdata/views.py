@@ -21,7 +21,7 @@ def is_business_user(user):
 def businessDataManagement(request):
   data = BusinessUserData.objects.filter(user=request.user).values("id", "document_title")
   context = {"data": data}
-  return render(request, 'businessdata/businessdatamanagement.html', context)
+  return render(request, 'business/businessdatamanagement.html', context)
   # for API later on we might use jsonResponse
   '''
   return JsonResponse({'business_data': list(data)})
@@ -54,7 +54,7 @@ def addBusinessData(request):
         request,
         "Business data added successfully!"
       )
-      return redirect("businessdata:businessdatamanagement")
+      return redirect("businessdata:addbusinessdata")
     else:
       messages.error(
         request,
@@ -62,7 +62,7 @@ def addBusinessData(request):
       )
   context = {'form': form}
   # JSON validation should be handled at the form level, no need to submit if it is not good JSON/Dict
-  return render(request, 'businessdata/addbusinessdata.html', context)
+  return render(request, 'business/addbusinessdata.html', context)
 
 # update business data
 @login_required(login_url='users:loginbusinessuser')
@@ -86,7 +86,7 @@ def updateBusinessData(request, pk):
         "Form submission incorrect. Please enter correct information respecting the data. eg: JSON format or DICT"
       )
   context = {'form': form}
-  return render(request, "businessdata/updatebusinessdata.html", context)
+  return render(request, "business/updatebusinessdata.html", context)
 
 
 # delete business data

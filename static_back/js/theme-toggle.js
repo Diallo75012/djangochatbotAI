@@ -1,6 +1,5 @@
 // Theme Toggle Functionality
 function toggleTheme() {
-    // console.log("Toggle button clicked"); // For debugging
     // Toggle theme based on the current theme
     if (document.body.getAttribute("data-theme") === "dark") {
         // Switch to light mode
@@ -31,4 +30,3 @@ document.addEventListener("DOMContentLoaded", function () {
 document.querySelectorAll('button.toggle-theme').forEach(button => {
     button.addEventListener("click", toggleTheme);
 });
-

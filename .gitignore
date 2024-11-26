@@ -20,3 +20,8 @@ db*
 *.coverage*
 *coverage*
 .coverage/**
+
+nginx
+nginx/
+nginx/*/**
+
