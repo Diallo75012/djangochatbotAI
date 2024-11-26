@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ChatBotAI{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1>Creditizens ChatBotAI</h1>
+        </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="nav">
+        <a href="{% url 'businessdata:businessdatamanagement' %}">Home</a>
+        <a href="{% url 'users:loginbusinessuser' %}">Login Business User</a>
+        <a href="{% url 'users:registerbusinessuser' %}">Register Business User</a>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="container mt-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 CreditizensAI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Theme Toggle Script -->
+    <button class="btn btn-secondary toggle-container toggle-theme" onclick="toggleTheme()">Toggle Dark/Light Mode</button>
+    <script src="{% static 'js/theme-toggle.js' %}"></script>
+</body>
+
+</html>

@@ -125,17 +125,53 @@ curl -X GET YOU_URL/?limit=7
 ```
 
 # diagram v1: Higher level view
-[Diagram V1: high level view of app](https://excalidraw.com/#json=HPUEbE0K-4allRPKxBRUO,8dUZv2OYLOPVMn0HHFkSNw)
+[Diagram V1: high level view of app](https://excalidraw.com/#json=13cims8czPh4dJf0H06YF,avcPyjTq6wk_9r3-E0tu1Q)
 
 # Next
-- from Django normal to Django API: decide all route needed and names
-- create React App and connect frontend to backend for each route
 - we won't use REACT but just Full Django HTML/JS/CSS/JINJA and chatgpt for improvements of UI with screenshots after having done boilerplate
 - therefore we are going to use django routes normal ones for forms and everything and if needed to show data easily we can use the DjangoRestFramework ViewSets just to show the data from database to user
 
+# Prometheus Python Client
+- [Documentation Prometheus Python](https://prometheus.github.io/client_python/)
 
+# render image from database using Jinja
+```python
+{% for img in your_object %}
+    <img src="{{ img.image.url }}" >
+{% endfor %}
+```
 
+# ForeignKey 
+**on_delete options**
+- CASCADE
+- PROTECT
+- SET_NULL
+- SET_DEFAULT
+- SET()
+- DO_NOTHING
 
+# Memcache for question answers instead of redis
+source: https://medium.com/@netfluff/memcached-for-django-ecedcb74a06d
+```python
+pip install python-memcached
+
+# settings.pyCACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
+
+# views.py
+
+from django.core.cache import cachedef my_view(request):
+    cache_key = 'my_unique_key' # needs to be unique (uuid probably)
+    cache_time = 86400 # time in seconds for cache to be valid
+    data = cache.get(cache_key) # returns None if no key-value pair    if not data:
+        my_service = Service()
+        data = service.get_data()
+    
+    cache.set(cache_key, data, cache_time)return JsonResponse(data, safe=False)```
 
 
 

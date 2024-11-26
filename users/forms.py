@@ -1,19 +1,23 @@
 from django.forms import ModelForm
-from .models import BusinessUserData
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 from django import forms
-# as code would be duplicated the JSON validator has been moved to a class mixin in the mixins file
-from .mixins import JSONFieldValidationMixin
+
 
 # create user
-class CreateUserForm(UserCreationForm):
+class CreateBusinessUserForm(UserCreationForm):
+  business_group = forms.CharField(
+    initial='business',
+    disabled=True,
+    # Use HiddenInput if you don't want to show the group field
+    widget=forms.HiddenInput()
+  )
   class Meta:
     model = User
     fields = ('username', 'email', 'password1', 'password2')
 
 # update user
-class UpdateUserForm(forms.ModelForm):
+class UpdateBusinessUserForm(ModelForm):
     """
     Form to update user's information like username, email, and first/last name.
     """
@@ -32,18 +36,3 @@ class UpdateUserForm(forms.ModelForm):
         if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError('A user with this email already exists.')
         return email
-
-
-# BusinessUserData record form
-class BusinessUserDataForm(ModelForm, JSONFieldValidationMixin):
-  class Meta:
-    model = BusinessUserData
-    fields = ['document_title', 'question_answer_data'] 
-
-# BusinessUserData Update data records
-class BusinessUserDataUpdateForm(ModelForm, JSONFieldValidationMixin):
-  class Meta:
-    model = BusinessUserData
-    # here need to list fields that need to be updated,
-    #the user won't be updated it will be binded to the user logged in who have access to this data
-    fields = ['document_title', 'question_answer_data']

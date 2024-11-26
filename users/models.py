@@ -1,24 +1,32 @@
 from django.db import models
 # django built-in User model
 from django.contrib.auth.models import User
+from chatbotsettings.models import ChatBotSettings
 
 
-# no custom User model but use it directly in our first model
-class BusinessUserData(models.Model):
+class ClientUser(models.Model):
   user = models.ForeignKey(
     User,
     null=True,
     on_delete=models.CASCADE
   )
-  document_title = models.CharField(max_length=255, unique=True)
-  question_answer_data = models.JSONField()
-  # can also override here Django built-in error message
-  # for invalid JSON and use your custom one instead of "Enter a valid JSON"
-  # question_answer_data = models.JSONField(error_messages={
-    # use this message for unti tests of views.py functions
-    #'invalid': "Invalid JSON format. Please enter valid JSON data"
-  #})
-
+  nickname = models.CharField(max_length=40)
+  picture = models.ImageField(
+    max_length=255,
+    upload_to="uploads/client_user/",
+    blank=True
+  )
+  bio = models.CharField(max_length=255, blank=True)
+  preferred_chatbot = models.ForeignKey(
+    ChatBotSettings,
+    null=True,
+    blank=True,
+    on_delete=models.SET_NULL
+  )
 
   def __str__(self):
-    return f"{self.document_title}: {self.question_answer_data}"
+    return f"{self.nickname}: {self.bio[:50]}..."
+
+
+
+
