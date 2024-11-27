@@ -36,4 +36,10 @@ class BusinessUserData(models.Model):
   )
 
   def __str__(self):
-    return f"{self.document_title}: {self.question_answer_data}"
+    if self.chat_bot is not None:
+      if self.chat_bot.name:
+        return f"{self.document_title}: {self.chat_bot.name}"
+    else:
+      data_length = len(self.question_answer_data)
+      return f"Doc: {self.document_title} | Data length: {data_length}"
+

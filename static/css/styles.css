@@ -156,7 +156,8 @@ table th {
 /* Improve table header visibility */
 .table thead th {
     background-color: #e0e0e0; /* Light gray to differentiate from white background */
-    color: #000000; /* Black text for better contrast */
+    color: #333,
+    /* color: #000000;  Black text for better contrast */
 }
 
 /* Improve table row hover visibility */
@@ -178,12 +179,21 @@ table th {
 /* Center and space the action buttons */
 .table td {
     vertical-align: middle;
+    text-align: left,
 }
 
 .table .btn-action {
     margin-right: 5px; /* Space between buttons */
 }
 
+
+/* Improve header alignment and readability */
+.table-container {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: var(--background-color);
+    border-radius: 8px;
+}
 
 /* Remove the white border and properly center align the buttons in the actions column */
 .table-container .action-buttons-cell {
@@ -334,6 +344,11 @@ form {
         font-size: 14px;
         padding: 6px;  /* Reduce padding to fit smaller screens */
     }
+    
+    /* Reduce padding for smaller screens for better fit */
+    table td, table th {
+        padding: 10px 5px;
+    }
 
     table {
         overflow-x: auto;  /* Allow horizontal scrolling for tables */
@@ -364,8 +379,23 @@ form {
         margin: 5px 0;  /* Consistent spacing between action buttons */
         width: 100%;    /* Stack buttons vertically on smaller screens */
     }
+
+    /* Stack action buttons vertically on small screens */
+    .action-buttons-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
 }
 
+/* Fix the button centering issue for the Actions column */
+.action-buttons-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
 
 
 /* Utility Classes */

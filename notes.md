@@ -174,6 +174,10 @@ from django.core.cache import cachedef my_view(request):
     cache.set(cache_key, data, cache_time)return JsonResponse(data, safe=False)```
 
 
+# django foreinkey access to other model fields
+- `.select_related()`: use .select_related('chat_bot') for example to get access to all fields in the view.py
+- `__`: use .values('chat_bot__name') for example to access one specific field
+- `jinj`: use dot notation if using `.select_related()` method or directly here `chat_bot__name`
 
 
 

@@ -25,7 +25,7 @@
     <nav class="nav">
       {% if user.is_authenticated %}
         <a href="{% url 'businessdata:businessdatamanagement' %}">Home</a>
-        <a href="" >Bot Settings</a>
+        <a href="{% url 'chatbotsettings:chatbotsettingsmanagement' %}">Bot Settings</a>
         <a href="{% url 'users:logoutbusinessuser' %}" >Logout</a>
         {% if user.group.business %}
         {% endif %}

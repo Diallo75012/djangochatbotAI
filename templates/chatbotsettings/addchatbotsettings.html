@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load form_tags %}
+
+{% block title %}Add ChatBot Settings{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-center">
+        <div class="business_card">
+            <div class="d-flex justify-content-center">
+                <h3 id="form-title">Add ChatBot Settings</h3>
+            </div>
+            <div class="d-flex justify-content-center form_container">
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    {{ form.name|add_class_with_label:"form-control" }}
+                    {{ form.tone|add_class_with_label:"form-control" }}
+                    {{ form.description|add_class_with_label:"form-control" }}
+                    {{ form.expertise|add_class_with_label:"form-control" }}
+                    {{ form.custom_greeting|add_class_with_label:"form-control" }}
+                    {{ form.example_of_response|add_class_with_label:"form-control" }}
+                    {{ form.origin|add_class_with_label:"form-control" }}
+                    {{ form.age|add_class_with_label:"form-control" }}
+                    {{ form.dream|add_class_with_label:"form-control" }}
+                    {{ form.avatar|add_class_with_label:"form-control" }}
+
+                    <div class="d-flex justify-content-center mt-4">
+                        <input class="btn action_btn" type="submit" value="Add ChatBot Settings">
+                    </div>
+                </form>
+            </div>
+            {% if form.errors %}
+            <div class="alert alert-danger mt-4">
+                {{ form.errors }}
+            </div>
+            {% endif %}
+            <div class="mt-4">
+                <div class="d-flex justify-content-center links">
+                    <a href="{% url 'chatbotsettings:chatbotsettingsmanagement' %}" class="btn btn-link">Back to Setting Management</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

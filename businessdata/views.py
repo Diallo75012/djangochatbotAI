@@ -15,24 +15,13 @@ from .forms import (
 def is_business_user(user):
   return user.groups.filter(name='business').exists()
 
-# user index page
+# business user management page (like index page)
 @login_required(login_url='users:loginbusinessuser')
 @user_passes_test(is_business_user, login_url='users:loginbusinessuser')
 def businessDataManagement(request):
-  data = BusinessUserData.objects.filter(user=request.user).values("id", "document_title")
+  data = BusinessUserData.objects.filter(user=request.user).values("id", "document_title", "chat_bot__name")
   context = {"data": data}
   return render(request, 'business/businessdatamanagement.html', context)
-  # for API later on we might use jsonResponse
-  '''
-  return JsonResponse({'business_data': list(data)})
-  # which will output (good for frontend REACT...)
-  {
-    "business_data": [
-      {"id": 1, "document_title": "Title1"},
-      {"id": 2, "document_title": "Title2"}
-    ]
-  }
-  '''
 
 # add business data
 @login_required(login_url='users:loginbusinessuser')

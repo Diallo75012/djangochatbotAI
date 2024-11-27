@@ -16,7 +16,7 @@
     </div>
 
     <!-- Data Table -->
-    <table class="table table-bordered table-hover table-dark" id="businessDataTable">
+    <table class="table table-bordered table-hover table-dark">
         <thead class="thead-light">
             <tr>
                 <th>Document Title</th>
@@ -28,7 +28,13 @@
             {% for item in data %}
                 <tr>
                     <td>{{ item.document_title }}</td>
-                    <td>BOT_NAME_HERE</td>
+                    <td>
+                      {% if item.chat_bot__name %}
+                        {{ item.chat_bot__name }}
+                      {% else %}
+                        No ChatBot Assigned
+                      {% endif %}
+                    </td>
                     <td class="action-buttons-cell">
                         <!-- Update Button -->
                         <a href="{% url 'businessdata:updatebusinessdata' item.id %}" class="btn btn-primary btn-action mx-1">
