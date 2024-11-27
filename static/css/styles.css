@@ -155,9 +155,9 @@ table th {
 
 /* Improve table header visibility */
 .table thead th {
-    background-color: #e0e0e0; /* Light gray to differentiate from white background */
-    color: #333,
-    /* color: #000000;  Black text for better contrast */
+    background-color: #e6e6e6;
+    /* background-color: #e0e0e0; Light gray differentiate from white background */
+    color: #333; /* color: #000000;  Black text for better contrast */
 }
 
 /* Improve table row hover visibility */
@@ -165,15 +165,59 @@ table th {
     background-color: #f8f9fa; /* Light gray background on hover to maintain visibility */
 }
 
+/* Table Dark Theme Fixes */
+[data-theme="dark"] .table thead th {
+    background-color: #343a40; /* Darker header for dark mode */
+    color: #ffffff; /* White text for better contrast in dark mode */
+}
+
+
 /* Ensure table text color remains visible on hover in light mode */
 [data-theme="light"] .table tbody tr:hover {
     background-color: #e9ecef; /* Light gray on hover for visibility */
     color: #000; /* Keep the text color black */
 }
 
-/* Update Delete button shadow */
-.btn-action .btn-danger {
-    box-shadow: none; /* Remove the unwanted shadow */
+/* For light mode */
+[data-theme="light"] table th, 
+[data-theme="light"] table td {
+    border-color: #ccc; /* Light gray for a subtle effect */
+}
+
+/* For dark mode */
+[data-theme="dark"] table th, 
+[data-theme="dark"] table td {
+    border-color: #444; /* Darker color to make borders less intrusive in dark mode */
+}
+
+/* Remove White Borders for Action Column in Dark Mode */
+[data-theme="dark"] .table-container .action-buttons-cell {
+    border-color: #1e1e1e; /* Match the rest of the table row to blend the borders */
+}
+
+/* Darken Action Buttons Background */
+[data-theme="dark"] .action-buttons-cell .btn {
+    box-shadow: none;
+}
+
+/* Table Borders in Dark Mode - Blend with Table Background */
+[data-theme="dark"] .table-container table,
+[data-theme="dark"] .table-container table th,
+[data-theme="dark"] .table-container table td {
+    border-color: #1e1e1e; /* Match with dark background to remove visible white lines */
+}
+
+/* Table Borders in Light Mode - Ensure Contrast */
+[data-theme="light"] .table-container table,
+[data-theme="light"] .table-container table th,
+[data-theme="light"] .table-container table td {
+    border-color: #e0e0e0; /* Light gray to keep borders consistent in light mode */
+}
+
+/* Center the Table Horizontally */
+.table-wrapper {
+    display: flex;
+    justify-content: center;
 }
 
 /* Center and space the action buttons */
@@ -184,6 +228,7 @@ table th {
 
 .table .btn-action {
     margin-right: 5px; /* Space between buttons */
+    box-shadow: none;
 }
 
 
@@ -212,11 +257,19 @@ table th {
 }
 
 .table-container .table tbody tr {
-    background-color: #333; /* Default for dark mode */
+    /*background-color: #333;  Default for dark mode */
+    background-color: var(--background-color);
+    color: var(--text-color);
 }
 
 [data-theme="light"] .table-container .table tbody tr {
     background-color: #f8f9fa; /* Default for light mode */
+    color: #000000; /* Black text for light mode */
+}
+
+[data-theme="dark"] .table-container .table tbody tr {
+    background-color: #1e1e1e; /* Dark background for dark mode */
+    color: #ffffff; /* White text for dark mode */
 }
 
 /* Navigation Menu */
@@ -259,6 +312,10 @@ a:focus {
     outline-offset: 4px;
 }
 
+/* Update Delete button shadow */
+.btn-action .btn-danger {
+    box-shadow: none; /* Remove the unwanted shadow */
+}
 
 /* Form Field Specific Styles */
 form {
