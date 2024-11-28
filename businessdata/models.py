@@ -1,7 +1,6 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
-from chatbotsettings.models import ChatBotSettings
 
 
 # no custom User model but use it directly in our first model
@@ -14,7 +13,7 @@ class BusinessUserData(models.Model):
   # Need to have LLM that summarize user query to a question form and short
   # Need to have LLM that will check if there is too much deviation from question to answer
   # , unique=False,
-  uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+  uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
   user = models.ForeignKey(
     User,
     null=True,
@@ -29,7 +28,7 @@ class BusinessUserData(models.Model):
     #'invalid': "Invalid JSON format. Please enter valid JSON data"
   #})
   chat_bot = models.ForeignKey(
-    ChatBotSettings,
+    "chatbotsettings.ChatBotSettings",
     null=True,
     blank=True,
     on_delete=models.SET_NULL
@@ -38,8 +37,8 @@ class BusinessUserData(models.Model):
   def __str__(self):
     if self.chat_bot is not None:
       if self.chat_bot.name:
-        return f"{self.document_title}: {self.chat_bot.name}"
+        return f"{self.document_title}: {self.chat_bot.name}| Legal: {self.uuid}"
     else:
       data_length = len(self.question_answer_data)
-      return f"Doc: {self.document_title} | Data length: {data_length}"
+      return f"Doc: {self.document_title} | Data length: {data_length} | Legal: {self.uuid}"
 

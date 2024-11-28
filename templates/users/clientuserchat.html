@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Client User Chat{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+
+    <!-- Sidebar with ChatBot Details -->
+    <div class="sidebar">
+        <h3>ChatBot Details</h3>
+        <div class="chatbot-details">
+            <img src="{{ chatbot_avatar }}" alt="ChatBot Avatar" class="avatar chatbot-avatar">
+            <ul>
+                <li><strong>Name:</strong> {{ chat_bot.name }}</li>
+                <li><strong>Origin:</strong> {{ chat_bot.origin }}</li>
+                <li><strong>Expertise:</strong> {{ chat_bot.expertise }}</li>
+                <li><strong>Age:</strong> {{ chat_bot.age }}</li>
+                <li><strong>Dream:</strong> {{ chat_bot.dream }}</li>
+                <li><strong>Business User:</strong> {{ chat_bot.business_user.username }}</li>
+                <li><strong>UUID:</strong> {{ chat_bot.business_user_uuid }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Chat Section -->
+    <div class="main-chat-section">
+        <!-- Chat Messages Container -->
+        <div id="chat-container" class="chat-messages-container">
+            {% for message in chat_messages %}
+                <div class="message-container {% if message.sender_type == 'user' %}user-message{% else %}bot-message{% endif %}">
+                    <img src="{% if message.sender_type == 'user' %}{{ user_avatar }}{% else %}{{ chatbot_avatar }}{% endif %}" 
+                         alt="Avatar" class="avatar">
+                    <div class="message">
+                        <p>{{ message.content }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Chat Form -->
+        <form id="message-form" method="post" class="message-form">
+            {% csrf_token %}
+            <input id="message-input" name="message" class="message-input" placeholder="Enter your message here..." required>
+            <button type="submit" class="btn btn-send">Send</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

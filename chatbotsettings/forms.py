@@ -3,6 +3,7 @@ from .models import ChatBotSettings
 from django.contrib.auth.models import User
 
 
+
 # ChatBotSetting record form
 class ChatBotSettingsForm(ModelForm):
   class Meta:
@@ -22,6 +23,7 @@ class ChatBotSettingsForm(ModelForm):
       'dream': 'What is the Bot dreaming of?',
        'avatar': 'Bot logo or picture',
     }
+
 
 # ChatBotSettings Update data records
 class ChatBotSettingsUpdateForm(ModelForm):

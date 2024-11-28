@@ -1,7 +1,7 @@
 from django.db import models
 # django built-in User model
 from django.contrib.auth.models import User
-from chatbotsettings.models import ChatBotSettings
+import uuid
 
 
 class ClientUser(models.Model):
@@ -17,16 +17,29 @@ class ClientUser(models.Model):
     blank=True
   )
   bio = models.CharField(max_length=255, blank=True)
-  preferred_chatbot = models.ForeignKey(
-    ChatBotSettings,
-    null=True,
-    blank=True,
-    on_delete=models.SET_NULL
-  )
+  email = models.EmailField(unique=True)
 
   def __str__(self):
     return f"{self.nickname}: {self.bio[:50]}..."
 
 
+class ChatMessage(models.Model):
+  MESSAGE_TYPE_CHOICES = [
+    ('user', 'User'),
+    ('bot', 'Bot')
+  ]
+  user = models.ForeignKey(
+    User,
+    null=True,
+    on_delete=models.CASCADE
+  )
+  sender_type = models.CharField(
+    max_length=4,
+    choices=MESSAGE_TYPE_CHOICES
+  )
+  nickname = models.CharField(max_length=40)
+  content = models.TextField()
+  timestamp = models.DateTimeField(auto_now_add=True)
 
-
+  def __str__(self):
+    return f"{self.nickname} ({self.sender_type}): {self.content[:20]}..."

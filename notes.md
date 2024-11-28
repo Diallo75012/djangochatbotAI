@@ -154,6 +154,7 @@ curl -X GET YOU_URL/?limit=7
 source: https://medium.com/@netfluff/memcached-for-django-ecedcb74a06d
 ```python
 pip install python-memcached
+```
 
 # settings.pyCACHES = {
     'default': {
@@ -180,9 +181,35 @@ from django.core.cache import cachedef my_view(request):
 - `jinj`: use dot notation if using `.select_related()` method or directly here `chat_bot__name`
 
 
+# Next
+- make the user client routes, templates, forms, views, models..
+- fix issue with picture upload and see if is saved at location, then test deletion and see if function override works and actually delete the file and also make the field picture upload unique
+- prepare user using the diagram to know how UI would look like and make logic for User Client/Buisiness Registration
+- Have a set of numbers in a list that is like a number representing the business legal registration number, 
+  , we could have also a system here that uses governmental API to check if business exist and other flags,
+  here we are just making it simple to simulate only verified businesses registration allowed.
+- Add this number to business model as field that cannot change and will be used also in the bot model so add a field to get that number set for the chatbot getting it from the business user field.
 
+# Django use of Lazy reference instead of import models from apps to other apps
+instead of using `import` in the top of the top of the page we can use lazy referencing.
+like:
+```python
+...
+    chat_bot = models.OneToOneField(
+        'chatbotsettings.ChatBotSettings',  # Lazy reference
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+...
+``` 
 
+This is more flexible as it prevent to get the circular import error.
 
-
-
+# decision about chat
+- there will be a sidebar with ChatBot Details
+- we will use python-memcached or django session to save messages
+- use javascript to have the webui keep the sate of the messages even if user reloads page or goes in another page and comes back
+- clear everything when user logout
+- use TTL is using cache (1h): it is for workplace so just asking to get answer from business knowledge and then use that information to continue working so after 1hour it can be deleted from cache
 

@@ -8,6 +8,7 @@ from .forms import (
   ChatBotSettingsForm,
   ChatBotSettingsUpdateForm
 )
+from businessdata.models import BusinessUserData
 
 
 def is_business_user(user):
@@ -37,6 +38,37 @@ def addChatBotSettings(request):
     if form.is_valid():
       chatbotsettings_data = form.save(commit=False)
       chatbotsettings_data.business_user = request.user
+
+      # Check if the avatar already exists for this user
+      avatar = request.FILES.get('avatar')
+      if avatar:
+        try:
+          # Check if an existing ChatBotSettings has the same avatar for the same user
+          existing_avatar = ChatBotSettings.objects.get(
+            business_user=request.user,
+            avatar__contains=avatar.name
+          )
+          messages.error(
+            request,
+            "This image has already been used. Please upload a different one."
+          )
+          return redirect("chatbotsettings:addchatbotsettings")
+        except ChatBotSettings.DoesNotExist:
+          # No duplicate avatar exists, continue to save
+          print("Image double name doesn't exist")
+          pass
+
+      # Set the business_user_uuid using the user's related BusinessUserData uuid
+      try:
+        business_user_data = BusinessUserData.objects.get(user=request.user)
+        chatbotsettings_data.business_user_uuid = business_user_data
+      except Exception as e:
+        message.error(
+          request,
+          "Before creating any ChatBot Setting, you need to have uploaded Business Data"
+        )
+        return redirect("businessdata:addbusinessdata")
+
       chatbotsettings_data.save()
       messages.success(
         request,
@@ -61,6 +93,24 @@ def updateChatBotSettings(request, pk):
   if request.method == 'POST':
     form = ChatBotSettingsUpdateForm(request.POST, request.FILES, instance=chatbot_settings_to_update)
     if form.is_valid():
+      # Check if the avatar already exists for this user
+      avatar = request.FILES.get('avatar')
+      if avatar:
+        try:
+          # Check if an existing ChatBotSettings has the same avatar for the same user
+          existing_avatar = ChatBotSettings.objects.get(
+            business_user=request.user,
+            avatar__contains=avatar.name
+          )
+          messages.error(
+            request,
+            "This image has already been used. Please upload a different one."
+          )
+          return redirect("chatbotsettings:addchatbotsettings")
+        except ChatBotSettings.DoesNotExist:
+          # No duplicate avatar exists, continue to save
+          pass
+
       form.save()
       messages.success(
         request,
@@ -77,7 +127,7 @@ def updateChatBotSettings(request, pk):
 
 
 # delete chatbot settings
-@login_required(login_url="users:loginuser")
+@login_required(login_url="users:loginbusinessuser")
 @user_passes_test(is_business_user, login_url='users:loginbusinessuser')
 def deleteChatBotSettings(request, pk):
   chatbot_settings_to_delete = get_object_or_404(ChatBotSettings, id=pk, business_user=request.user)

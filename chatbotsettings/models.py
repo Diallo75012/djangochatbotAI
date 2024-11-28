@@ -1,10 +1,17 @@
+import os
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.conf import settings
 
 class ChatBotSettings(models.Model):
   business_user = models.ForeignKey(
     User,
+    null=True,
+    on_delete=models.CASCADE
+  )
+  business_user_uuid = models.ForeignKey(
+    "businessdata.BusinessUserData",
+    to_field="uuid",
     null=True,
     on_delete=models.CASCADE
   )
@@ -26,7 +33,7 @@ class ChatBotSettings(models.Model):
   )
 
   def __str__(self):
-    return f"{self.name}: {self.description[:50]}..."
+    return f"{self.name}: {self.description[:50]}...| From {self.business_user}-{self.business_user_uuid}"
 
   # this overrides the Django native delete() method
   # it deletes the avatar if any then the instance
@@ -38,3 +45,15 @@ class ChatBotSettings(models.Model):
         os.remove(avatar_path)
     # Call the superclass delete method to delete the model instance
     super().delete(*args, **kwargs)
+
+  # this will check that file doesn't exist already for the picture
+  def clean_avatar(self):
+    avatar = self.cleaned_data.get('avatar')
+
+    if avatar:
+      # Check if there's an existing ChatBotSettings with the same avatar filename
+      existing_avatar = ChatBotSettings.objects.filter(avatar=avatar.name).first()
+      if existing_avatar:
+        raise ValidationError("This image filename is already being used by another ChatBot. Please upload a unique image.")
+
+    return avatar

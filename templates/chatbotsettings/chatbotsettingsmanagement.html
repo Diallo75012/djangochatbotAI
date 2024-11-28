@@ -7,6 +7,8 @@
 <div class="container table-container">
     <h1 class="text-center">Welcome, {{ user.username }}!</h1>
     <h2 class="text-center">Manage Your ChatBot Settings</h2>
+    <p class="text-center">Note: Upload Business Data Before Creating Any ChatBot Settings.</p>
+    <p class="text-center">Then come back here, to create your ChatBot Seeting.</p>
 
     <!-- Add New ChatBot Setting Button -->
     <div class="d-flex justify-content-end mb-3">
@@ -45,7 +47,13 @@
                     <td>{{ item.origin }}</td>
                     <td>{{ item.age }}</td>
                     <td>{{ item.dream }}</td>
-                    <td>{{ item.avatar }}</td>
+                    <td>
+                      {% if item.avatar %}
+                        <img src="{{ item.avatar.url }}" alt="Creditizens ChatBotAI Avatar">
+                      {% else %}
+                        <p>No Avatar Uploaded</p>
+                      {% endif %}
+                    </td>
                     <td class="action-buttons-cell">
                         <!-- Update Button -->
                         <a href="{% url 'chatbotsettings:updatechatbotsettings' item.id %}" class="btn btn-primary btn-action mx-1">
