@@ -11,9 +11,11 @@ from .forms import (
   UpdateBusinessUserForm,
   # to create/update
   ClientUserChatForm,
+  CreateClientUserForm,
+  UpdateClientUserForm
 )
 # from chatbotsettings.models import ChatBotSettings
-from .models import ClientUser, ChatUserMessage
+from .models import ClientUser, ChatMessages
 import hashlib
 import memcache
 
@@ -67,7 +69,7 @@ def registerBusinessUser(request):
       if user:
         login(request, user)
         messages.success(request, f"Account has been created for {username}")
-        return redirect('businessdata:loginuser')
+        return redirect('users:loginbusinessuser')
       else:
         messages.error(request, "Authentication failed after registration.")
     else:
@@ -134,8 +136,8 @@ def logoutBusinessUser(request):
 #############################################################
 #               CLIENT USER                                 #
 #############################################################
-@login_required(login_url='users:loginindex') #loginindex to be created
-@user_passes_test(is_client_user, login_url='users:loginclientuser') # url to be created
+@login_required(login_url='users:loginclientuser')
+@user_passes_test(is_client_user, login_url='users:loginclientuser')
 def clientUserChat(request):
   user = request.user
   cache_key = f"chat_{user.id}"
@@ -154,7 +156,7 @@ def clientUserChat(request):
     if form.is_valid():
       # save user message
       user_message = form.cleaned_dat['message']
-      chat_msg = ChatMessage.objects.create(
+      chat_msg = ChatMessages.objects.create(
         user=user,
         sender_type='user',
         nickname=user.clientuser.nickname,
@@ -170,7 +172,7 @@ def clientUserChat(request):
 
       # dummy chat response until we plugin LLM Agents
       bot_response_content = f"Echo: {user_message}"
-      bot_msg = ChatMessage.objects.create(
+      bot_msg = ChatMessages.objects.create(
         user=user,
         sender_type='bot',
         nickname="ChatBot",
@@ -205,13 +207,101 @@ def clientUserChat(request):
 
   return render(request, 'users/clientuserchat.html', context)
 
+# register user
+def registerClientUser(request):
+
+  if request.method == 'POST':
+    form = CreateClientUserForm(request.POST)
+
+    # Check if the username already exists before form validation
+    username = request.POST.get('username')
+    if User.objects.filter(username=username).exists():
+      messages.error(request, f"A user with the username '{username}' already exists.")
+      form.add_error("username", f"A user with the username '{username}' already exists.")
+      context = {'form': form}
+      return render(request, 'users/registerclientuser.html', context)
+
+    # Proceed with validating the form
+    if form.is_valid():
+      # Save the user and log them in
+      user = form.save()
+
+      # Add user to 'business' group
+      client_group, created = Group.objects.get_or_create(name='client')
+      user.groups.add(client_group)
+
+      password = form.cleaned_data['password1']
+      user = authenticate(username=username, password=password)
+
+      if user:
+        login(request, user)
+        messages.success(request, f"Account has been created for {username}")
+        return redirect('users:loginclientuser')
+      else:
+        messages.error(request, "Authentication failed after registration.")
+    else:
+      messages.error(request, "Invalid form submission. Please correct the errors.")
+  else:
+    # Present an empty registration form by default
+    form = CreateClientUserForm()
+
+  context = {'form': form}
+  return render(request, 'users/registerclientuser.html', context)
+
+
+# update user
+@login_required(login_url='users:loginclientuser')
+@user_passes_test(is_client_user, login_url='users:loginclientuser')
+def updateClientUser(request):
+    """
+    View to update the logged-in user's information.
+    """
+    user = get_object_or_404(User, pk=request.user.pk)
+    form = UpdateClientUserForm(instance=user)
+
+    if request.method == 'POST':
+        form = UpdateClientUserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('users:clientuserchat')
+        else:
+            messages.error(request, 'Please correct the error below.')
+
+    context = {'form': form}
+    return render(request, 'users/updateclientuser.html', context)
+
+# login user
+def loginClientUser(request):
+  # making sure user is redirected to index page when already logged in
+  if request.user.is_authenticated:
+    return redirect('users:clientuserchat')
+
+  if request.method == 'POST':
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+
+    user = authenticate(request=request, username=username, password=password)
+    if user is not None:
+      if is_client_user(user):
+        login(request, user)
+        return redirect('users:clientuserchat')
+      else:
+        messages.error(request, 'User is not a client user. Create a client account, then come back to login here.')
+    else:
+      messages.info(request, 'Username OR Password is incorrect')
+
+  context = {}
+  return render(request, 'users/loginclientuser.html', context)
+
+
 
 # we make sure that when we logout the cache is emptied
-def clientUserLogout(request):
+def logoutClientUser(request):
   user = request.user
   cache_key = f"chat_{user.id}"
   # clear the cached messges on logout
   mc.delete(cache_key)
   logout(request)
-  # rotue to be created
+
   return redirect('users:loginclientuser')

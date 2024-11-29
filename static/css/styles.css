@@ -317,6 +317,27 @@ a:focus {
     box-shadow: none; /* Remove the unwanted shadow */
 }
 
+.register_btn {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+[data-theme="dark"] .register_btn {
+    background-color: #007bff;
+    color: #000;  /* Ensure sufficient contrast */
+}
+
+.login_btn {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+[data-theme="dark"] .login_btn {
+    background-color: #007bff;
+    color: #000;  /* Ensure sufficient contrast */
+}
+
+
 /* Form Field Specific Styles */
 form {
     background-color: var(--background-color);

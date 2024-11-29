@@ -151,8 +151,22 @@ curl -X GET YOU_URL/?limit=7
 - DO_NOTHING
 
 # Memcache for question answers instead of redis
-source: https://medium.com/@netfluff/memcached-for-django-ecedcb74a06d
+- install memcached on ubuntu
+```bash
+sudo apt update
+sudo apt install memcached
+# systemctl start
+sudo systemctl start memcached
+# manual start 
+memcached -d -m 64 -l 127.0.0.1 -p 11211
+-d:		Run as a daemon.
+-m 64:		Use 64MB of memory.
+-l 127.0.0.1:	Listen only on localhost.
+-p 11211:	Use port 11211 (default Memcached port).
+```
+- source: https://medium.com/@netfluff/memcached-for-django-ecedcb74a06d
 ```python
+# python client to interact with memcached server
 pip install python-memcached
 ```
 

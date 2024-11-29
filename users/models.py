@@ -5,7 +5,7 @@ import uuid
 
 
 class ClientUser(models.Model):
-  user = models.ForeignKey(
+  user = models.OneToOneField(
     User,
     null=True,
     on_delete=models.CASCADE
@@ -23,7 +23,7 @@ class ClientUser(models.Model):
     return f"{self.nickname}: {self.bio[:50]}..."
 
 
-class ChatMessage(models.Model):
+class ChatMessages(models.Model):
   MESSAGE_TYPE_CHOICES = [
     ('user', 'User'),
     ('bot', 'Bot')

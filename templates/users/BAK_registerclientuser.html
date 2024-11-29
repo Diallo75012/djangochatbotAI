@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {% load form_tags %}
 
-{% block title %}Register Business User Account{% endblock %}
+{% block title %}Register Client User Account{% endblock %}
 
 {% block content %}
 <div class="container">
 <div class="d-flex justify-content-center">
     <div class="user_card">
         <div class="d-flex justify-content-center">
-            <h3 id="form-title">Register Business User Account</h3>
+            <h3 id="form-title">Register Client User Account</h3>
         </div>
         <div class="d-flex justify-content-center form_container">
             <form method="POST" action="">
-                {% csrf_token %}
+              {% csrf_token %}
 
-                <!-- USERNAME -->
-                <label for="id_username">Username</label>
+              <!-- NICKNAME -->
+                <label for="id_nickname">Nickname</label>
                 <div class="input-group mb-3">
                     <div class="input-group-append">
                         <span class="input-group-text"><i class="fas fa-user"></i></span>
                     </div>
-                    <input type="text" class="form-control" id="id_username" name="username" placeholder="Enter your username" value="{{ form.username.value|default_if_none:'' }}">
+                    <input type="text" class="form-control" id="id_nickname" name="nickname" placeholder="Enter your nickname" value="{{ form.nickname.value|default_if_none:'' }}">
                 </div>
                 {% if form.nickname.errors %}
                   <div class="text-danger">
@@ -41,6 +41,23 @@
                 {% if form.email.errors %}
                   <div class="text-danger">
                     {% for error in form.email.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+                <!-- BIO -->
+                <label for="id_bio">Bio</label>
+                <div class="input-group mb-2">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-user-edit"></i></span>
+                  </div>
+                    <input type="text" class="form-control" id="id_bio" name="bio" placeholder="Enter your bio" value="{{ form.bio.value|default_if_none:'' }}">
+                  </div>
+                </div>
+                {% if form.bio.errors %}
+                  <div class="text-danger">
+                    {% for error in form.bio.errors %}
                       {{ error }}
                     {% endfor %}
                   </div>
@@ -83,20 +100,18 @@
                     <input class="btn register_btn" type="submit" value="Register Account">
                 </div>
             </form>
-          <div class="mt-4">
-            <div class="d-flex justify-content-center links">
-              Already have an account? <a href="{% url 'users:loginbusinessuser' %}" class="ml-2">Login here</a>
-            </div>
-          </div>
         </div>
         {% if form.errors %}
         <div class="alert alert-danger mt-3">
             {{ form.errors }}
         </div>
         {% endif %}
+        <div class="mt-4">
+            <div class="d-flex justify-content-center links">
+                Already have an account? <a href="{% url 'users:loginclientuser' %}" class="ml-2">Login here</a>
+            </div>
         </div>
     </div>
-  </div>
+</div>
 </div>
 {% endblock %}
-

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load form_tags %}
+
+{% block title %}Update Client User Information{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="d-flex justify-content-center">
+    <div class="user_card">
+        <div class="d-flex justify-content-center">
+            <h3 id="form-title">Update Client User Information</h3>
+        </div>
+        <div class="d-flex justify-content-center form_container">
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="input-group mb-4">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    </div>
+                    {{ form.nickname|add_class_with_label:"form-control" }}
+                </div>
+                <div class="input-group mb-4">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                    </div>
+                    {{ form.email|add_class_with_label:"form-control" }}
+                </div>
+                <div class="input-group mb-4">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
+                    </div>
+                    {{ form.bio|add_class_with_label:"form-control" }}
+                </div>
+                <div class="d-flex justify-content-center mt-4">
+                    <input class="btn action_btn" type="submit" value="Update Information">
+                </div>
+            </form>
+        </div>
+        {% if form.errors %}
+        <div class="alert alert-danger mt-4">
+            {{ form.errors }}
+        </div>
+        {% endif %}
+        <div class="mt-4">
+            <div class="d-flex justify-content-center links">
+                <a href="{% url 'users:clientuserchat' %}" class="btn btn-link">Back to Chat</a>
+            </div>
+            <div class="d-flex justify-content-center links">
+                <a href="{% url 'users:logoutclientuser' %}" class="btn btn-link">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

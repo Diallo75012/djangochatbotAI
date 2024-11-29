@@ -15,7 +15,7 @@
                 {% csrf_token %}
 
                 <!-- USERNAME -->
-                <label for="id_username">Username</label>
+                <label for="id_unsername">Username</label>
                 <div class="input-group mb-3">
                     <div class="input-group-append">
                         <span class="input-group-text"><i class="fas fa-user"></i></span>
@@ -83,20 +83,19 @@
                     <input class="btn register_btn" type="submit" value="Register Account">
                 </div>
             </form>
-          <div class="mt-4">
-            <div class="d-flex justify-content-center links">
-              Already have an account? <a href="{% url 'users:loginbusinessuser' %}" class="ml-2">Login here</a>
-            </div>
-          </div>
         </div>
         {% if form.errors %}
         <div class="alert alert-danger mt-3">
             {{ form.errors }}
         </div>
         {% endif %}
+        <div class="mt-4">
+            <div class="d-flex justify-content-center links">
+                Already have an account? <a href="{% url 'users:loginbusinessuser' %}" class="ml-2">Login here</a>
+            </div>
         </div>
     </div>
-  </div>
+</div>
 </div>
 {% endblock %}
 

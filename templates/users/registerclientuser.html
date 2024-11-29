@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load form_tags %}
+
+{% block title %}Register Client User Account{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="d-flex justify-content-center">
+    <div class="user_card">
+      <div class="d-flex justify-content-center">
+        <h3 id="form-title">Register Client User Account</h3>
+      </div>
+      <div class="d-flex justify-content-center form_container">
+        <form method="POST" action="">
+          {% csrf_token %}
+
+          <!-- NICKNAME -->
+          <label for="id_nickname">Nickname</label>
+          <div class="input-group mb-3">
+            <div class="input-group-append">
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
+            </div>
+            <input type="text" class="form-control" id="id_nickname" name="nickname" placeholder="Enter your nickname" value="{{ form.nickname.value|default_if_none:'' }}">
+          </div>
+          {% if form.nickname.errors %}
+          <div class="text-danger">
+            {% for error in form.nickname.errors %}
+            {{ error }}
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- EMAIL -->
+          <label for="id_email">Email</label>
+          <div class="input-group mb-2">
+            <div class="input-group-append">
+              <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+            </div>
+            <input type="email" class="form-control" id="id_email" name="email" placeholder="Enter your email" value="{{ form.email.value|default_if_none:'' }}">
+          </div>
+          {% if form.email.errors %}
+          <div class="text-danger">
+            {% for error in form.email.errors %}
+            {{ error }}
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- BIO -->
+          <label for="id_bio">Bio</label>
+          <div class="input-group mb-2">
+            <div class="input-group-prepend">
+              <span class="input-group-text"><i class="fas fa-user-edit"></i></span>
+            </div>
+            <input type="text" class="form-control" id="id_bio" name="bio" placeholder="Enter your bio" value="{{ form.bio.value|default_if_none:'' }}">
+          </div>
+          {% if form.bio.errors %}
+          <div class="text-danger">
+            {% for error in form.bio.errors %}
+            {{ error }}
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- PASSWORD1 -->
+          <label for="id_password1">Password</label>
+          <div class="input-group mb-2">
+            <div class="input-group-append">
+              <span class="input-group-text"><i class="fas fa-key"></i></span>
+            </div>
+            <input type="password" class="form-control" id="id_password1" name="{{ form.password1.name }}" placeholder="Enter your password">
+          </div>
+          {% if form.password1.errors %}
+          <div class="text-danger">
+            {% for error in form.password1.errors %}
+            {{ error }}
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- PASSWORD2 -->
+          <label for="id_password2">Confirm Password</label>
+          <div class="input-group mb-2">
+            <div class="input-group-append">
+              <span class="input-group-text"><i class="fas fa-key"></i></span>
+            </div>
+            <input type="password" class="form-control" id="id_password2" name="{{ form.password2.name }}" placeholder="Confirm your password">
+          </div>
+          {% if form.password2.errors %}
+          <div class="text-danger">
+            {% for error in form.password2.errors %}
+            {{ error }}
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <div class="d-flex justify-content-center mt-3">
+            <input class="btn register_btn" type="submit" value="Register Account">
+          </div>
+        </form>
+      </div>
+      {% if form.errors %}
+      <div class="alert alert-danger mt-3">
+        {{ form.errors }}
+      </div>
+      {% endif %}
+      <div class="mt-4">
+        <div class="d-flex justify-content-center links">
+          Already have an account? <a href="{% url 'users:loginclientuser' %}" class="ml-2">Login here</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
