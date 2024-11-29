@@ -196,13 +196,13 @@ from django.core.cache import cachedef my_view(request):
 
 
 # Next
-- make the user client routes, templates, forms, views, models..
-- fix issue with picture upload and see if is saved at location, then test deletion and see if function override works and actually delete the file and also make the field picture upload unique
-- prepare user using the diagram to know how UI would look like and make logic for User Client/Buisiness Registration
-- Have a set of numbers in a list that is like a number representing the business legal registration number, 
+-[x] make the user client routes, templates, forms, views, models..
+-[x] fix issue with picture upload and see if is saved at location, then test deletion and see if function override works and actually delete the file and also make the field picture upload unique
+-[x] prepare user using the diagram to know how UI would look like and make logic for User Client/Buisiness Registration
+-[not for mvp no need] Have a set of numbers in a list that is like a number representing the business legal registration number, 
   , we could have also a system here that uses governmental API to check if business exist and other flags,
   here we are just making it simple to simulate only verified businesses registration allowed.
-- Add this number to business model as field that cannot change and will be used also in the bot model so add a field to get that number set for the chatbot getting it from the business user field.
+- [not for mvp no need do not overcomplicate]Add this number to business model as field that cannot change and will be used also in the bot model so add a field to get that number set for the chatbot getting it from the business user field.
 
 # Django use of Lazy reference instead of import models from apps to other apps
 instead of using `import` in the top of the top of the page we can use lazy referencing.
@@ -226,4 +226,36 @@ This is more flexible as it prevent to get the circular import error.
 - use javascript to have the webui keep the sate of the messages even if user reloads page or goes in another page and comes back
 - clear everything when user logout
 - use TTL is using cache (1h): it is for workplace so just asking to get answer from business knowledge and then use that information to continue working so after 1hour it can be deleted from cache
+
+# Notes:
+I have pivoted a bit my idea in how the user will be able to select chatbots:
+- user will be able to select document_titles only
+- if the document_title is associated with a chatbotsetting done by the business user, client user will have details about that chatbot and will have no other choice but use that one
+- if no chatbotsettings are associated to that document_title, user will be presented a form with all fields of th echatbotsettings but his record won't be saved but used ont he fly by LLM agents to fill prompts and code logic.
+- later maybe we would provide option for user to use default setting or to use his own chatbot customization.
+
+# Next
+- need to fix the logic and get those document_titles showing in the drop down as for the time being they are not
+- need to go step by step, after that, need to have the chatbotsetting so informnation being displayed on the sidebar or if no chatbotsettings associated with the document_title have an empty form for user to customize chatbot, if user sends message without customization, we need to handle that in the backend with default value for chatbot more neutral
+- need to have user message visible in the webui with picture next to it
+- need to have response andswer just under it with chatbot avatar if any or a default one that will be stored in static files just in case
+- then need to do all the unit tests
+- then need to start pluggin in AI
+- then make those agents to interact with user
+- then add logging in the codebase
+- then create the other asynchrone workflow with agents analyzing logs
+- then replace caching with memecache isntead of native django cache or have that as fallback
+- then create a report or email stream for Devops/SRE team to have reports on the app logs
+- then dockerrize the app
+- have docker compose first and see if all works fine
+- then add nginx
+- then use https self-signed
+- then buy real domain and get letencrypt https
+- then use dockerhub or other to have the image of the app in a container repo
+- then create the terraform to have infrastructure for app in AWS
+- then use ansible playbook to setup the server at distance
+- then create a repository only for terraform so that we can start preparing the GitOps, organize ansible to be part of it, have github links to repository to get those dockerfiles or dockerhub image
+- then do a nice CI with code quality (Sonarqube), Gate (Sonarqube), image scanning (Trivy)
+- then have CD using ArgoCD server and the CI when good will update the listening repo image tags which will trigger ArgoCD to deploy new version of app. use githubaction if possible for CI..or have a jenkins server and jenkinsfiles in a repo for the flow.
+
 

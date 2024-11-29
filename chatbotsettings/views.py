@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
+from django.http import JsonResponse
 from .models import ChatBotSettings
 from .forms import (
   ChatBotSettingsForm,
@@ -10,6 +11,9 @@ from .forms import (
 )
 from businessdata.models import BusinessUserData
 
+
+def is_client_user(user):
+  return user.groups.filter(name='client').exists()
 
 def is_business_user(user):
   return user.groups.filter(name='business').exists()
@@ -63,7 +67,7 @@ def addChatBotSettings(request):
         business_user_data = BusinessUserData.objects.get(user=request.user)
         chatbotsettings_data.business_user_uuid = business_user_data
       except Exception as e:
-        message.error(
+        messages.error(
           request,
           "Before creating any ChatBot Setting, you need to have uploaded Business Data"
         )
@@ -138,3 +142,24 @@ def deleteChatBotSettings(request, pk):
       "ChatBot settings has been successfully deleted."
     )
     return redirect("chatbotsettings:chatbotsettingsmanagement")
+
+# special route for frontend javascript to fetch chatbot settings
+@login_required(login_url="users:loginclientuser")
+@user_passes_test(is_client_user, login_url='users:loginclientuser')
+def getChatbotDetails(request, chatbot_id):
+    try:
+        chatbot = ChatBotSettings.objects.get(pk=chatbot_id)
+        data = {
+            "name": chatbot.name,
+            "age": chatbot.age,
+            "origin": chatbot.orign,
+            "dream": chatbot.dream,
+            "tone": chatbot.tone,
+            "description": chatbot.description,
+            "expertise": chatbot.expertise,
+            "avatar_url": chatbot.avatar.url if chatbot.avatar else "",
+        }
+        return JsonResponse(data)
+    except ChatBotSettings.DoesNotExist:
+        return JsonResponse({"error": "Chatbot not found."}, status=404)
+

@@ -10,7 +10,7 @@ from .forms import (
 )
 
 
-# setup function that checks if user is business 
+# setup function that checks if user is business
 # and use in decorator for group filtering views
 def is_business_user(user):
   return user.groups.filter(name='business').exists()

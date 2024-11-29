@@ -5,18 +5,14 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User, Group
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
-from django.utils import timezone
 from .forms import (
   CreateBusinessUserForm,
   UpdateBusinessUserForm,
   # to create/update
-  ClientUserChatForm,
   CreateClientUserForm,
   UpdateClientUserForm
 )
-# from chatbotsettings.models import ChatBotSettings
-from .models import ClientUser, ChatMessages
-import hashlib
+from .models import ClientUser
 import memcache
 from django.http import HttpResponse
 
@@ -121,7 +117,7 @@ def loginBusinessUser(request):
         login(request, user)
         return redirect('businessdata:businessdatamanagement')
       else:
-        messages.error(request, 'User is not a business user.')
+        messages.error(request, 'User is not a business user. Create a business account, then come back to login here.')
     else:
       messages.info(request, 'Username OR Password is incorrect')
 
@@ -137,80 +133,6 @@ def logoutBusinessUser(request):
 #############################################################
 #               CLIENT USER                                 #
 #############################################################
-@login_required(login_url='users:loginclientuser')
-@user_passes_test(is_client_user, login_url='users:loginclientuser')
-def clientUserChat(request):
-  # to test lets just return a response on other routes redirect tot this one
-  # return HttpResponse("<h1 style='color:red'>Chat Interface!</h1>")
-
-  user = request.user
-  cache_key = f"chat_{user.id}"
-
-  # fetch chat messages from cache or database
-  chat_messages = mc.get(cache_key)
-  if not chat_messages:
-    chat_messages = ChatMessages.objects.filter(
-      user=user
-    ).order_by('timestamp')
-    # this is how in memecached you record data with ttl 1h
-    mc.set(cache_key, list(chat_messages), time=3600)
-
-  if request.method == 'POST':
-    form = ClientUserChatForm(request.POST)
-    if form.is_valid():
-      # save user message
-      user_message = form.cleaned_dat['message']
-      chat_msg = ChatMessages.objects.create(
-        user=user,
-        sender_type='user',
-        nickname=user.clientuser.nickname,
-        content=user_message,
-        timestamp=timezone.now()
-      )
-
-      # save in database and update cache
-      # convert QuerySet to list if not already done
-      chat_messages = list(chat_messages)
-      chat_messages.apped(chat_msg)
-      mc.set(cache_key, chat_messages, time=36000)
-
-      # dummy chat response until we plugin LLM Agents
-      bot_response_content = f"Echo: {user_message}"
-      bot_msg = ChatMessages.objects.create(
-        user=user,
-        sender_type='bot',
-        nickname="ChatBot",
-        content=bot_response_content,
-        timestamp=timezone.now()
-      )
-
-      # update cache with bot response
-      chat_messages.append(bot_msg)
-      mc.set(cache_key, chat_messages, time=36000)
-
-      # or use django native session states to set messages
-      # request.session['chat_state'] = list(chat_messages)
-      # and retrieve later using
-      # chat_messages = request.session.get('chat_state', [])
-
-      # save bot message in the database as well
-      bot_msg.save()
-
-      # reload page to show new messages
-      return redirect('clientuserchat')
-  else:
-    form = ClientUserChatForm()
-
-  # now lets pass all that to WebUI context
-  context = {
-    'form': form,
-    'chat_messages': chat_messages,
-    'user_avatar': user.clientuser.picture.url if user.clientuser.picture else None,
-    'chatbot_avatar': 'dummy/url/image.png'
-  }
-
-  return render(request, 'users/clientuserchat.html', context)
-
 
 # register user
 def registerClientUser(request):
@@ -255,7 +177,7 @@ def registerClientUser(request):
   return render(request, 'users/registerclientuser.html', context)
 
 
-# update user
+# update user will be used as user settings page to update
 @login_required(login_url='users:loginclientuser')
 @user_passes_test(is_client_user, login_url='users:loginclientuser')
 def updateClientUser(request):
@@ -271,7 +193,7 @@ def updateClientUser(request):
     if form.is_valid():
       form.save()
       messages.success(request, 'Your profile has been updated successfully.')
-      return redirect('users:clientuserchat')
+      return redirect('clientchat:clientuserchat')
     else:
       messages.error(request, 'Please correct the error below.')
 
@@ -283,7 +205,7 @@ def updateClientUser(request):
 def loginClientUser(request):
   # making sure user is redirected to index page when already logged in
   if request.user.is_authenticated:
-    return redirect('users:clientuserchat')
+    return redirect('clientchat:clientuserchat')
 
   if request.method == 'POST':
     username = request.POST.get('username')
@@ -293,7 +215,7 @@ def loginClientUser(request):
     if user is not None:
       if is_client_user(user):
         login(request, user)
-        return redirect('users:clientuserchat')
+        return redirect('clientchat:clientuserchat')
       else:
         messages.error(request, 'User is not a client user. Create a client account, then come back to login here.')
     else:

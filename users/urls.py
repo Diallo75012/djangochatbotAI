@@ -12,7 +12,6 @@ urlpatterns = [
   path('updatebusinessuser', views.updateBusinessUser, name='updatebusinessuser'),
 
   # client user
-  path('clientuserchat', views.clientUserChat, name='clientuserchat'),
   path('registerclientuser', views.registerClientUser, name='registerclientuser'),
   path('loginclientuser', views.loginClientUser, name='loginclientuser'),
   path('logoutclientuser', views.logoutClientUser, name='logoutclientuser'),

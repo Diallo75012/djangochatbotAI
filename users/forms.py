@@ -2,7 +2,7 @@ from django.forms import ModelForm
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-from .models import ChatMessages, ClientUser
+from .models import ClientUser
 
 
 # create client user
@@ -38,16 +38,6 @@ class UpdateBusinessUserForm(ModelForm):
             raise forms.ValidationError('A user with this email already exists.')
         return email
 
-
-# client user chat form
-class ClientUserChatForm(forms.ModelForm):
-  class Meta:
-    model = ChatMessages
-    fields = ["nickname", "content"]
-    labels = {
-      "Nickname": "Enter your nickname",
-      "Content": "Enter your message",
-    }
 
 # create client user
 class CreateClientUserForm(UserCreationForm):

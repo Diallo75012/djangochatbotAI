@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'businessdata.apps.BusinessdataConfig',
     'chatbotsettings.apps.ChatbotsettingsConfig',
     'common.apps.CommonConfig',
+    'clientchat.apps.ClientchatConfig',
 ]
 
 MIDDLEWARE = [

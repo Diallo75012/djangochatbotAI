@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Client User Chat{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="container mt-3">
+        <!-- Sidebar with Chatbot Details -->
+        <div class="sidebar">
+            <h4>AI Personality Details</h4>
+
+            <!-- Dropdown to select a document title -->
+            <select id="documentTitleDropdown" class="form-control">
+                <option value="" disabled selected>Select Document Title</option>
+                {% for document_title in document_titles %}
+                    <option value="{{ document_title }}" {% if document_title == selected_document %} selected {% endif %}>
+                        {{ document_title }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Chatbot details that will be updated based on selection -->
+            <div id="chatbotDetails">
+                {% if default_chatbot %}
+                    <h5 id="chatbotName">{{ default_chatbot.name }}</h5>
+                    {% if default_chatbot.avatar %}
+                      <img id="chatbotAvatar" src="{{ default_chatbot.avatar.url }}" alt="Chatbot Avatar" width="150">
+                    {% endif %}
+                    <p><strong>Age:</strong> <span id="chatbotAge">{{ default_chatbot.age }}</span></p>
+                    <p><strong>Origin:</strong> <span id="chatbotOrigin">{{ default_chatbot.origin }}</span></p>
+                    <p><strong>Dream:</strong> <span id="chatbotDream">{{ default_chatbot.dream }}</span></p>
+                    <p><strong>Tone:</strong> <span id="chatbotTone">{{ default_chatbot.tone }}</span></p>
+                    <p><strong>Description:</strong> <span id="chatbotDescription">{{ default_chatbot.description }}</span></p>
+                    <p><strong>Expertise:</strong> <span id="chatbotExpertise">{{ default_chatbot.expertise }}</span></p> 
+                    <p><strong>Business Owner:</strong> <span id="chatbotBusinessOwner">{{ default_chatbot.business_user.username }}</span></p>
+                    <p><strong>Number:</strong> <span id="chatbotNumber">{{ default_chatbot.business_user.uuid }}</span></p>  
+                {% else %}
+                    <p>No AI personality assigned yet. Select one from the dropdown above.</p>
+                {% endif %}
+            </div>
+
+            <!-- Custom chatbot form if no default chatbot -->
+            {% if not default_chatbot %}
+            <form id="customChatbotForm">
+                <div class="form-group">
+                    <label for="customChatbotName">Chatbot Name</label>
+                    <input type="text" class="form-control" id="customChatbotName" placeholder="Enter Chatbot Name">
+                </div>
+                <div class="form-group">
+                    <label for="customChatbotAge">Chatbot Age</label>
+                    <input type="number" class="form-control" id="customChatbotAge" placeholder="Enter Chatbot Age">
+                </div>
+                <div class="form-group">
+                    <label for="customChatbotOrigin">Chatbot Origin</label>
+                    <input type="text" class="form-control" id="customChatbotOrigin" placeholder="Enter Chatbot Origin">
+                </div>
+                <div class="form-group">
+                    <label for="customChatbotDream">Chatbot Dream</label>
+                    <input type="text" class="form-control" id="customChatbotDream" placeholder="Enter Chatbot Dream">
+                </div>
+                <div class="form-group">
+                    <label for="customChatbotTone">Chatbot Tone</label>
+                    <input type="text" class="form-control" id="customChatbotTone" placeholder="Enter Chatbot Tone">
+                </div>
+                <div class="form-group">
+                    <label for="customChatbotDescription">Chatbot Description</label>
+                    <textarea class="form-control" id="customChatbotDescription" placeholder="Enter Chatbot Description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="customChatbotExpertise">Chatbot Expertise</label>
+                    <input type="text" class="form-control" id="customChatbotExpertise" placeholder="Enter Chatbot Expertise">
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Chat Section -->
+    <div class="main-chat-section">
+        <!-- Chat Messages Container -->
+        <div id="chat-container" class="chat-messages-container">
+            {% for message in chat_messages %}
+                <div class="message-container {% if message.sender_type == 'user' %}user-message{% else %}bot-message{% endif %}">
+                    <img src="{% if message.sender_type == 'user' %}{{ user_avatar }}{% else %}{{ chatbot_avatar }}{% endif %}" 
+                         alt="Avatar" class="avatar">
+                    <div class="message">
+                        <p>{{ message.content }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Chat Form -->
+        <form id="message-form" method="post" class="message-form">
+            {% csrf_token %}
+            <input id="message-input" name="message" class="message-input" placeholder="Enter your message here..." required>
+            {% if default_chatbot %}
+                <input type="hidden" id="chatbotName" value="{{ default_chatbot.name }}">
+                <input type="hidden" id="chatbotAge" value="{{ default_chatbot.age }}">
+                <input type="hidden" id="chatbotOrigin" value="{{ default_chatbot.origin }}">
+                <input type="hidden" id="chatbotDream" value="{{ default_chatbot.dream }}">
+                <input type="hidden" id="chatbotTone" value="{{ default_chatbot.tone }}">
+                <input type="hidden" id="chatbotDescription" value="{{ default_chatbot.description }}">
+                <input type="hidden" id="chatbotExpertise" value="{{ default_chatbot.expertise }}">
+            {% endif %}
+            <button type="submit" class="btn btn-send">Send</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

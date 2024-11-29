@@ -30,7 +30,7 @@
           <a href="{% url 'chatbotsettings:chatbotsettingsmanagement' %}">Bot Settings</a>
           <a href="{% url 'users:logoutbusinessuser' %}" >Logout</a>
         {% elif user|has_group:"client" %}
-          <a href="{% url 'users:clientuserchat' %}">Home</a>
+          <a href="{% url 'clientchat:clientuserchat' %}">Home</a>
           <a href="{% url 'users:updateclientuser' %}">Update Details</a>
           <a href="{% url 'users:logoutclientuser' %}" >Logout</a>
         {% endif %}
@@ -65,6 +65,9 @@
         </div>
     </footer>
     <script src="{% static 'js/theme-toggle.js' %}"></script>
+    {% if request.resolver_match.url_name == 'clientuserchat' %}
+      <script src="{% static 'js/client-chat.js' %}"></script>
+    {% endif %}
 </body>
 
 </html>
