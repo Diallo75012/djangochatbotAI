@@ -16,3 +16,9 @@ def add_class_with_label(field, css_class):
 
     # Wrap the label and input in a form-group div
     return format_html('<div class="form-group">{}</br>{}</div>', label_html, field_with_class)
+
+
+# custom template tag to use in jinja to check user group appartenance
+@register.filter(name='has_group') 
+def has_group(user, group_name):
+    return user.groups.filter(name=group_name).exists() 

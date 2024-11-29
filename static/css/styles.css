@@ -585,16 +585,22 @@ form {
 
 /* MAIN & UPDATEUSER */
 .user_card {
-    width: 400px;
-    margin-top: 10%;
-    background: var(--card-background);
+    width: 600px;
+    margin-top: 5%;
+    background: var(--card-background, #ffffff);
     position: relative;
     display: flex;
     justify-content: center;
     flex-direction: column;
-    padding: 20px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 8px 12px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    color: var(--text-color)
+}
+
+[data-theme="dark"] .user_card {
+    background: #1e1e1e; /* Dark background color for the card */
+    color: #ffffff; /* White text color for the card content */
 }
 
 /* ADDBUSINESS DATA & UPDATEBUSINESSDATA */

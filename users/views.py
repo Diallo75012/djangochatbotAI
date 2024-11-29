@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
@@ -18,6 +18,7 @@ from .forms import (
 from .models import ClientUser, ChatMessages
 import hashlib
 import memcache
+from django.http import HttpResponse
 
 
 # Connecting to Memcached
@@ -139,6 +140,9 @@ def logoutBusinessUser(request):
 @login_required(login_url='users:loginclientuser')
 @user_passes_test(is_client_user, login_url='users:loginclientuser')
 def clientUserChat(request):
+  # to test lets just return a response on other routes redirect tot this one
+  # return HttpResponse("<h1 style='color:red'>Chat Interface!</h1>")
+
   user = request.user
   cache_key = f"chat_{user.id}"
 
@@ -201,11 +205,12 @@ def clientUserChat(request):
   context = {
     'form': form,
     'chat_messages': chat_messages,
-    'user_avatar': user.clientuser.picturl.url if user.clientuser.picture else None,
+    'user_avatar': user.clientuser.picture.url if user.clientuser.picture else None,
     'chatbot_avatar': 'dummy/url/image.png'
   }
 
   return render(request, 'users/clientuserchat.html', context)
+
 
 # register user
 def registerClientUser(request):
@@ -230,8 +235,9 @@ def registerClientUser(request):
       client_group, created = Group.objects.get_or_create(name='client')
       user.groups.add(client_group)
 
+      username = form.cleaned_data.get('username')
       password = form.cleaned_data['password1']
-      user = authenticate(username=username, password=password)
+      user = authenticate(username=user.username, password=password)
 
       if user:
         login(request, user)
@@ -253,23 +259,25 @@ def registerClientUser(request):
 @login_required(login_url='users:loginclientuser')
 @user_passes_test(is_client_user, login_url='users:loginclientuser')
 def updateClientUser(request):
-    """
-    View to update the logged-in user's information.
-    """
-    user = get_object_or_404(User, pk=request.user.pk)
-    form = UpdateClientUserForm(instance=user)
+  """
+  View to update the logged-in user's information.
+  """
+  user = get_object_or_404(User, pk=request.user.pk)
+  form = UpdateClientUserForm(instance=user)
 
-    if request.method == 'POST':
-        form = UpdateClientUserForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Your profile has been updated successfully.')
-            return redirect('users:clientuserchat')
-        else:
-            messages.error(request, 'Please correct the error below.')
+  if request.method == 'POST':
+    # Include request.FILES to handle image uploads
+    form = UpdateClientUserForm(request.POST, request.FILES, instance=user)
+    if form.is_valid():
+      form.save()
+      messages.success(request, 'Your profile has been updated successfully.')
+      return redirect('users:clientuserchat')
+    else:
+      messages.error(request, 'Please correct the error below.')
 
-    context = {'form': form}
-    return render(request, 'users/updateclientuser.html', context)
+  context = {'form': form}
+  return render(request, 'users/updateclientuser.html', context)
+
 
 # login user
 def loginClientUser(request):

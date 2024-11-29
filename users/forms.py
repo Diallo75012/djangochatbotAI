@@ -45,8 +45,8 @@ class ClientUserChatForm(forms.ModelForm):
     model = ChatMessages
     fields = ["nickname", "content"]
     labels = {
-      "content": "Your Message",
-      "image": "Atache an Image",
+      "Nickname": "Enter your nickname",
+      "Content": "Enter your message",
     }
 
 # create client user
@@ -82,18 +82,21 @@ class CreateClientUserForm(UserCreationForm):
     return user
 
 # update client user
-class UpdateClientUserForm(ModelForm):
+class UpdateClientUserForm(forms.ModelForm):
     """
-    Form to update user's information like username, email, and first/last name.
+    Form to update user's information like username, email, nickname, bio, and picture.
     """
+
+    # Additional fields for ClientUser
+    nickname = forms.CharField(max_length=40)
+    bio = forms.CharField(max_length=255, required=False)
+    picture = forms.ImageField(required=False)
+
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name']
+        fields = ['email']
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}),
         }
 
     def clean_email(self):
@@ -101,4 +104,30 @@ class UpdateClientUserForm(ModelForm):
         if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError('A user with this email already exists.')
         return email
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+
+        if commit:
+            user.save()
+
+            # Get or create ClientUser related to User
+            # get_or_create returns a tupple so it can written different ways depends on what we need
+            # client_user, create = ...objects.get_or_create
+            # client_user, _ = ....objects.get_or_create
+            # Or just client_user = ...objects.get_or_create
+            client_user, _ = ClientUser.objects.get_or_create(user=user)
+
+            client_user.nickname = self.cleaned_data['nickname']
+            client_user.bio = self.cleaned_data.get('bio', '')
+
+            # Save the picture if provided
+            picture = self.cleaned_data.get('picture')
+            if picture:
+                client_user.picture = picture
+
+            client_user.save()
+
+        return user
 

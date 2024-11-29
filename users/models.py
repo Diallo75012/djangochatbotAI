@@ -17,7 +17,7 @@ class ClientUser(models.Model):
     blank=True
   )
   bio = models.CharField(max_length=255, blank=True)
-  email = models.EmailField(unique=True)
+  email = models.EmailField(unique=True, blank=True)
 
   def __str__(self):
     return f"{self.nickname}: {self.bio[:50]}..."
