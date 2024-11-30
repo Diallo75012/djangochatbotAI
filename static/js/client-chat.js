@@ -1,39 +1,46 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const chatContainer = document.getElementById('chat-container');
-  chatContainer.scrollTop = chatContainer.scrollHeight;  // Scroll to the latest message
-
   const messageForm = document.getElementById('message-form');
   messageForm.addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const messageInput = document.getElementById('message-input');
-    const messageContent = messageInput.value;
+    const messageInput = document.getElementById('message-input').value;
 
-    // Get the chatbot details from the sidebar
-    const selectedChatbotId = document.getElementById("documentTitleDropdown").value;
-    const chatbotName = document.getElementById("chatbotName")?.innerText || document.getElementById("customChatbotName")?.value;
-    const chatbotAge = document.getElementById("chatbotAge")?.innerText || null;
-    const chatbotOrigin = document.getElementById("chatbotOrigin")?.innerText || null;
-    const chatbotDream = document.getElementById("chatbotDream")?.innerText || null;
-    const chatbotTone = document.getElementById("chatbotTone")?.innerText || null;
-    const chatbotDescription = document.getElementById("chatbotDescription")?.innerText || null;
-    const chatbotExpertise = document.getElementById("chatbotExpertise")?.innerText || null;
+    // Determine if we should use default chatbot or custom fields
+    let chatbotData = {};
+    if (document.getElementById('chatbotName')) {
+      // Default chatbot details
+      chatbotData = {
+        'chatbot_name': document.getElementById('chatbotName').value,
+        'chatbot_age': document.getElementById('chatbotAge') ? document.getElementById('chatbotAge').value : '',
+        'chatbot_origin': document.getElementById('chatbotOrigin') ? document.getElementById('chatbotOrigin').value : '',
+        'chatbot_dream': document.getElementById('chatbotDream') ? document.getElementById('chatbotDream').value : '',
+        'chatbot_tone': document.getElementById('chatbotTone') ? document.getElementById('chatbotTone').value : '',
+        'chatbot_description': document.getElementById('chatbotDescription') ? document.getElementById('chatbotDescription').value : '',
+        'chatbot_expertise': document.getElementById('chatbotExpertise') ? document.getElementById('chatbotExpertise').value : ''
+      };
+    } else {
+      // Custom chatbot details
+      chatbotData = {
+        'chatbot_name': document.getElementById('customChatbotName').value || '',
+        'chatbot_age': document.getElementById('customChatbotAge').value || '',
+        'chatbot_origin': document.getElementById('customChatbotOrigin').value || '',
+        'chatbot_dream': document.getElementById('customChatbotDream').value || '',
+        'chatbot_tone': document.getElementById('customChatbotTone').value || '',
+        'chatbot_description': document.getElementById('customChatbotDescription').value || '',
+        'chatbot_expertise': document.getElementById('customChatbotExpertise').value || ''
+      };
+    }
 
-    // Prepare the data to be sent to the backend
+    // Prepare data for submission
     const dataToSend = {
-      'message': messageContent,
-      'chatbot_id': selectedChatbotId,
-      'chatbot_name': chatbotName,
-      'chatbot_age': chatbotAge,
-      'chatbot_origin': chatbotOrigin,
-      'chatbot_dream': chatbotDream,
-      'chatbot_tone': chatbotTone,
-      'chatbot_description': chatbotDescription,
-      'chatbot_expertise': chatbotExpertise
+      'message': messageInput,
+      ...chatbotData
     };
 
-    // AJAX request to post message and chatbot details
-    fetch('/clientchat/clientuserchat/', {
+    console.log("Data to send", dataToSend);
+
+    // AJAX request to post message
+    fetch('/clientchat/clientuserchat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -49,13 +56,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Scroll to the bottom after updating
       chatContainer.scrollTop = chatContainer.scrollHeight;
-
-      // Clear the message input
-      messageInput.value = '';
     })
     .catch(error => console.error('Error:', error));
   });
 });
+
+
 
 function appendMessage(container, message, sender) {
   const messageContainer = document.createElement('div');

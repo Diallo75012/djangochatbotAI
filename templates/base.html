@@ -18,7 +18,12 @@
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <h1>Creditizens ChatBotAI</h1>
+            {% if user.is_authenticated %}
+              <h1>Creditizens ChatBotAI</h1>
+              <h3>{{ user.username }}</h3>
+            {% else %}
+              <h1>Creditizens ChatBotAI</h1>
+            {% endif %}
         </div>
     </header>
 

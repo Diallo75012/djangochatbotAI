@@ -27,14 +27,7 @@ def is_client_user(user):
 # client user chat route
 @login_required(login_url='users:loginclientuser')
 @user_passes_test(is_client_user, login_url='users:loginclientuser')
-@login_required(login_url='users:loginclientuser')
-@user_passes_test(is_client_user, login_url='users:loginclientuser')
-@login_required(login_url='users:loginclientuser')
-@user_passes_test(is_client_user, login_url='users:loginclientuser')
 def clientUserChat(request):
-    """
-    View to handle client user chat, fetch document titles, chatbot details, etc.
-    """
     user = request.user
     cache_key = f"chat_{user.id}"
 
@@ -44,30 +37,23 @@ def clientUserChat(request):
         chat_messages = ChatMessages.objects.filter(user=user).order_by('timestamp')
         mc.set(cache_key, list(chat_messages), time=3600)
 
-    # Fetch all document titles available from the database
-    document_titles = BusinessUserData.objects.values_list('document_title', flat=True).distinct().order_by('document_title')
-    
-    # Select the first document title alphabetically if none is selected by the client user
-    selected_document = request.GET.get('selected_document', document_titles.first() if document_titles else None)
-    default_chatbot = None
-    business_user = None
-
-    if selected_document:
-        # Fetch the business data associated with the selected document title
-        business_data = BusinessUserData.objects.filter(document_title=selected_document).first()
-        if business_data:
-            # Get the business user from business data
-            business_user = business_data.user
-
-            # Get the default chatbot if it exists for the selected document title
-            if business_data.chat_bot:
-                default_chatbot = business_data.chat_bot
-
     if request.method == 'POST':
         form = ClientUserChatForm(request.POST)
         if form.is_valid():
-            # Save user message
-            user_message = form.cleaned_data['message']
+            user_message = form.cleaned_data['content']
+            chatbot_name = request.POST.get('chatbot_name')
+            chatbot_age = request.POST.get('chatbot_age')
+            chatbot_origin = request.POST.get('chatbot_origin')
+            chatbot_dream = request.POST.get('chatbot_dream')
+            chatbot_tone = request.POST.get('chatbot_tone')
+            chatbot_description = request.POST.get('chatbot_description')
+            chatbot_expertise = request.POST.get('chatbot_expertise')
+
+            # Debugging information
+            print("User message:", user_message)
+            print("Chatbot details:", chatbot_name, chatbot_age, chatbot_origin, chatbot_dream, chatbot_tone, chatbot_description, chatbot_expertise)
+
+            # Create and save user message
             chat_msg = ChatMessages.objects.create(
                 user=user,
                 sender_type='user',
@@ -76,12 +62,12 @@ def clientUserChat(request):
                 timestamp=timezone.now()
             )
 
-            # Save in database and update cache
+            # Update chat messages in cache
             chat_messages = list(chat_messages)
             chat_messages.append(chat_msg)
-            mc.set(cache_key, chat_messages, time=3600)
+            mc.set(cache_key, chat_messages, time=36000)
 
-            # Dummy chat response until we plug in LLM agents
+            # Create a dummy response for now
             bot_response_content = f"Echo: {user_message}"
             bot_msg = ChatMessages.objects.create(
                 user=user,
@@ -93,27 +79,28 @@ def clientUserChat(request):
 
             # Update cache with bot response
             chat_messages.append(bot_msg)
-            mc.set(cache_key, chat_messages, time=3600)
+            mc.set(cache_key, chat_messages, time=36000)
 
-            # Save bot message in the database as well
+            # Save bot message in the database
             bot_msg.save()
 
-            # Reload page to show new messages
-            return redirect('clientchat:clientuserchat')
-    else:
-        form = ClientUserChatForm()
+            # Return response to JavaScript
+            return JsonResponse({
+                'user_message': user_message,
+                'bot_message': bot_response_content
+            })
 
-    # Now, let's pass all that to the WebUI context
+    # Render initial form
+    form = ClientUserChatForm()
     context = {
         'form': form,
         'chat_messages': chat_messages,
         'user_avatar': user.clientuser.picture.url if user.clientuser.picture else None,
         'chatbot_avatar': '/images/chatbot_dummy.png',
-        'document_titles': document_titles,
-        'selected_document': selected_document,
-        'default_chatbot': default_chatbot,
-        'business_user': business_user,
+        'document_titles': BusinessUserData.objects.all().values_list('document_title', flat=True),
+        'default_chatbot': None,  # Placeholder for initial render
     }
 
     return render(request, 'clientchat/clientuserchat.html', context)
+
 

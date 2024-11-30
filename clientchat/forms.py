@@ -9,8 +9,7 @@ from .models import ChatMessages
 class ClientUserChatForm(forms.ModelForm):
   class Meta:
     model = ChatMessages
-    fields = ["nickname", "content"]
+    fields = ["content"]
     labels = {
-      "Nickname": "Enter your nickname",
       "Content": "Enter your message",
     }

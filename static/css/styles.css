@@ -35,8 +35,8 @@ body {
 
 /* Container Styles */
 .container {
-    width: 80%;
-    max-width: 1200px;
+    width: 100%;
+    max-width: 1300px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -640,7 +640,7 @@ form {
 /* Sidebar Styles */
 .sidebar {
     flex: 1;
-    max-width: 20%;
+    max-width: 30%;
     display: flex;
     flex-direction: column;
     padding: 20px;
@@ -680,7 +680,7 @@ form {
 /* Main Chat Section */
 .main-chat-section {
     flex: 4;
-    max-width: 80%;
+    max-width: 70%;
     display: flex;
     flex-direction: column;
     padding: 20px;
@@ -755,4 +755,8 @@ form {
 
 .btn-send:hover {
     background-color: #0056b3;
+}
+
+body.container .mt-4 {
+  width: 100%;
 }
