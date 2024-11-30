@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="chat-container">
-    <div class="container mt-3">
+<!--    <div class="container mt-3"> -->
         <!-- Sidebar with Chatbot Details -->
         <div class="sidebar">
             <h4>AI Personality Details</h4>
@@ -35,7 +35,7 @@
                     <p><strong>Business Owner:</strong> <span id="chatbotBusinessOwner">{{ default_chatbot.business_user.username }}</span></p>
                     <p><strong>Number:</strong> <span id="chatbotNumber">{{ default_chatbot.business_user.uuid }}</span></p>  
                 {% else %}
-                    <p>No AI personality assigned yet. Select one from the dropdown above.</p>
+                    <p>No AI personality assigned yet to document. You are free to set AI personality.</p>
                 {% endif %}
             </div>
 
@@ -73,7 +73,7 @@
             </form>
             {% endif %}
         </div>
-    </div>
+  <!--  </div> -->
 
     <!-- Main Chat Section -->
     <div class="main-chat-section">

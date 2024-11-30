@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageContent = messageInput.value;
 
     // Get the chatbot details from the sidebar
-    const selectedChatbotId = document.getElementById("chatbotDropdown").value;
+    const selectedChatbotId = document.getElementById("documentTitleDropdown").value;
     const chatbotName = document.getElementById("chatbotName")?.innerText || document.getElementById("customChatbotName")?.value;
     const chatbotAge = document.getElementById("chatbotAge")?.innerText || null;
     const chatbotOrigin = document.getElementById("chatbotOrigin")?.innerText || null;
@@ -76,7 +76,7 @@ function appendMessage(container, message, sender) {
 }
 
 // ########### SIDEBAR CLIENT CHAT CHATBOT DETAILS DYNAMIC CHANGE WHEN USER SELECT #######
-document.getElementById("chatbotDropdown").addEventListener("change", function() {
+document.getElementById("documentTitleDropdown").addEventListener("change", function() {
   const selectedChatbotId = this.value;
 
   // AJAX request to get the selected chatbot details
