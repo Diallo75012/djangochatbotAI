@@ -22,6 +22,8 @@
             <!-- Chatbot details that will be updated based on selection -->
             <div id="chatbotDetails">
                 {% if default_chatbot %}
+                  <p>default chatbot {{ default_chatbot.chat_bot.age }}</p>
+                  {% if default_chatbot.name %}
                 <!-- This is handled by django if we want to send default botsettings if exist we tabe the first one and send it with the context -->    
                     <h5 id="chatbotName">{{ default_chatbot.name }}</h5>
                     <img id="chatbotAvatar" src="{{ default_chatbot.avatar.url }}" alt="Chatbot Avatar" width="150">
@@ -32,9 +34,10 @@
                     <p><strong>Description:</strong> <span id="chatbotDescription">{{ default_chatbot.description }}</span></p>
                     <p><strong>Expertise:</strong> <span id="chatbotExpertise">{{ default_chatbot.expertise }}</span></p> 
                     <p><strong>Business Owner:</strong> <span id="chatbotBusinessOwner">{{ default_chatbot.business_user.username }}</span></p>
-                    <p><strong>Number:</strong> <span id="chatbotNumber">{{ default_chatbot.business_user.uuid }}</span></p>  
+                    <p><strong>Number:</strong> <span id="chatbotNumber">{{ default_chatbot.business_user_uuid }}</span></p>
+                  {% endif %}  
                 {% else %}
-                <!-- Javascript will handle that part by showing the fields if there something -->
+                <!-- Javascript will handle that part by showing the fields if there something and user selects it from dropdown-->
                     <h5 type="hidden" id="chatbotName" value=""></h5>
                     <img style="display: none;" id="chatbotAvatar" src="" alt="Chatbot Avatar" width="150">
                     <p><span type="hidden" id="chatbotAge" value=""></span></p>

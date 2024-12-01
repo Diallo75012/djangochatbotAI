@@ -8,6 +8,7 @@ from django.core.cache import cache  # Using Django's cache framework for simpli
 from .forms import (
   ClientUserChatForm,
 )
+from chatbotsettings.models import ChatBotSettings
 from businessdata.models import BusinessUserData
 from users.models import ClientUser
 from .models import ChatMessages
@@ -112,12 +113,27 @@ def clientUserChat(request):
 
     # Render initial form
     form = ClientUserChatForm()
+
+    # get any default chatbot settings
+    business_data_first_document_title = BusinessUserData.objects.all().values_list('document_title', flat=True).order_by('-document_title').first()
+    try: 
+      chatbot_name = BusinessUserData.objects.filter(document_title=business_data_first_document_title).values_list('chat_bot__name')[0][0]
+      if chatbot_name:
+        default_chatbot = ChatBotSettings.objects.get(name=chatbot_name)
+        print("default chatbot: ", default_chatbot)
+      else:
+        default_chatbot = ""
+    except IndexError as e:
+      print(f"Error while trying to get the chatbot name, probably no chatbot records: {e}")
+      default_chatbot = ""
+
     context = {
         'form': form,
         'chat_messages': chat_messages,
         'user_avatar': user.clientuser.picture.url if user.clientuser.picture else None,
         'chatbot_avatar': '/images/chatbot_dummy.png',
         'business_data': BusinessUserData.objects.all(),
+        'default_chatbot': default_chatbot,
     }
 
     return render(request, 'clientchat/clientuserchat.html', context)
