@@ -42,16 +42,36 @@ def clientUserChat(request):
         if form.is_valid():
             user_message = form.cleaned_data['content']
             chatbot_name = request.POST.get('chatbot_name')
-            chatbot_age = request.POST.get('chatbot_age')
-            chatbot_origin = request.POST.get('chatbot_origin')
-            chatbot_dream = request.POST.get('chatbot_dream')
-            chatbot_tone = request.POST.get('chatbot_tone')
             chatbot_description = request.POST.get('chatbot_description')
-            chatbot_expertise = request.POST.get('chatbot_expertise')
+
+            # Check if required chatbot fields are missing
+            if not chatbot_name or not chatbot_description:
+                return JsonResponse(
+                  {
+                    'error': 'Chatbot name and description are required.'
+                  },
+                  status=400
+                )
+
+            # Gather other chatbot fields
+            chatbot_age = request.POST.get('chatbot_age', '')
+            chatbot_origin = request.POST.get('chatbot_origin', '')
+            chatbot_dream = request.POST.get('chatbot_dream', '')
+            chatbot_tone = request.POST.get('chatbot_tone', '')
+            chatbot_expertise = request.POST.get('chatbot_expertise', '')
 
             # Debugging information
             print("User message:", user_message)
-            print("Chatbot details:", chatbot_name, chatbot_age, chatbot_origin, chatbot_dream, chatbot_tone, chatbot_description, chatbot_expertise)
+            print(
+              "Chatbot details:", 
+                chatbot_name,
+                chatbot_age,
+                chatbot_origin,
+                chatbot_dream,
+                chatbot_tone,
+                chatbot_description,
+                chatbot_expertise
+            )
 
             # Create and save user message
             chat_msg = ChatMessages.objects.create(
@@ -97,10 +117,10 @@ def clientUserChat(request):
         'chat_messages': chat_messages,
         'user_avatar': user.clientuser.picture.url if user.clientuser.picture else None,
         'chatbot_avatar': '/images/chatbot_dummy.png',
-        'document_titles': BusinessUserData.objects.all().values_list('document_title', flat=True),
-        'default_chatbot': None,  # Placeholder for initial render
+        'business_data': BusinessUserData.objects.all(),
     }
 
     return render(request, 'clientchat/clientuserchat.html', context)
+
 
 

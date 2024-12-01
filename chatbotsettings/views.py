@@ -146,20 +146,33 @@ def deleteChatBotSettings(request, pk):
 # special route for frontend javascript to fetch chatbot settings
 @login_required(login_url="users:loginclientuser")
 @user_passes_test(is_client_user, login_url='users:loginclientuser')
-def getChatbotDetails(request, chatbot_id):
+def getChatbotDetails(request, business_data_id):
     try:
-        chatbot = ChatBotSettings.objects.get(pk=chatbot_id)
-        data = {
-            "name": chatbot.name,
-            "age": chatbot.age,
-            "origin": chatbot.orign,
-            "dream": chatbot.dream,
-            "tone": chatbot.tone,
-            "description": chatbot.description,
-            "expertise": chatbot.expertise,
-            "avatar_url": chatbot.avatar.url if chatbot.avatar else "",
-        }
-        return JsonResponse(data)
-    except ChatBotSettings.DoesNotExist:
-        return JsonResponse({"error": "Chatbot not found."}, status=404)
+        # Fetch the BusinessUserData entry
+        business_data = BusinessUserData.objects.get(pk=int(business_data_id))
+        print("Business Data: ", business_data)
+
+        # Check if a chat_bot is linked to the business_data
+        if business_data.chat_bot:
+            # Fetch the ChatBotSettings linked via the ForeignKey
+            data = {
+                "name": business_data.chat_bot.name,
+                "age": business_data.chat_bot.age,
+                "origin": business_data.chat_bot.origin,
+                "dream": business_data.chat_bot.dream,
+                "tone": business_data.chat_bot.tone,
+                "description": business_data.chat_bot.description,
+                "expertise": business_data.chat_bot.expertise,
+                "avatar_url": business_data.chat_bot.avatar.url if business_data.chat_bot.avatar else "",
+                "business_owner": business_data.user.username,
+                "number": business_data.uuid,
+            }
+            print("CHATBOT: ", data)
+            return JsonResponse(data)
+        else:
+            return JsonResponse({"error": "No chatbot linked to the selected business data."}, status=404)
+
+    except BusinessUserData.DoesNotExist:
+        return JsonResponse({"error": "Business data not found."}, status=404)
+
 

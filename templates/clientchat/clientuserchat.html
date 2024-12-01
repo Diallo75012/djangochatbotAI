@@ -12,9 +12,9 @@
             <!-- Dropdown to select a document title -->
             <select id="documentTitleDropdown" class="form-control">
                 <option value="" disabled selected>Select Document Title</option>
-                {% for document_title in document_titles %}
-                    <option value="{{ document_title }}" {% if document_title == selected_document %} selected {% endif %}>
-                        {{ document_title }}
+                {% for document in business_data %}
+                    <option value="{{ document.id }}" {% if document == selected_document %} selected {% endif %}>
+                        {{ document.document_title }}
                     </option>
                 {% endfor %}
             </select>
@@ -22,10 +22,9 @@
             <!-- Chatbot details that will be updated based on selection -->
             <div id="chatbotDetails">
                 {% if default_chatbot %}
+                <!-- This is handled by django if we want to send default botsettings if exist we tabe the first one and send it with the context -->    
                     <h5 id="chatbotName">{{ default_chatbot.name }}</h5>
-                    {% if default_chatbot.avatar %}
-                      <img id="chatbotAvatar" src="{{ default_chatbot.avatar.url }}" alt="Chatbot Avatar" width="150">
-                    {% endif %}
+                    <img id="chatbotAvatar" src="{{ default_chatbot.avatar.url }}" alt="Chatbot Avatar" width="150">
                     <p><strong>Age:</strong> <span id="chatbotAge">{{ default_chatbot.age }}</span></p>
                     <p><strong>Origin:</strong> <span id="chatbotOrigin">{{ default_chatbot.origin }}</span></p>
                     <p><strong>Dream:</strong> <span id="chatbotDream">{{ default_chatbot.dream }}</span></p>
@@ -35,39 +34,50 @@
                     <p><strong>Business Owner:</strong> <span id="chatbotBusinessOwner">{{ default_chatbot.business_user.username }}</span></p>
                     <p><strong>Number:</strong> <span id="chatbotNumber">{{ default_chatbot.business_user.uuid }}</span></p>  
                 {% else %}
-                    <p>No AI personality assigned yet to document. You are free to set AI personality.</p>
+                <!-- Javascript will handle that part by showing the fields if there something -->
+                    <h5 type="hidden" id="chatbotName" value=""></h5>
+                    <img style="display: none;" id="chatbotAvatar" src="" alt="Chatbot Avatar" width="150">
+                    <p><span type="hidden" id="chatbotAge" value=""></span></p>
+                    <p><span type="hidden" id="chatbotOrigin" value=""></span></p>
+                    <p><span type="hidden" id="chatbotDream" value=""></span></p>
+                    <p><span type="hidden" id="chatbotTone" value=""></span></p>
+                    <p><span type="hidden" id="chatbotDescription" value=""></span></p>
+                    <p><span type="hidden" id="chatbotExpertise" value=""></span></p> 
+                    <p><span type="hidden" id="chatbotBusinessOwner" value=""></span></p>
+                    <p><span type="hidden" id="chatbotNumber" value=""></span></p>  
                 {% endif %}
             </div>
 
             <!-- Custom chatbot form if no default chatbot -->
             {% if not default_chatbot %}
-            <form id="customChatbotForm">
+            <form  style="display: none" id="customChatbotForm">
+                <p class="lightmode-text-black">No AI personality assigned yet. Define your custom AI Personality.</p>
                 <div class="form-group">
-                    <label for="customChatbotName">Chatbot Name</label>
+                    <label class="lightmode-text-black" for="customChatbotName">Chatbot Name</label>
                     <input type="text" class="form-control" id="customChatbotName" name="customChatbotName" placeholder="Enter Chatbot Name" required>
                 </div>
                 <div class="form-group">
-                    <label for="customChatbotAge">Chatbot Age</label>
+                    <label class="lightmode-text-black" for="customChatbotAge">Chatbot Age</label>
                     <input type="number" class="form-control" id="customChatbotAge" name="customChatbotAge" placeholder="Enter Chatbot Age">
                 </div>
                 <div class="form-group">
-                    <label for="customChatbotOrigin">Chatbot Origin</label>
+                    <label class="lightmode-text-black" for="customChatbotOrigin">Chatbot Origin</label>
                     <input type="text" class="form-control" id="customChatbotOrigin" name="customChatbotOrigin" placeholder="Enter Chatbot Origin">
                 </div>
                 <div class="form-group">
-                    <label for="customChatbotDream">Chatbot Dream</label>
+                    <label class="lightmode-text-black" for="customChatbotDream">Chatbot Dream</label>
                     <input type="text" class="form-control" id="customChatbotDream" name="customChatbotDream" placeholder="Enter Chatbot Dream">
                 </div>
                 <div class="form-group">
-                    <label for="customChatbotTone">Chatbot Tone</label>
+                    <label class="lightmode-text-black" for="customChatbotTone">Chatbot Tone</label>
                     <input type="text" class="form-control" id="customChatbotTone" name="customChatbotTone" placeholder="Enter Chatbot Tone">
                 </div>
                 <div class="form-group">
-                    <label for="customChatbotDescription">Chatbot Description</label>
+                    <label class="lightmode-text-black" for="customChatbotDescription">Chatbot Description</label>
                     <textarea class="form-control" id="customChatbotDescription" name="customChatbotDescription" placeholder="Enter Chatbot Description" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="customChatbotExpertise">Chatbot Expertise</label>
+                    <label class="lightmode-text-black" for="customChatbotExpertise">Chatbot Expertise</label>
                     <input type="text" class="form-control" id="customChatbotExpertise" name="customChatbotExpertise" placeholder="Enter Chatbot Expertise">
                 </div>
             </form>

@@ -630,6 +630,7 @@ form {
     display: flex;
     width: 100%;
     max-width: 1200px;
+    min-height: 700px;
     margin: 0 auto;
     background-color: var(--background-color);
     padding: 20px;
@@ -673,8 +674,13 @@ form {
 }
 
 #customChatbotForm {
-    max-height: 300px;
+    min-height: 300px;
+    max-height: 420px;
     overflow-y: auto;
+}
+
+[data-theme="light"] .lightmode-text-black {
+    color: #000000;
 }
 
 /* Main Chat Section */

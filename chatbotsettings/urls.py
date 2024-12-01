@@ -11,5 +11,5 @@ urlpatterns = [
   path('chatbotsettingsmanagement', views.ChatBotSettingsManagement, name='chatbotsettingsmanagement'),
 
   # route for Ajax frontend to have access to chatbotsettings details for user webui dynamic change when user picks a chatbot
-  path('chatbotdetails/<int:chatbot_id>/', views.getChatbotDetails, name='getchatbotdetails'),
+  path('chatbotdetails/<int:business_data_id>/', views.getChatbotDetails, name='getchatbotdetails'),
 ]
