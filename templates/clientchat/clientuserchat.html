@@ -7,6 +7,7 @@
         <!-- Here we put hidden span fields for javascript to be able to fetch those urls coming from backend context view so that images can be shown with messages sent -->
         <span id="user-avatar" data-avatar-url="{{ user_avatar }}" hidden></span>
         <span id="chatbot-avatar" data-avatar-url="{{ chatbot_avatar }}" hidden></span>
+        <span id="default-chatbot" data-default-chatbot="{{ default_chatbot }}" hidden></span>
 
 <!--    <div class="container mt-3"> -->
         <!-- Sidebar with Chatbot Details -->
@@ -44,14 +45,14 @@
                 <!-- Javascript will handle that part by showing the fields if there something and user selects it from dropdown-->
                     <h5 type="hidden" id="chatbotName" value=""></h5>
                     <img style="display: none;" id="chatbotAvatar" src="" alt="Chatbot Avatar" width="150">
-                    <p><span type="hidden" id="chatbotAge" value=""></span></p>
-                    <p><span type="hidden" id="chatbotOrigin" value=""></span></p>
-                    <p><span type="hidden" id="chatbotDream" value=""></span></p>
-                    <p><span type="hidden" id="chatbotTone" value=""></span></p>
-                    <p><span type="hidden" id="chatbotDescription" value=""></span></p>
-                    <p><span type="hidden" id="chatbotExpertise" value=""></span></p> 
-                    <p><span type="hidden" id="chatbotBusinessOwner" value=""></span></p>
-                    <p><span type="hidden" id="chatbotNumber" value=""></span></p>  
+                    <p><span style="display: none;" id="chatbotAge" value=""></span></p>
+                    <p><span style="display: none;" id="chatbotOrigin" value=""></span></p>
+                    <p><span style="display: none;" id="chatbotDream" value=""></span></p>
+                    <p><span style="display: none;" id="chatbotTone" value=""></span></p>
+                    <p><span style="display: none;" id="chatbotDescription" value=""></span></p>
+                    <p><span style="display: none;" id="chatbotExpertise" value=""></span></p> 
+                    <p><span style="display: none;" id="chatbotBusinessOwner" value=""></span></p>
+                    <p><span style="display: none;" id="chatbotNumber" value=""></span></p>  
                 {% endif %}
             </div>
 

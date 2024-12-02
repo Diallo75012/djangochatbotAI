@@ -259,3 +259,31 @@ I have pivoted a bit my idea in how the user will be able to select chatbots:
 - then have CD using ArgoCD server and the CI when good will update the listening repo image tags which will trigger ArgoCD to deploy new version of app. use githubaction if possible for CI..or have a jenkins server and jenkinsfiles in a repo for the flow.
 
 
+# javascript making custom data available
+```code
+# HTML side
+<span id="user-avatar" data-avatar-url="{{ user_avatar }}" hidden></span>
+# javascript side
+const userAvatarUrl = document.getElementById('user-avatar').dataset.avatarUrl;
+```
+The `data-avatar-url` attribute is a custom data attribute,
+and JavaScript allows you to access this attribute using the `.dataset` property.
+
+### How `.dataset.avatarUrl` Works:
+- When an HTML element has an attribute like `data-avatar-url`, 
+- JavaScript will make it available through the .dataset property of that element.
+- `data-` attributes are automatically **converted to camelCase** format in JavaScript.
+
+# javascript get sidebar elements to send with form data
+# for form
+Use `.value` to get forms fields data
+```code
+# eg. using Expertise field:
+document.getElementById('chatbotExpertise').value;
+```
+# for HTML text in tags
+Use `.innerHtml` to get already populated html text field
+```code
+# eg. using Expertise field:
+document.getElementById('chatbotExpertise').innerText;
+```

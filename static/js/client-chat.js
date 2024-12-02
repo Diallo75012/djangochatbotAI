@@ -12,9 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Determine if we should use default chatbot or custom fields and if they exist
     let chatbotData = {};
-    const chatbotNameElem = document.getElementById('chatbotName') ? document.getElementById('chatbotName').value : '';
+    const chatbotNameElem = document.getElementById('chatbotName') ? document.getElementById('chatbotName').innerText : '';
     console.log("ChatbotNameElem: ", chatbotNameElem)
-    const chatbotDescriptionElem = document.getElementById('chatbotDescription') ? document.getElementById('chatbotDescription').value : '';
+    const chatbotDescriptionElem = document.getElementById('chatbotDescription') ? document.getElementById('chatbotDescription').innerText : '';
     console.log("chatbotDescriptionElem: ", chatbotDescriptionElem)
     const customchatbotNameElem = document.getElementById('customChatbotName') ? document.getElementById('customChatbotName').value : '';
     console.log("customChatbotNameElem: ", customchatbotNameElem)
@@ -25,12 +25,12 @@ document.addEventListener('DOMContentLoaded', function() {
       // Default chatbot details
       chatbotData = {
         'chatbot_name': chatbotNameElem || '',
-        'chatbot_age': document.getElementById('chatbotAge') ? document.getElementById('chatbotAge').value : '',
-        'chatbot_origin': document.getElementById('chatbotOrigin') ? document.getElementById('chatbotOrigin').value : '',
-        'chatbot_dream': document.getElementById('chatbotDream') ? document.getElementById('chatbotDream').value : '',
-        'chatbot_tone': document.getElementById('chatbotTone') ? document.getElementById('chatbotTone').value : '',
+        'chatbot_age': document.getElementById('chatbotAge') ? document.getElementById('chatbotAge').innerText : '',
+        'chatbot_origin': document.getElementById('chatbotOrigin') ? document.getElementById('chatbotOrigin').innerText  : '',
+        'chatbot_dream': document.getElementById('chatbotDream') ? document.getElementById('chatbotDream').innerText  : '',
+        'chatbot_tone': document.getElementById('chatbotTone') ? document.getElementById('chatbotTone').innerText  : '',
         'chatbot_description': chatbotDescriptionElem || '',
-        'chatbot_expertise': document.getElementById('chatbotExpertise') ? document.getElementById('chatbotExpertise').value : '',
+        'chatbot_expertise': document.getElementById('chatbotExpertise') ? document.getElementById('chatbotExpertise').innerText  : '',
       };
       console.log("Chatbotdata default: ", chatbotData);
     } else {
@@ -120,9 +120,14 @@ function appendMessage(container, message, sender) {
 
 // handle dropdown document_titles in sidebar. check if there is chatbotsettings associated and display detail if yes
 document.getElementById("documentTitleDropdown").addEventListener("change", function() {
+
+  // this is to check if default chatbot setting exist to see how later in the function we display the fields with labels or not. span hidden is used in webui to catch that here
+  const chatbotDefault = document.getElementById('default-chatbot').dataset.defaultChatbot;
+  console.log("chatbotdefault: ", chatbotDefault);
+  
   // this id from business data corresponding to the document_title row will be used to fetch from the `chat_bot` field the right chatbot data
   const selectedBusinessDataId = this.value;
-  console.log("Chatbot ID: ", selectedBusinessDataId, typeof(selectedBusinessDataId))
+  console.log("Chatbot ID: ", selectedBusinessDataId, typeof(selectedBusinessDataId));
 
   // AJAX request to get the selected chatbot details
   fetch(`/chatbotsettings/chatbotdetails/${selectedBusinessDataId}/`)
@@ -138,26 +143,49 @@ document.getElementById("documentTitleDropdown").addEventListener("change", func
       if (data) {
         console.log("data received from backend for front: ", data);
 
-        document.getElementById("chatbotName").setAttribute("type", "visible");
-        document.getElementById("chatbotName").innerText = `Name: ${data.name}`;
-        document.getElementById("chatbotAvatar").setAttribute("style", "display: inline;");
-        document.getElementById("chatbotAvatar").src = data.avatar_url;
-        document.getElementById("chatbotAge").setAttribute("type", "visible");
-        document.getElementById("chatbotAge").innerText = `Age: ${data.age}`;
-        document.getElementById("chatbotOrigin").setAttribute("type", "visible");
-        document.getElementById("chatbotOrigin").innerText = `Origin: ${data.origin}`;
-        document.getElementById("chatbotDream").setAttribute("type", "visible");
-        document.getElementById("chatbotDream").innerText = `Dream: ${data.dream}`;
-        document.getElementById("chatbotTone").setAttribute("type", "visible");
-        document.getElementById("chatbotTone").innerText = `Tone: ${data.tone}`;
-        document.getElementById("chatbotDescription").setAttribute("type", "visible");
-        document.getElementById("chatbotDescription").innerText = `Description: ${data.description}`;
-        document.getElementById("chatbotExpertise").setAttribute("type", "visible");
-        document.getElementById("chatbotExpertise").innerText = `Expertise: ${data.expertise}`;
-        document.getElementById("chatbotBusinessOwner").setAttribute("type", "visible");
-        document.getElementById("chatbotBusinessOwner").innerText = `Business Owner: ${data.business_owner}`;
-        document.getElementById("chatbotNumber").setAttribute("type", "visible");
-        document.getElementById("chatbotNumber").innerText = `Number: ${data.number}`;
+        if (chatbotDefault) {
+          document.getElementById("chatbotName").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotName").innerText = `${data.name}`;
+          document.getElementById("chatbotAvatar").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotAvatar").src = data.avatar_url;
+          document.getElementById("chatbotAge").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotAge").innerText = `${data.age}`;
+          document.getElementById("chatbotOrigin").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotOrigin").innerText = `${data.origin}`;
+          document.getElementById("chatbotDream").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotDream").innerText = `${data.dream}`;
+          document.getElementById("chatbotTone").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotTone").innerText = `${data.tone}`;
+          document.getElementById("chatbotDescription").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotDescription").innerText = `${data.description}`;
+          document.getElementById("chatbotExpertise").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotExpertise").innerText = `${data.expertise}`;
+          document.getElementById("chatbotBusinessOwner").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotBusinessOwner").innerText = `${data.business_owner}`;
+          document.getElementById("chatbotNumber").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotNumber").innerText = `${data.number}`;
+        } else {
+          document.getElementById("chatbotName").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotName").innerText = `Name: ${data.name}`;
+          document.getElementById("chatbotAvatar").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotAvatar").src = data.avatar_url;
+          document.getElementById("chatbotAge").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotAge").innerText = `Age: ${data.age}`;
+          document.getElementById("chatbotOrigin").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotOrigin").innerText = `Origin: ${data.origin}`;
+          document.getElementById("chatbotDream").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotDream").innerText = `Dream: ${data.dream}`;
+          document.getElementById("chatbotTone").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotTone").innerText = `Tone: ${data.tone}`;
+          document.getElementById("chatbotDescription").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotDescription").innerText = `Description: ${data.description}`;
+          document.getElementById("chatbotExpertise").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotExpertise").innerText = `Expertise: ${data.expertise}`;
+          document.getElementById("chatbotBusinessOwner").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotBusinessOwner").innerText = `Business Owner: ${data.business_owner}`;
+          document.getElementById("chatbotNumber").setAttribute("style", "display: inline;");
+          document.getElementById("chatbotNumber").innerText = `Number: ${data.number}`;
+        }
       } else {
 
            // show the form for custom AI Personality traits
@@ -170,13 +198,13 @@ document.getElementById("documentTitleDropdown").addEventListener("change", func
 
           // make all the other field invisible again to not see their label (Age, Dream...)
           document.getElementById("chatbotAge").setAttribute("style", "display: none;");
-          document.getElementById("chatbotOrigin").setAttribute("type", "hidden");
-          document.getElementById("chatbotDream").setAttribute("type", "hidden");
-          document.getElementById("chatbotTone").setAttribute("type", "hidden");
-          document.getElementById("chatbotDescription").setAttribute("type", "hidden");
-          document.getElementById("chatbotExpertise").setAttribute("type", "hidden");
-          document.getElementById("chatbotBusinessOwner").setAttribute("type", "hidden");
-          document.getElementById("chatbotNumber").setAttribute("type", "hidden");
+          document.getElementById("chatbotOrigin").setAttribute("style", "display: none;");
+          document.getElementById("chatbotDream").setAttribute("style", "display: none;");
+          document.getElementById("chatbotTone").setAttribute("style", "display: none;");
+          document.getElementById("chatbotDescription").setAttribute("style", "display: none;");
+          document.getElementById("chatbotExpertise").setAttribute("style", "display: none;");
+          document.getElementById("chatbotBusinessOwner").setAttribute("style", "display: none;");
+          document.getElementById("chatbotNumber").setAttribute("style", "display: none;");
         }
     })
     .catch(error => {
