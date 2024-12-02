@@ -6,31 +6,51 @@ document.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
 
     const messageInput = document.getElementById('message-input').value;
+    console.log("MessageInput: ", messageInput);
+    // straight away add the message sent by the user to the webui
+    appendMessage(chatContainer, messageInput, 'user');
 
-    // Determine if we should use default chatbot or custom fields
+    // Determine if we should use default chatbot or custom fields and if they exist
     let chatbotData = {};
-    if (document.getElementById('chatbotName')) {
+    const chatbotNameElem = document.getElementById('chatbotName') ? document.getElementById('chatbotName').value : '';
+    console.log("ChatbotNameElem: ", chatbotNameElem)
+    const chatbotDescriptionElem = document.getElementById('chatbotDescription') ? document.getElementById('chatbotDescription').value : '';
+    console.log("chatbotDescriptionElem: ", chatbotDescriptionElem)
+    const customchatbotNameElem = document.getElementById('customChatbotName') ? document.getElementById('customChatbotName').value : '';
+    console.log("customChatbotNameElem: ", customchatbotNameElem)
+    const customchatbotDescriptionElem = document.getElementById('customChatbotDescription') ? document.getElementById('customChatbotDescription').value : '';
+    console.log("customchatbotDescriptionElem: ", customchatbotDescriptionElem)
+
+    if (chatbotNameElem && chatbotDescriptionElem) {
       // Default chatbot details
       chatbotData = {
-        'chatbot_name': document.getElementById('chatbotName').value,
+        'chatbot_name': chatbotNameElem || '',
         'chatbot_age': document.getElementById('chatbotAge') ? document.getElementById('chatbotAge').value : '',
         'chatbot_origin': document.getElementById('chatbotOrigin') ? document.getElementById('chatbotOrigin').value : '',
         'chatbot_dream': document.getElementById('chatbotDream') ? document.getElementById('chatbotDream').value : '',
         'chatbot_tone': document.getElementById('chatbotTone') ? document.getElementById('chatbotTone').value : '',
-        'chatbot_description': document.getElementById('chatbotDescription') ? document.getElementById('chatbotDescription').value : '',
-        'chatbot_expertise': document.getElementById('chatbotExpertise') ? document.getElementById('chatbotExpertise').value : ''
+        'chatbot_description': chatbotDescriptionElem || '',
+        'chatbot_expertise': document.getElementById('chatbotExpertise') ? document.getElementById('chatbotExpertise').value : '',
       };
+      console.log("Chatbotdata default: ", chatbotData);
     } else {
+      console.log("missing chatbot name or description or both");
+    }
+
+    if (customchatbotNameElem && customchatbotDescriptionElem) {
       // Custom chatbot details
       chatbotData = {
-        'chatbot_name': document.getElementById('customChatbotName').value || '',
-        'chatbot_age': document.getElementById('customChatbotAge').value || '',
-        'chatbot_origin': document.getElementById('customChatbotOrigin').value || '',
-        'chatbot_dream': document.getElementById('customChatbotDream').value || '',
-        'chatbot_tone': document.getElementById('customChatbotTone').value || '',
-        'chatbot_description': document.getElementById('customChatbotDescription').value || '',
-        'chatbot_expertise': document.getElementById('customChatbotExpertise').value || ''
+        'chatbot_name': customchatbotNameElem || '',
+        'chatbot_age': document.getElementById('customChatbotAge') ? document.getElementById('customChatbotAge').value : '',
+        'chatbot_origin': document.getElementById('customChatbotOrigin') ? document.getElementById('customChatbotOrigin').value : '',
+        'chatbot_dream': document.getElementById('customChatbotDream') ? document.getElementById('customChatbotDream').value : '',
+        'chatbot_tone': document.getElementById('customChatbotTone') ? document.getElementById('customChatbotTone').value : '',
+        'chatbot_description': customchatbotDescriptionElem || '',
+        'chatbot_expertise': document.getElementById('customChatbotExpertise') ? document.getElementById('customChatbotExpertise').value : '',
       };
+      console.log("Chatbotdata from client sidebar form: ", chatbotData);
+    } else {
+      console.log("missing chatbot name or description or both");
     }
 
     // Prepare data for submission
@@ -40,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     console.log("Data to send", dataToSend);
+    console.log("Stringified data to send: ", JSON.stringify(dataToSend))
 
     // AJAX request to post message
     fetch('/clientchat/clientuserchat', {
@@ -52,32 +73,44 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(response => response.json())
     .then(data => {
-      // Append the user message and the bot response to the chat container
-      appendMessage(chatContainer, data.user_message, 'user');
+      // check what is inside data
+      console.log("data from ajax call received: ", data)    
+
+      // Append the bot response to the chat container
       appendMessage(chatContainer, data.bot_message, 'bot');
 
       // Scroll to the bottom after updating
       chatContainer.scrollTop = chatContainer.scrollHeight;
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => console.error(`Error: ${error}`));
   });
 });
 
 
 // chat side of webui appending messages to display those
+/* check this function as it doesn't use the argument `container` which is the `chatContainer` sent fromt he above function*/
 function appendMessage(container, message, sender) {
+  console.log("Container: ", container, "Message: ", message, "Sender: ", sender)
+  // creating the container space to receive messages
   const messageContainer = document.createElement('div');
   messageContainer.className = `message-container ${sender}-message`;
 
+  // creating the avatar space <img src:"" >
+  /* here we get the two urls sent by django view having the url of the chatbot/user images */
+  const userAvatarUrl = document.getElementById('user-avatar').dataset.avatarUrl;
+  const chatbotAvatarUrl = document.getElementById('chatbot-avatar').dataset.avatarUrl;
   const avatar = document.createElement('img');
   avatar.className = 'avatar';
-  avatar.src = sender === 'user' ? '{{ user_avatar }}' : '{{ chatbot_avatar }}';
+  //  those two `user/chatbot_avatar` are sent in the context of the template by the django view
+  avatar.src = sender === 'user' ? userAvatarUrl : chatbotAvatarUrl;
   avatar.alt = `${sender} avatar`;
 
+  // creating the message space <div class="">InnerHTML</div>
   const messageDiv = document.createElement('div');
   messageDiv.className = 'message';
   messageDiv.innerHTML = `<p>${message}</p>`;
 
+  // appending avatar and message to the container <div> adding <img> and <div> ></div>
   messageContainer.appendChild(avatar);
   messageContainer.appendChild(messageDiv);
   container.appendChild(messageContainer);
@@ -104,16 +137,7 @@ document.getElementById("documentTitleDropdown").addEventListener("change", func
     .then(data => {
       if (data) {
         console.log("data received from backend for front: ", data);
-        /* Outputs: { 
-             name: "test bot settings",
-             age: 39,
-             origin: "Shizuako",
-             dream: "dreaming of marseille",
-             tone: "happy",
-             description: "description of bot",
-             expertise: "expertise in testing",
-             avatar_url: "/media/uploads/chatbotsettings/happy_bot_XIUU1l1.png"
-         }*/
+
         document.getElementById("chatbotName").setAttribute("type", "visible");
         document.getElementById("chatbotName").innerText = `Name: ${data.name}`;
         document.getElementById("chatbotAvatar").setAttribute("style", "display: inline;");

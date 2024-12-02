@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User, Group
@@ -14,7 +15,7 @@ from users.models import ClientUser
 from .models import ChatMessages
 import memcache
 # just for returning test when debugging other route redirects
-#from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
 
 # Connecting to Memcached
@@ -39,20 +40,24 @@ def clientUserChat(request):
         mc.set(cache_key, list(chat_messages), time=3600)
 
     if request.method == 'POST':
+        print("REQUEST SEND BY AJAX: ", request.body)
+        data = json.loads(request.body)
+        print("Data send from javascript: ", data)
+        chatbot_name = data.get('chatbot_name')
+        chatbot_description = data.get('chatbot_description')
+
         form = ClientUserChatForm(request.POST)
         if form.is_valid():
+            # user message will be used for llm agents calls
             user_message = form.cleaned_data['content']
             chatbot_name = request.POST.get('chatbot_name')
             chatbot_description = request.POST.get('chatbot_description')
 
             # Check if required chatbot fields are missing
             if not chatbot_name or not chatbot_description:
-                return JsonResponse(
-                  {
-                    'error': 'Chatbot name and description are required.'
-                  },
-                  status=400
-                )
+                print("chatbot_name or chatbot_description missing.")
+                messages.error(request, "AI personality 'Name' and 'Description' are mandatory.")
+                return json({'error': 'Chatbot name and description are required.'})
 
             # Gather other chatbot fields
             chatbot_age = request.POST.get('chatbot_age', '')
@@ -106,10 +111,7 @@ def clientUserChat(request):
             bot_msg.save()
 
             # Return response to JavaScript
-            return JsonResponse({
-                'user_message': user_message,
-                'bot_message': bot_response_content
-            })
+            return json({'bot_message': bot_response_content})
 
     # Render initial form
     form = ClientUserChatForm()
@@ -130,7 +132,7 @@ def clientUserChat(request):
     context = {
         'form': form,
         'chat_messages': chat_messages,
-        'user_avatar': user.clientuser.picture.url if user.clientuser.picture else None,
+        'user_avatar': user.clientuser.picture.url if user.clientuser.picture else '/images/clientuser_dummy_hachiko.png',
         'chatbot_avatar': '/images/chatbot_dummy.png',
         'business_data': BusinessUserData.objects.all(),
         'default_chatbot': default_chatbot,

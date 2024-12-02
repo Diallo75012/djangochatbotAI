@@ -4,6 +4,10 @@
 
 {% block content %}
 <div class="chat-container">
+        <!-- Here we put hidden span fields for javascript to be able to fetch those urls coming from backend context view so that images can be shown with messages sent -->
+        <span id="user-avatar" data-avatar-url="{{ user_avatar }}" hidden></span>
+        <span id="chatbot-avatar" data-avatar-url="{{ chatbot_avatar }}" hidden></span>
+
 <!--    <div class="container mt-3"> -->
         <!-- Sidebar with Chatbot Details -->
         <div class="sidebar">
@@ -107,26 +111,6 @@
         <form id="message-form" method="post" class="message-form">
             {% csrf_token %}
             <input class="message-input" id="message-input" name="content" placeholder="Enter your message here..." value="{{ form.content.value|default_if_none:'' }}" required>
-            <!-- <input id="message-input" name="message" class="message-input" placeholder="Enter your message here..." required> -->
-            {% if default_chatbot %}
-              {% if default_chatbot.name %}
-                <input type="hidden" id="chatbotName" value="{{ default_chatbot.name }}">
-                <input type="hidden" id="chatbotAge" value="{{ default_chatbot.age }}">
-                <input type="hidden" id="chatbotOrigin" value="{{ default_chatbot.origin }}">
-                <input type="hidden" id="chatbotDream" value="{{ default_chatbot.dream }}">
-                <input type="hidden" id="chatbotTone" value="{{ default_chatbot.tone }}">
-                <input type="hidden" id="chatbotDescription" value="{{ default_chatbot.description }}">
-                <input type="hidden" id="chatbotExpertise" value="{{ default_chatbot.expertise }}">
-              {% endif %}
-            {% else %}
-                <input type="hidden" id="customchatbotName" value="{{ custom_name_value }}">
-                <input type="hidden" id="customchatbotAge" value="{{ custom_age_value }}">
-                <input type="hidden" id="customchatbotOrigin" value="{{ custom_origin_value }}">
-                <input type="hidden" id="customchatbotDream" value="{{ custom_dream_value }}">
-                <input type="hidden" id="customchatbotTone" value="{{ custom_tone_value }}">
-                <input type="hidden" id="customchatbotDescription" value="{{ custom_description_value }}">
-                <input type="hidden" id="customchatbotExpertise" value="{{ custom_expertise_value }}">
-            {% endif %}
             <button type="submit" class="btn btn-send">Send</button>
         </form>
     </div>
