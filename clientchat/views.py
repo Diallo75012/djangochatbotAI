@@ -43,81 +43,80 @@ def clientUserChat(request):
         print("REQUEST SEND BY AJAX: ", request.body)
         data = json.loads(request.body)
         print("Data send from javascript: ", data)
+        
+        # extract chatbot information
         chatbot_name = data.get('chatbot_name')
         chatbot_description = data.get('chatbot_description')
+        user_message = data.get('message')
+        # we need also the document_title for future llm call (RAG retrieval)
+        document_title = data.get('document_title')
 
-        form = ClientUserChatForm(request.POST)
-        if form.is_valid():
-            # user message will be used for llm agents calls
-            user_message = form.cleaned_data['content']
-            chatbot_name = request.POST.get('chatbot_name')
-            chatbot_description = request.POST.get('chatbot_description')
+        # Check if required chatbot fields are missing
+        if not chatbot_name or not chatbot_description:
+          print("chatbot_name or chatbot_description missing.")
+          messages.error(request, "AI personality 'Name' and 'Description' are mandatory.")
+          return json({'error': 'Chatbot name and description are required.'})
 
-            # Check if required chatbot fields are missing
-            if not chatbot_name or not chatbot_description:
-                print("chatbot_name or chatbot_description missing.")
-                messages.error(request, "AI personality 'Name' and 'Description' are mandatory.")
-                return json({'error': 'Chatbot name and description are required.'})
+        # Gather other chatbot fields
+        chatbot_age = data.get('chatbot_age', '')
+        chatbot_origin = data.get('chatbot_origin', '')
+        chatbot_dream = data.get('chatbot_dream', '')
+        chatbot_tone = data.get('chatbot_tone', '')
+        chatbot_expertise = data.get('chatbot_expertise', '')
 
-            # Gather other chatbot fields
-            chatbot_age = request.POST.get('chatbot_age', '')
-            chatbot_origin = request.POST.get('chatbot_origin', '')
-            chatbot_dream = request.POST.get('chatbot_dream', '')
-            chatbot_tone = request.POST.get('chatbot_tone', '')
-            chatbot_expertise = request.POST.get('chatbot_expertise', '')
+        # Create and save user message
+        user_chat_msg = ChatMessages.objects.create(
+          user=user,
+          sender_type='user',
+          nickname=user.clientuser.nickname,
+          content=user_message,
+          timestamp=timezone.now()
+        )
 
-            # Debugging information
-            print("User message:", user_message)
-            print(
-              "Chatbot details:", 
-                chatbot_name,
-                chatbot_age,
-                chatbot_origin,
-                chatbot_dream,
-                chatbot_tone,
-                chatbot_description,
-                chatbot_expertise
-            )
+        # Update chat messages in cache
+        chat_messages = list(chat_messages)
+        chat_messages.append(user_chat_msg)
+        mc.set(cache_key, chat_messages, time=36000)
 
-            # Create and save user message
-            chat_msg = ChatMessages.objects.create(
-                user=user,
-                sender_type='user',
-                nickname=user.clientuser.nickname,
-                content=user_message,
-                timestamp=timezone.now()
-            )
+        # Create a dummy response for now
+        bot_response_content = f"AI dummy response form backend: Yo! looks like we are connected now!"
+        bot_chat_msg = ChatMessages.objects.create(
+          user=user,
+          sender_type='bot',
+          nickname="ChatBot",
+          content=bot_response_content,
+          timestamp=timezone.now()
+        )
 
-            # Update chat messages in cache
-            chat_messages = list(chat_messages)
-            chat_messages.append(chat_msg)
-            mc.set(cache_key, chat_messages, time=36000)
+        # Update cache with bot response
+        chat_messages.append(bot_chat_msg)
+        mc.set(cache_key, chat_messages, time=36000)
 
-            # Create a dummy response for now
-            bot_response_content = f"Echo: {user_message}"
-            bot_msg = ChatMessages.objects.create(
-                user=user,
-                sender_type='bot',
-                nickname="ChatBot",
-                content=bot_response_content,
-                timestamp=timezone.now()
-            )
+        # Save bot/user message in the database
+        bot_chat_msg.save()
+        user_chat_msg
 
-            # Update cache with bot response
-            chat_messages.append(bot_msg)
-            mc.set(cache_key, chat_messages, time=36000)
+        # format the response
+        response_data = {
+          'bot_message': bot_response_content,
+        }
+        response_json = json.dumps(response_data)
 
-            # Save bot message in the database
-            bot_msg.save()
+        # Return response to JavaScript using HttpResponse 
+        # and not JsonResponse which will destroy the webui and just show the message
+        # we just want a nice message sent to the javascript frontend handler
+        return HttpResponse(response_json, content_type='application/json')
 
-            # Return response to JavaScript
-            return json({'bot_message': bot_response_content})
 
-    # Render initial form
-    form = ClientUserChatForm()
-
-    # get any default chatbot settings
-    business_data_first_document_title = BusinessUserData.objects.all().values_list('document_title', flat=True).order_by('-document_title').first()
+    # get a default chatbot settings (first in desc order)
+    business_data_first_document_title = BusinessUserData.objects.all().values_list(
+      'document_title', flat=True
+      ).order_by(
+        # `-` to have it in desc order
+        '-document_title'
+      ).first()
+    
+    # setup defaut_chatbot for webui sidebar if any
     try: 
       chatbot_name = BusinessUserData.objects.filter(document_title=business_data_first_document_title).values_list('chat_bot__name')[0][0]
       if chatbot_name:
@@ -129,12 +128,17 @@ def clientUserChat(request):
       print(f"Error while trying to get the chatbot name, probably no chatbot records: {e}")
       default_chatbot = ""
 
+    # get default avatar if nothing set
+    user_default_avatar = user.clientuser.picture.url if user.clientuser.picture else '/images/clientuser_dummy_hachiko.png'
+    chatbot_default_avatar = default_chatbot.avatar.url if default_chatbot.avatar else '/images/chatbot_dummy.png'
+    # get business data to use jinja fields
+    business_data = BusinessUserData.objects.all()
+
     context = {
-        'form': form,
         'chat_messages': chat_messages,
-        'user_avatar': user.clientuser.picture.url if user.clientuser.picture else '/images/clientuser_dummy_hachiko.png',
-        'chatbot_avatar': '/images/chatbot_dummy.png',
-        'business_data': BusinessUserData.objects.all(),
+        'user_avatar': user_default_avatar,
+        'chatbot_avatar': chatbot_default_avatar,
+        'business_data': business_data,
         'default_chatbot': default_chatbot,
     }
 

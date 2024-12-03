@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const customchatbotDescriptionElem = document.getElementById('customChatbotDescription') ? document.getElementById('customChatbotDescription').value : '';
     console.log("customchatbotDescriptionElem: ", customchatbotDescriptionElem)
 
+    // selected document_title
+    const selectedDocumentTitle = document.getElementById('documentTitleDropdown').value;
+    
     if (chatbotNameElem && chatbotDescriptionElem) {
       // Default chatbot details
       chatbotData = {
@@ -56,6 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Prepare data for submission
     const dataToSend = {
       'message': messageInput,
+      'document_title': selectedDocumentTitle,
       ...chatbotData
     };
 
