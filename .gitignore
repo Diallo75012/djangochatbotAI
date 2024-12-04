@@ -25,3 +25,10 @@ nginx
 nginx/
 nginx/*/**
 
+
+
+# Added by cargo
+/target
+*.so
+*.dll
+*.pyd

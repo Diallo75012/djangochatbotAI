@@ -1,4 +1,6 @@
 import json
+# import rust library her efor the moment but we might create a helper file with this inside or put it in common app so that all apps can call it from central point
+import rust_lib
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User, Group
@@ -43,7 +45,7 @@ def clientUserChat(request):
         print("REQUEST SEND BY AJAX: ", request.body)
         data = json.loads(request.body)
         print("Data send from javascript: ", data)
-        
+
         # extract chatbot information
         chatbot_name = data.get('chatbot_name')
         chatbot_description = data.get('chatbot_description')
@@ -79,6 +81,19 @@ def clientUserChat(request):
         mc.set(cache_key, chat_messages, time=36000)
 
         # Create a dummy response for now
+        # so here instead of dummy answer we will implement Rust LLM Call library
+        '''
+          - use all variables above to fill in a prompt. so we will need a `prompts.py` module on the side
+          - call LLMs like (boilerplate):
+           response = rust_lib.call_llm_api(
+             api_url=API_URL, # we will use env vars
+             api_key=API_KEY,
+             paylaod=<our prompts variable loaded with all necesary vars or default if those vars are empty>
+           )
+          - use the `response` to send it back to the webui
+          We will start small like that with a simple API call
+          before introducing the llm agents from a side module imported here
+        '''
         bot_response_content = f"AI dummy response form backend: Yo! looks like we are connected now!"
         bot_chat_msg = ChatMessages.objects.create(
           user=user,

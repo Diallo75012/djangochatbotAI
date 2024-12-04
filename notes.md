@@ -287,3 +287,51 @@ Use `.innerHtml` to get already populated html text field
 # eg. using Expertise field:
 document.getElementById('chatbotExpertise').innerText;
 ```
+
+# install rust side library that will be used by Django
+- here we trying to create a module that will be used by Python
+to enjoy using Rust for long lasting tasks and enjoy Rust performances
+
+```bash
+# 1) install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# 2) check version
+rustc --version
+# 2') update it (optional or if int he future need to update Rust)
+rustup update
+# 3) install maturin (will help setup Rust to be Python friendly)
+pip install maturin
+# 4) create a rust project
+maturin new --bindings pyo3 rust_lib
+cd rust_lib
+# 5) install rust extension-module to PyO3
+cargo add pyo3 --features "extension-module"
+# 6) open pyproject.toml and update it a bit adding:
+- in `[project]`:
+version = "<put version , i used same as in cargo.toml 0.1.0>"
+description = "<put a description here>"
+authors = [{name = "<name>", email = "<email>"}]
+- in `[tool.maturin]`:
+bindings = "pyo3"
+# 7) open Cargo.toml and add dependencies that will be needed like reqwest and more for llm calls
+# for HTTP requests to Groq or Ollama APIs...
+# for HTTP requests to Groq or Ollama APIs...
+reqwest = { "0.11", features = ["blocking"] }
+serde = { version = "1.0", feautres = ["derive"] }
+serde_json = "1.0"
+# 8) open src/lib_rs and put code there for Rust functions to be exportable from Rust and importable from Python
+do not forget the decorator: #[pyfunction] for any function defined and #[pymodule] for the bigger exporter wrapper
+# 9) install pkg-config and libssl-dev as openssl special version won't be found and it is better so that no need to set the env var everytime
+sudo apt-get install pkg-config libssl-dev
+sudo apt update
+**close terminal if any issue and run net command**
+# 10) need to build the rust module
+maturin develop
+# 11) then we can import the module using the name of the folder like
+import rust_lib 
+OR from rust_lib import <function name>
+# 12) the rust_lib should built and have a bigger size now:
+du -hs rust_lib
+623M	rust_lib
+```
+
