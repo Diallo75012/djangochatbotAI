@@ -1,5 +1,20 @@
 # ChatBoTAI 
 
+### personal note:
+I use ChatGPT as my tutor and superior who don't gatekeep information or how to do stuff.
+Why?
+- I believe that people who are nto using it the right way won't be needed in the workforce anymore.
+- I believe that we shouldn't at this time end of 2024 expect it to build an entire app from few prompts
+- I believe that we can talk with it to have optional solutions paths or views in order to decide quicker
+- I believe we can use it to improve our understanding of what we would have `stackoverflowed...` in the past
+- I believe that it can be used as well to make a profil of how we behaved in the project and help for retrospectives (projectwise and self ones)
+
+This is why I have created a forlder personal_retrospective that would summarize in an objective way what should be improved and what are the strengths.
+If you want to know me more about how I develop or think IT it is where you might want to go first.
+I have pivoted to IT in 2018. I have entrepreneur mind and I am having fun!
+I think in a very high `eagle` level to see everything from top as I believe that coming form other industries provide me an advantage to see problems and solutions in different way as usual. Even if I still need to learn. I believe that project management skills are top notch for future It workers if they want to stay in the field and not be eaten by AI.
+
+
 ## details
 This repository is for Businesses which need to just enter a set of question/answer in JSON format and create a custom ChatBot.
 Then Client can login and talk to that ChatBotAI which is using AI agents and RAG under the hood to answer to user with personality trait.

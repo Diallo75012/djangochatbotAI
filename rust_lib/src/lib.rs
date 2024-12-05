@@ -18,14 +18,36 @@ struct PayLoad {
 
 /// Utility function to log debug information into a log file for troubleshooting.
 fn log_debug_info(info: &str) {
-    let mut file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .append(true)
-        .open("rust_debug.log")
-        .unwrap();
-    writeln!(file, "{}", info).unwrap();
+
+  // Attempt to open the file with OpenOptions
+  let file = OpenOptions::new()
+    .create(true)   // Create the file if it doesn't exist
+    .write(true)    // Open for writing
+    .append(true)   // Append to the file if it exists
+    .open("rust_logs.log");
+
+  // Handle the result of attempting to open the file
+  match file {
+    Ok(mut log_file) => {
+      // If the file opened successfully, attempt to write to it
+      match writeln!(log_file, "{}", info) {
+        Ok(_) => {
+          // Successfully wrote to the file
+          println!("Successfully logged information.");
+        },
+        Err(err) => {
+          // Failed to write to the file
+          eprintln!("Failed to write to log file: {}", err);
+        },
+      }
+    },
+    Err(err) => {
+      // Failed to open the file
+      eprintln!("An error occurred while trying to open the log file: {}", err);
+    },
+  }
 }
+
 
 /// Function to call LLM API and return the raw response as a String.
 #[pyfunction]

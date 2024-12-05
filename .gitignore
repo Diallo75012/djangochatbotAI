@@ -32,3 +32,4 @@ nginx/*/**
 *.so
 *.dll
 *.pyd
+logs_rust/*

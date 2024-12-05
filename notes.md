@@ -235,16 +235,16 @@ I have pivoted a bit my idea in how the user will be able to select chatbots:
 - later maybe we would provide option for user to use default setting or to use his own chatbot customization.
 
 # Next
-- need to fix the logic and get those document_titles showing in the drop down as for the time being they are not
-- need to go step by step, after that, need to have the chatbotsetting so informnation being displayed on the sidebar or if no chatbotsettings associated with the document_title have an empty form for user to customize chatbot, if user sends message without customization, we need to handle that in the backend with default value for chatbot more neutral
-- need to have user message visible in the webui with picture next to it
-- need to have response andswer just under it with chatbot avatar if any or a default one that will be stored in static files just in case
+- [x] need to fix the logic and get those document_titles showing in the drop down as for the time being they are not
+- [x] need to go step by step, after that, need to have the chatbotsetting so information being displayed on the sidebar or if no chatbotsettings associated with the document_title have an empty form for user to customize chatbot, if user sends message without customization, we need to handle that in the backend with default value for chatbot more neutral
+- [x] need to have user message visible in the webui with picture next to it
+- [x] need to have response answer just under it with chatbot avatar if any or a default one that will be stored in static files just in case
 - then need to do all the unit tests
-- then need to start pluggin in AI
+- [x] then need to start pluggin in AI
 - then make those agents to interact with user
 - then add logging in the codebase
 - then create the other asynchrone workflow with agents analyzing logs
-- then replace caching with memecache isntead of native django cache or have that as fallback
+- [x] then replace caching with memecache isntead of native django cache or have that as fallback
 - then create a report or email stream for Devops/SRE team to have reports on the app logs
 - then dockerrize the app
 - have docker compose first and see if all works fine
@@ -382,4 +382,25 @@ eg: using `.to_string()`, `.to_vec()`...
 - Note3:
 as the code is compile and used by Pyo# we can't see the `println!'s` instead we can use `eprintln!` which prints to `stderr`
 **OR** maybe the best write to a filem this will be handy for our future llm agent that would analyze logs.
+
+# Next
+- then need to create new app for agents or have it in the `common` app as central point that all other apps can get agents from
+- then implement embedding for business data when recorded by business user (Use Rust and LangGraph)
+- then implement retrieval when user sends a message (Use Rust and LangGraph)
+- then need to do all the unit tests (I want to cry! hihihihihiiii, ChatGPT Agent Will work with me to streamline this quicker/more productive)
+- then make those agents to interact with user
+- then add logging in the codebase
+- then create the other asynchrone workflow with agents analyzing logs
+- then create a report or email stream for Devops/SRE team to have reports on the app logs
+- then dockerrize the app
+- have docker compose first and see if all works fine
+- then add nginx
+- then use https self-signed
+- then buy real domain and get letencrypt https
+- then use dockerhub or other to have the image of the app in a container repo
+- then create the terraform to have infrastructure for app in AWS
+- then use ansible playbook to setup the server at distance
+- then create a repository only for terraform so that we can start preparing the GitOps, organize ansible to be part of it, have github links to repository to get those dockerfiles or dockerhub image
+- then do a nice CI with code quality (Sonarqube), Gate (Sonarqube), image scanning (Trivy)
+- then have CD using ArgoCD server and the CI when good will update the listening repo image tags which will trigger ArgoCD to deploy new version of app. use githubaction if possible for CI..or have a jenkins server and jenkinsfiles in a repo for the flow.
 
