@@ -1,3 +1,4 @@
+import os
 import json
 # import rust library her efor the moment but we might create a helper file with this inside or put it in common app so that all apps can call it from central point
 import rust_lib
@@ -18,7 +19,10 @@ from .models import ChatMessages
 import memcache
 # just for returning test when debugging other route redirects
 from django.http import HttpResponse, JsonResponse
+from dotenv import load_dotenv
 
+
+load_dotenv()
 
 # Connecting to Memcached
 mc = memcache.Client(['127.0.0.1:11211'], debug=1)
@@ -51,7 +55,8 @@ def clientUserChat(request):
         chatbot_description = data.get('chatbot_description')
         user_message = data.get('message')
         # we need also the document_title for future llm call (RAG retrieval)
-        document_title = data.get('document_title')
+        document_title_id = data.get('document_title_id')
+        print("Document Title Id: ", document_title_id)
 
         # Check if required chatbot fields are missing
         if not chatbot_name or not chatbot_description:
@@ -94,7 +99,15 @@ def clientUserChat(request):
           We will start small like that with a simple API call
           before introducing the llm agents from a side module imported here
         '''
-        bot_response_content = f"AI dummy response form backend: Yo! looks like we are connected now!"
+        response = rust_lib.call_llm_api(
+          api_url = os.getenv("GROQ_API_URL"),
+          api_key = os.getenv("GROQ_API_KEY"),
+          message_content = user_message,
+          model = "mixtral-8x7b-32768",
+        )
+        # let replace the dummy message with the Rust fowarded API call response to test
+        bot_response_content = response #f"AI dummy response form backend: Yo! looks like we are connected now!"
+        print("Bot Response Content: ", bot_response_content)
         bot_chat_msg = ChatMessages.objects.create(
           user=user,
           sender_type='bot',

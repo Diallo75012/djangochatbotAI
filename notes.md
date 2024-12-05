@@ -335,3 +335,51 @@ du -hs rust_lib
 623M	rust_lib
 ```
 
+# Rust Code Structure
+- Note 1:
+When creating a struct to parse the response from API response, we need to match the schema of the response and those fields
+eg. response from `Groq`:
+```json
+{
+  "id": "chatcmpl-123",
+  "object": "chat.completion",
+  "created": 123456789,
+  "model": "gpt-3.5-turbo",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The biggest capital city in Asia is Beijing, China."
+      },
+      "finish_reason": "stop"
+    }
+  ]
+}
+```
+eg.:
+```rust
+#[derive(Serialize, Deserialize, Debug)]
+struct ApiResponse {
+    // The fields that Groq API returns
+    choices: Vec<Choice>,
+    // If the response has more fields, we need to include them here
+    // Optional fields can use `Option<T>` to indicate they may or may not be present.
+    #[serde(default)]
+    id: Option<String>,
+    #[serde(default)]
+    created: Option<u64>,
+    #[serde(default)]
+    model: Option<String>,
+}
+```
+- Note 2:
+When calling API make sure to take into consideration `Rust's lifetimes` as the variable sent would outlive the function `lifetime`
+if we send an `&` of the variable.
+Therefore, **variable sent need to be OWNED** to respect `Rust Lifetime`.
+eg: using `.to_string()`, `.to_vec()`...
+
+- Note3:
+as the code is compile and used by Pyo# we can't see the `println!'s` instead we can use `eprintln!` which prints to `stderr`
+**OR** maybe the best write to a filem this will be handy for our future llm agent that would analyze logs.
+

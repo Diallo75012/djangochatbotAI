@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Prepare data for submission
     const dataToSend = {
       'message': messageInput,
-      'document_title': selectedDocumentTitle,
+      'document_title_id': selectedDocumentTitle,
       ...chatbotData
     };
 
