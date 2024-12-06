@@ -19,6 +19,13 @@ I think in a very high `eagle` level to see everything from top as I believe tha
 This repository is for Businesses which need to just enter a set of question/answer in JSON format and create a custom ChatBot.
 Then Client can login and talk to that ChatBotAI which is using AI agents and RAG under the hood to answer to user with personality trait.
 
+## Value Proposition of this project:
+
+**Provide business-specific responses by retrieval.**
+**Unlike traditional methods that train an LLM on domain-specific data,**
+**my rely on the general knowledge of an LLM and supplement it with domain-specific answers.**
+**This can indeed significantly reduce complexity and costs while providing high-quality, accurate responses.**
+
 ## Stack to install and have ready
 Django
 Memcache

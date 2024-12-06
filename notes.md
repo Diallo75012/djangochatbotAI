@@ -404,3 +404,42 @@ as the code is compile and used by Pyo# we can't see the `println!'s` instead we
 - then do a nice CI with code quality (Sonarqube), Gate (Sonarqube), image scanning (Trivy)
 - then have CD using ArgoCD server and the CI when good will update the listening repo image tags which will trigger ArgoCD to deploy new version of app. use githubaction if possible for CI..or have a jenkins server and jenkinsfiles in a repo for the flow.
 
+# Value Proposition of this project:
+
+**Provide business-specific responses by retrieval.**
+**Unlike traditional methods that train an LLM on domain-specific data,**
+**my rely on the general knowledge of an LLM and supplement it with domain-specific answers.**
+**This can indeed significantly reduce complexity and costs while providing high-quality, accurate responses.**
+
+# Embedding and Retrieval flows
+
+**RETRIEVAL**
+- Client User Flow:
+  - Retrieval Flow:
+    -> user send a message >
+         perform a safety check on user query and if comply with law >
+           - if unsafe or not comply:
+               send warning to user and flag user in database and create logs for Devops/Security team 
+           - if safe, perform retrieval:
+               get document name, AI personality traits needed to perform retrieval and answer user >
+                  > x2 retrieval layers: at treshold 0.62 for valid answer and one more at 0.5 to have some other type of questions
+                 - if no data retrieved:
+                     perform internet search and tell user disclaimer that we didn't find answer in our business data
+                     but this what an internet search info about it. Then provide retrieved question form retrieved data at 0.5 if any
+                      get the questions to show user which kind of question we have and can answer as sample to inform user.
+
+
+**EMBEDDING**
+- Business User Flow:
+  - Embedding Flow:
+    -> enters data >
+         - data is store in database
+         - data is put in dataframe >
+           No Chunking needed (Cooool!) >
+             embedding document creation >
+               - document_title is embedding document name
+               - answer is embedded with question to have more context for retrieval
+                 and this will be one doc. This is why it is not need to Chunk, just get dataframe rows
+
+
+We will use python first until the workflow is dont and works fine and then, `We Rust it!`
