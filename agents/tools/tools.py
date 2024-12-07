@@ -75,7 +75,16 @@ def retrieve_answer(query: str, state: MessagesState = MessagesState()):
    vector_response_063 = answer_retriever(query, score063, top_n)
    print("JSON RESPONSE 063: ", json.dumps(vector_response_063, indent=2))
    vector_response_055 = answer_retriever(query, score055, top_n)
-   print("JSON RESPONSE 063: ", json.dumps(vector_response_063, indent=2))
+   print("JSON RESPONSE 055: ", json.dumps(vector_response_055, indent=2))
+
+  '''
+    # Returns
+    {
+      'question': vector['question'],
+      'answer': vector['answer'],
+      'score': vector['score'],
+    }
+  '''
 
    if vector_response_063:
      # update to vector_response

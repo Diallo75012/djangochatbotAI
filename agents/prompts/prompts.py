@@ -81,3 +81,10 @@ answer_to_user_prompt = {
     "input_variables": {}
   },
 }
+
+# this is not langchain prompt but just a dict where we get our disclaimers from
+disclaimer = {
+  "nothing": "There is no relevant answer to the question you just asked {user_initial_question}.",
+  "example_of_questions_having_answers": "This no relevant answer to the question you just asked {user_initial_question}.\n Those are examples of types of questions that we have answer for:\n{type_of_questions_example_show_to_user}.",
+  "answer_found_but_disclaim_accuracy": "To your question: {user_initial_question}, answer have been found: {answer_found_in_vector_db}"
+}

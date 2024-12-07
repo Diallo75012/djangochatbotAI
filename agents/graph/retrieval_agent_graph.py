@@ -8,12 +8,15 @@ from structured_output.structured_output import (
   analyse_user_query_safety_schema,
   summarize_user_to_clear_question_schema,
   retrieve_answer_schema,
+  answer_to_user_schema,
 )
 # prompts
 from prompts.prompts import (
   analyse_user_query_safety_prompt,
   summarize_user_to_clear_question_prompt,
   retrieve_answer_prompt,
+  answer_to_user_prompt,
+  disclaimer,
 )
 from typing import Dict, List, Any, Optional, Union
 # utils
@@ -21,6 +24,7 @@ from app_utils import (
   call_llm,
   prompt_creation,
   answer_retriever,
+  beautiful_graph_output,
 )
 # Tools
 from app_tools.app_tools import (
@@ -39,8 +43,6 @@ from llms.llms import (
 # for graph creation and management
 from langgraph.checkpoint import MemorySaver
 from langgraph.graph import END, StateGraph, MessagesState
-# display drawing of graph
-from IPython.display import Image, display
 # env vars
 from dotenv import load_dotenv, set_key
 
@@ -97,30 +99,32 @@ EXAMPLE OF USER INPUT ANALYSIS FLOW
 # NODE
 def analyse_user_query_safety(state: MessagesState, analyse_query_class = AnalyseUserInput):
   messages = state['messages']
+  this should be equal to os.getenv("USER_INITIAL_QUERY")
   last_message = messages[-1].content
-  set_key(".vars.env", "USER_INITIAL_QUERY", last_message)
-  load_dotenv(dotenv_path=".vars.env", override=True)
 
-  query = prompt_creation.prompt_creation(analyse_user_query_safety_prompt["human"], user_initial_query=last_message)
+  if last_message == os.getenv("USER_INITIAL_QUERY"):
+    query = prompt_creation.prompt_creation(analyse_user_query_safety_prompt["human"], user_initial_query=last_message)
+  else:
+    return {"messages": [{"role": "ai", "content": json.dumps({"error": "User query to start graph different from environment variable set for user query."})}]}
   
   # get the answer as we want it using structured output schema directly injected in prompt
   try:
     decision = call_llm.call_llm(query, analyse_user_query_safety_prompt["system"]["template"], schema, groq_llm_llama3_70b)
     if decision.safe.lower() == "true":
-      return {"messages": [{"role": "ai", "content": "safe"}]}
-    return {"messages": [{"role": "ai", "content": "unsafe"}]}
+      return {"messages": [{"role": "ai", "content": json.dumps({"safe":"safe"})}]}
+    return {"messages": [{"role": "ai", "content": json.dumps({"unsafe": "unsafe"})}]}
   except Exception as e:
-    return {"messages": [{"role": "ai", "content": f"An error occured while trying to analyze user input content: {e}"}]}
+    return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to analyze user input content: {e}"})}]}
 
 # CONDITIONAL EDGE
 def safe_or_not(state: MessagesState):
   messages = state['messages']
-  last_message = messages[-1].content
+  last_message = json.loads(messages[-1].content)
 
-  if last_message == "safe":
+  if "safe" in last_message:
     # go to question rephraser node
     return "summarize_user_to_clear_question"
-  elif last_message == "unsafe":
+  elif "unsafe" in last_message:
     # set env var for unsafe query and the Django view will take care of flagging user in the DB and creating log of that event for Devops/Security Team
     set_key(".var.env", "USER_QUERY_UNSAFE", "True")
     load_dotenv(dotenv_path=".vars.env", override=True)
@@ -131,11 +135,8 @@ def safe_or_not(state: MessagesState):
 
 # NODE
 def summarize_user_to_clear_question(state: MessagesState):
-  messages = state['messages']
-  # should be 'safe' or 'unsafe'
-  last_message = messages[-1].content
-  user_initial_query = os.getenv("USER_INITIAL_QUERY")
 
+  user_initial_query = os.getenv("USER_INITIAL_QUERY")
   query = prompt_creation.prompt_creation(summarize_user_to_clear_question_prompt["human"], user_initial_query=user_initial_query)
   
   # rephrase user intial query to a question
@@ -166,7 +167,8 @@ def retrieve_answer_agent(state: MessagesState):
   prompt = prompt_creation.prompt_creation(retrieve_answer_prompt["system"], query=rephrased_user_query, response_schema=retrieve_answer_prompt_schema) 
   response = llm_with_retrieve_answer_tool_choice.invoke(json.dumps(prompt))
   # return response for the answer_retriever tool to be able to perform the retrieval task from this llm binded tool choice
-  return {"messages": [response]}
+  # return {"messages": [response]}
+  return {"messages": [{"role": "ai", "content": json.dumps({"response": response})}]}
 
 # CONDITIONAL EDGE
 def retrieved_answer_or_not(state: MessagesState):
@@ -174,7 +176,30 @@ def retrieved_answer_or_not(state: MessagesState):
   Here we will capture the answer fromt he state which is success or error
   '''
   messages = state["messages"]
-  last_message = messages[-1].content
+  last_message = json.loads(messages[-1].content)["response"]
+  
+  '''
+    # Last Message Should Look Like Returns
+    {
+      "score_063": {
+        'question': vector['question'],
+        'answer': vector['answer'],
+        'score': vector['score'],
+      },
+      "score_055": {
+        'question': vector['question'],
+        'answer': vector['answer'],
+        'score': vector['score'],
+      },
+    }
+
+  OR
+
+    { 
+      "nothing": "nothing_in_cache_nor_vectordb"
+    }
+  '''
+
   
   if "vector_responses" or "nothing" in last_message:
     # we will evaluate 055 vs 063 in "answer_user" node
@@ -182,44 +207,118 @@ def retrieved_answer_or_not(state: MessagesState):
   elif "error_vector" in last_message:
     return "error_handler"
 
-'''
-EXAMPLE OF ERROR HANDLING IF THREE RESPONSE BACK EXIST LIKE AFTER API CALL
-'''
-# error handling
-def error_handler(state: MessagesState):
-  messages = state['messages']
-  last_three_messages_json = json.dumps([
-    {
-      "Error": "Find here the last 3 messages of code execution graph",
-      "message -3": messages[-3].content,
-      "message -2": messages[-2].content,
-      "message -1": messages[-1].content,
-    }
-  ])
-  
-  with open("./logs/conditional_edge_logs.log", "a", encoding="utf-8") as conditional:
-      conditional.write(f"\n\nerror handler called: {last_three_messages_json}\n\n")
-
-  return {"messages": [{"role": "ai", "content": f"An error occured, error message: {last_three_messages_json}"}]}
-
 # NODE
 def answer_to_user(state: MessagesState):
   messages = state['messages']
-  last_message = message[-1].content
+  
+  ## GETTNG ALL VARS NEEDED
+  # last_message is the vector retrieved or not from database
+  vector_db_answer = json.loads(messages[-1].content)
+  '''
+    # Last Message Should Look Like Returns. I hasn't change since retrieval (same)
+    {
+      # get answer from this one
+      "score_063": {
+        'question': vector['question'],
+        'answer': vector['answer'],
+        'score': vector['score'],
+      },
+      # get questions from this one if no 0063
+      "score_055": {
+        'question': vector['question'],
+        'answer': vector['answer'],
+        'score': vector['score'],
+      },
+    }
+
+  OR
+
+    { 
+      "nothing": "nothing_in_cache_nor_vectordb"
+    }
+  '''
   # end the graph if it is unsafe and set env var that app will fetch
   document_title = os.getenv("DOCUMENT_TITLE")
   # no need to make it JSON or Dict, we just will inject it in prompt at the right place
+  # so ai_personality_traits should be saved to env vars using jsom.dumps and here json.loads to get traits and use a function to inject in prompt with default value if some generic fields are missing.
   ai_personality_traits = os.getenv("AI_PERSONALITY_TRAITS")
   user_initial_query_rephrased = os.getenv("REPHRASED_USER_QUERY")
-  query = prompt_creation.prompt_creation(summarize_user_to_clear_question_prompt["human"], user_initial_query_rephrased=user_initial_query_rephrased)
+  query = prompt_creation.prompt_creation(answer_to_user_prompt["human"], user_initial_query_rephrased=user_initial_query_rephrased)
   
   '''
     Nedd here to add if statements to check last messsage what is the level of retrieval if any and call llm then to make the final answer
   '''
-  try:
-    answer = call_llm(query, answer_to_user_prompt, answer_to_user_schema, groq_llm_llama3_70b, partial_variables={"ai_personality_traits": ai_personality_traits})
-  except Exception as e:
-    return e
+
+  # FLOW ZERO ANSWER
+  if vector_db_answer["nothing"]:
+    disclaimer_nothing = disclaimer["nothing"].format(user_initial_question=user_initial_query_rephrased)
+    # get schema and inject variables in schema
+    schema_if_nothing = answer_to_user_schema["answer_if_nothing"]["response"].format(disclaimer=disclaimer_nothing)
+    # call llm and then stop graph returning final answer to user
+    try:
+      final_answer_nothing = call_llm.call_llm(query, answer_to_user_prompt["system"]["template"], schema_if_nothing, groq_llm_llama3_70b)
+      # get the 'response' from the schema
+      response_nothing = fianl_answer_nothing["response"]
+      return {"messages": [{"role": "ai", "content": json.dumps({"response_nothing": response_nothing})}]}
+    except Exception as e:
+      return {"messages": [{"role": "ai", "content": json.dumps({"error_reponse_nothing": e})}]}
+
+  # FLOW ANSWERING USER WITH ANSWER FOUND    
+  if vector_db_answer["score_063"]:
+    # get answer
+    answers_063 = vector_db_answer["score_063"]["answer"]
+    disclaimer_answer_found_but_disclaim_accuracy = disclaimer["answer_found_but_disclaim_accuracy"].format(
+      user_initial_question=user_initial_query_rephrased,
+      answer_found_in_vector_db=answer_063,
+    )
+    schema_if_063 = answer_to_user_schema["answer_if_063"]["response"].format(
+      answer_with_disclaimer=disclaimer_answer_found_but_disclaim_accuracy
+    )
+    try:
+      final_answer_063 = call_llm.call_llm(query, answer_to_user_prompt["system"]["template"], schema_if_063, groq_llm_llama3_70b)
+      # get the 'response' from the schema
+      response_063 = fianl_answer_063["response"]
+      return {"messages": [{"role": "ai", "content": json.dumps({"response_063": response_063})}]}
+    except Exception as e:
+      return {"messages": [{"role": "ai", "content": json.dumps({"error_reponse_063": e})}]}
+
+  # FLOW WITH SIMILAR QUESTION BUT NO ANSWER FOUND  
+  else:
+    if vector_db_answer["score_055"]:
+      # get question
+      question_055 = vector_db_answer["score_055"]["question"]
+      disclaimer_only_this_type_of_questions_example_show_to_user = disclaimer["example_of_questions_having_answers"].format(
+        user_initial_question=user_initial_query_rephrased,
+        type_of_questions_example_show_to_user=question_055,
+      )
+      schema_if_055 = answer_to_user_schema["answer_if_055"]["response"].format(
+        disclaimer=disclaimer_only_this_type_of_questions_example_show_to_user
+      )
+    try:
+      final_answer_055 = call_llm.call_llm(query, answer_to_user_prompt["system"]["template"], schema_if_055, groq_llm_llama3_70b)
+      # get the 'response' from the schema
+      response_063 = fianl_answer_055["response"]
+      return {"messages": [{"role": "ai", "content": json.dumps({"response_055": response_055})}]}
+    except Exception as e:
+      return {"messages": [{"role": "ai", "content": json.dumps({"error_reponse_055": e})}]} 
+
+# error handling
+def error_handler(state: MessagesState):
+  messages = state['messages']
+  
+  # Log the graph errors in a file
+  with open("./logs/retrieval_graph_logs.log", "a", encoding="utf-8") as conditional:
+      json_error_message = messages[-1].content
+      conditional.write(f"\n\n{json_error_message}\n\n")
+  '''
+    # we return in the state the message that is already in json.dumps form so that we can json.load in the views.py side
+    # where we are going to filter to see what kind of error has been returned,
+    # we might need to have a thread running for the graph running environment
+    # all error types returned by graph: "error", "error_vector", "error_reponse_nothing", "error_reponse_063", "error_reponse_055"
+  '''
+  
+  return {"messages": [{"role": "ai", "content": messages[-1].content}]}
+
 '''
 RETRIEVAL
 Client User Flow:
@@ -233,10 +332,9 @@ Client User Flow:
                   > x2 retrieval layers: at treshold 0.62 for valid answer and one more at 0.5 to have some other type of questions
                  - if no data retrieved:
                      tell user disclaimer that we didn't find answer in our business data
-                     but this what an internet search info about it. Then provide retrieved question form retrieved data at 0.5 if any
-                      get the questions to show user which kind of question we have and can answer as sample to inform user.
+                     Then provide retrieved question form retrieved data at 0.5 if any
+                     get the questions to show user which kind of question we have and can answer as sample to inform user.
 '''
-
 
 # Initialize states
 workflow = StateGraph(MessagesState)
@@ -265,9 +363,9 @@ workflow.add__conditonal_edge(
   retrieved_answer_or_not
 )
 
-
 # end
 workflow.add_edge("error_handler", END)
+workflow.add_edge("answer_to_user", END)
 
 # compile
 checkpointer = MemorySaver()
@@ -280,27 +378,31 @@ user_query_processing_stage = workflow.compile(checkpointer=checkpointer)
 HERE WE COULD LOG THE GRAPH EXECUTION STEPS
 TO GET MAYBE LATER SOMETHING LIKE VISUAL REPRESENTATION...
 '''
-def code_execution_graph(user_query):
-  print("Code execution Graph")
+def retrieval_agent_team(user_query):
+  print("Retrieval Agents AI Team Startooooooo !!!")
   print(f"Query: '{user_query}'")
+
   count = 0
   for step in user_query_processing_stage.stream(
     {"messages": [SystemMessage(content=user_query)]},
     config={"configurable": {"thread_id": int(os.getenv("THREAD_ID"))}}):
     count += 1
+
     if "messages" in step:
-      output = beautify_output(step['messages'][-1].content)
+      output = beautiful_graph_output.beautify_output(step['messages'][-1].content)
       print(f"Step {count}: {output}")
     else:
-      output = beautify_output(step)
+      output = beautiful_graph_output.beautify_output(step)
       print(f"Step {count}: {output}")
   
   # subgraph drawing
-  graph_image = code_execution_graph.get_graph().draw_png()
-  with open("code_execution_subgraph.png", "wb") as f:
+  graph_image = retrieval_agent_team.get_graph().draw_png()
+  with open("retrieval_agent_team.png", "wb") as f:
     f.write(graph_image)
+  
+  return user_query_processing_stage
 
 '''
 if __name__ == '__main__':
-  code_execution_graph(user_query)
+  retrieval_agent_team(user_query)
 '''
