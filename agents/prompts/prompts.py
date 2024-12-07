@@ -40,7 +40,7 @@ summarize_user_to_clear_question_prompt = {
 retrieve_answer_prompt = {
   "system": {
     "template": "You are an expert in in embedding retrieval from user query and use tool available to query the vector database. Use valid JSON str to answer. Strictly answer following the given schema.\nhere is the schema that you have to follow and make sure it is a proper JSON format and put it between ```markdown ``` tags to ease parsing of response and use only lower cases: {response_schema}\nHere is user query: {query}\n"
-    "input_variables": {}
+    "input_variables": {"query": "", "response_schema": "",}
   },
   "human": {
     "template": "{rephrased_question}"
@@ -69,12 +69,12 @@ perform_internet_search_prompt = {
 
 answer_to_user_prompt = {
   "system": {
-    "template": "You are an expert of personalized answer formulation for easy fun understanding. You will answer to user query using the information provided to formulate your answer, with these personality traits: {ai_personality}. Use valid JSON str to answer. Strictly answer following the given schema.\nhere is the schema that you have to follow and make sure it is a proper JSON format and put it between ```markdown ``` tags to ease parsing of response and use only lower cases: {response_schema}\nHere is user query: {query}\n"
-    "input_variables": {"ai_personality":"",}
+    "template": "You are an expert of personalized answer formulation for easy fun understanding. You will answer to user query using the information provided to formulate your answer, with these personality traits: {ai_personality_traits}. Use valid JSON str to answer. Strictly answer following the given schema.\nhere is the schema that you have to follow and make sure it is a proper JSON format and put it between ```markdown ``` tags to ease parsing of response and use only lower cases: {response_schema}\nHere is user query: {query}\n"
+    "input_variables": {}
   },
   "human": {
-    "template": "{user_initial_query}"
-    "input_variables": {"user_initial_query": "",}
+    "template": "{user_initial_query_rephrased}"
+    "input_variables": {"user_initial_query_rephrased": "",}
   },
   "ai": {
     "template": "",

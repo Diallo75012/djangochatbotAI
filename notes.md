@@ -424,7 +424,7 @@ as the code is compile and used by Pyo# we can't see the `println!'s` instead we
                get document name, AI personality traits needed to perform retrieval and answer user >
                   > x2 retrieval layers: at treshold 0.62 for valid answer and one more at 0.5 to have some other type of questions
                  - if no data retrieved:
-                     perform internet search and tell user disclaimer that we didn't find answer in our business data
+                     tell user disclaimer that we didn't find answer in our business data
                      but this what an internet search info about it. Then provide retrieved question form retrieved data at 0.5 if any
                       get the questions to show user which kind of question we have and can answer as sample to inform user.
 
@@ -443,3 +443,6 @@ as the code is compile and used by Pyo# we can't see the `println!'s` instead we
 
 
 We will use python first until the workflow is dont and works fine and then, `We Rust it!`
+
+Decision here initally was to perform internet search if we don't find andswer, but it goes against the purpose of the app which is just to get the answer from business data recorded otherwise get nothing. I have decided to not deliver `nothing` to client user but to provide a disclaimer that we haven't found an answer and that's we have answers to some other questions like ... and here I have decided to show one question or two which were clothe to be selected as valid answers but did fail the relevant score test. I will just just use a lower relevant socre to reveal some question that look like the one that user have asked for as example for user.
+So not internet search! (for this version/ for the moment...etc..)

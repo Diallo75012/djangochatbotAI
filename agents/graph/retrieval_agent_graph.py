@@ -20,9 +20,12 @@ from typing import Dict, List, Any, Optional, Union
 from app_utils import (
   call_llm,
   prompt_creation,
+  answer_retriever,
 )
 # Tools
 from app_tools.app_tools import (
+  llm_with_retrieve_answer_tool_choice,
+  tool_retrieve_answer_node,
 )
 # LLMs
 from llms.llms import (
@@ -98,7 +101,7 @@ def analyse_user_query_safety(state: MessagesState, analyse_query_class = Analys
   set_key(".vars.env", "USER_INITIAL_QUERY", last_message)
   load_dotenv(dotenv_path=".vars.env", override=True)
 
-  query = prompt_creation.prompt_creation(analyse_user_query_safety_prompt["human"], user_initial_query=user_initial_query)
+  query = prompt_creation.prompt_creation(analyse_user_query_safety_prompt["human"], user_initial_query=last_message)
   
   # get the answer as we want it using structured output schema directly injected in prompt
   try:
@@ -110,8 +113,8 @@ def analyse_user_query_safety(state: MessagesState, analyse_query_class = Analys
     return {"messages": [{"role": "ai", "content": f"An error occured while trying to analyze user input content: {e}"}]}
 
 # CONDITIONAL EDGE
-def safe_or_not(state: MessageState):
-  message = state['messages']
+def safe_or_not(state: MessagesState):
+  messages = state['messages']
   last_message = messages[-1].content
 
   if last_message == "safe":
@@ -127,8 +130,8 @@ def safe_or_not(state: MessageState):
     return "error_handler"
 
 # NODE
-def summarize_user_to_clear_question(state: MessageState):
-  message = state['messages']
+def summarize_user_to_clear_question(state: MessagesState):
+  messages = state['messages']
   # should be 'safe' or 'unsafe'
   last_message = messages[-1].content
   user_initial_query = os.getenv("USER_INITIAL_QUERY")
@@ -138,69 +141,46 @@ def summarize_user_to_clear_question(state: MessageState):
   # rephrase user intial query to a question
   try:
     clear_question = call_llm.call_llm(query, summarize_user_to_clear_question_prompt["system"]["template"], schema, groq_llm_llama3_70b)
-    return {"messages": [{"role": "ai", "content": json.dumps({"success": clear_question.question})}]}
+    if clear_question:
+      question = clear_question["question"]
+      set_key(".vars.env", "REPHRASED_USER_QUERY", question)
+      load_dotenv(dotenv_path=".vars.env", override=True)
+      return {"messages": [{"role": "ai", "content": json.dumps({"success": clear_question})}]}
+    return {"messages": [{"role": "ai", "content": json.dumps({"error": f"no question key found in response: {e}"})}]}
   except Exception as e:
     return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to rephrase user query: {e}"})}]}
 
 # CONDITIONAL EDGE
-def question_rephrased_or_error(state: MessageState):
-  message = state['messages']
+def question_rephrased_or_error(state: MessagesState):
+  messages = state['messages']
   # should be 'success' or 'error'
   last_message = messages[-1].content
 
   if 'success' in last_message:
-    return "retrieve_answer"
+    return "retrieve_answer_agent"
   return "error_handler"
 
 # NODE
-def retrieve_answer(state: MessageState):
-  set_key(".vars.env", "USER_INITIAL_QUERY", last_message)
-  load_dotenv(dotenv_path=".vars.env", override=True)
+def retrieve_answer_agent(state: MessagesState):
+  rephrased_user_query = os.getenv("REPHRASED_USER_QUERY")
+  prompt = prompt_creation.prompt_creation(retrieve_answer_prompt["system"], query=rephrased_user_query, response_schema=retrieve_answer_prompt_schema) 
+  response = llm_with_retrieve_answer_tool_choice.invoke(json.dumps(prompt))
+  # return response for the answer_retriever tool to be able to perform the retrieval task from this llm binded tool choice
+  return {"messages": [response]}
 
-   # vars
-    messages = state['messages']
-    last_message = messages[-1].content
-    table_name: str = os.getenv("TABLE_NAME")
-    query: str = last_message
-    score: float = float(os.getenv("SCORE"))
-    top_n: int = int(os.getenv("TOP_N"))
-
-      try:
-        # returns List[Dict]
-        cached_response = fetch_cached_response_by_hash(query)
-        if cached_response:
-          #return {"exact_match_search_response_from_cache": cached_response}
-          return {"messages": [{"role": "ai", "content": f"success_hash: {cached_response}"}]}
-      except Exception as e:
-        print(f"An error occured while trying to fetch cached response by hash: {e}")
-        return {"messages": [{"role": "ai", "content": f"error_hash: An error occured while trying to fetch cached response by hash: {e}"}]}
-
-
-
-      # Perform vector search with score if semantic search is not relevant
-      try:
-          response = answer_retriever(table_name, query, score, top_n)
-  print("JSON RESPONSE: ", json.dumps(response, indent=4))
-
-        print("Cache had nothing, therefore, performing vectordb search, response: ", vector_response)
-        if vector_response:
-            # Cache the new response with TTL
-            try:
-              """
-              HERE CACHE THE RESPONSE WITH THE QUESTION IN THE USER INDEX OF THE CACHE
-              """
-              return {"messages": [{"role": "ai", "content": f"success_vector_retrieved_and_cached: {vector_response}"}]}
-            except Exception as e:
-              return {"messages": [{"role": "ai", "content": f"error_vector_retrieved_and_cached: An error occured while trying to cache the vector search response: {e}"}]}
-            #return {"vector_search_response_after_cache_failed_to_find": vector_response}
-      except Exception as e:
-        print(f"An error occured while trying to perform vectordb search query {e}")
-        return {"messages": [{"role": "ai", "content": f"error_vector: An error occured while trying to perform vectordb search query: {e}"}]}
-    
-    # If no relevant result found, return a default response, and perform maybe after that an internet search and cache the query and the response
-    return {"messages": [{"role": "ai", "content": f"nothing_in_cache_nor_vectordb: {query}."}]}
-
-
+# CONDITIONAL EDGE
+def retrieved_answer_or_not(state: MessagesState):
+  '''
+  Here we will capture the answer fromt he state which is success or error
+  '''
+  messages = state["messages"]
+  last_message = messages[-1].content
+  
+  if "vector_responses" or "nothing" in last_message:
+    # we will evaluate 055 vs 063 in "answer_user" node
+    return "answer_to_user"
+  elif "error_vector" in last_message:
+    return "error_handler"
 
 '''
 EXAMPLE OF ERROR HANDLING IF THREE RESPONSE BACK EXIST LIKE AFTER API CALL
@@ -222,46 +202,24 @@ def error_handler(state: MessagesState):
 
   return {"messages": [{"role": "ai", "content": f"An error occured, error message: {last_three_messages_json}"}]}
 
-
-'''
-EXAMPLE FUNCTION CALLING WITH SCHEMA
-'''
-# judging documentation created agent
-def documentation_steps_evaluator_and_doc_judge(state: MessagesState, apis = apis, code_doc_eval_class = CodeDocumentationEvaluation):
-  """
-    Will judge the documentation and return 'rewrite' to rewrite the documentation or 'generate' to start generating the script
-  """
-  # documentation written by agent
-  messages = state["messages"]
-  documentation = messages[-1].content
-  # user inital query
-  user_initial_query = os.getenv("USER_INITIAL_QUERY")
-  # api chosen to satisfy query
-  api_choice = os.getenv("API_CHOICE")
-  # links for api calls for each apis existing in our choices of apis
-  apis_links = apis
+# NODE
+def answer_to_user(state: MessagesState):
+  messages = state['messages']
+  last_message = message[-1].content
+  # end the graph if it is unsafe and set env var that app will fetch
+  document_title = os.getenv("DOCUMENT_TITLE")
+  # no need to make it JSON or Dict, we just will inject it in prompt at the right place
+  ai_personality_traits = os.getenv("AI_PERSONALITY_TRAITS")
+  user_initial_query_rephrased = os.getenv("REPHRASED_USER_QUERY")
+  query = prompt_creation.prompt_creation(summarize_user_to_clear_question_prompt["human"], user_initial_query_rephrased=user_initial_query_rephrased)
   
-  # we need to fill this template with the input variables to create the query form 'human' side of the rpompt template
-  query = prompt_creation(rewrite_or_create_api_code_script_prompt["human"], documentation=documentation, user_initial_query=user_initial_query, api_choice=api_choice, apis_links=apis_links)
-  # get the answer as we want it using structured output
+  '''
+    Nedd here to add if statements to check last messsage what is the level of retrieval if any and call llm then to make the final answer
+  '''
   try:
-
-    decision = call_llm(query, rewrite_or_create_api_code_script_prompt["system"]["template"], schema, groq_llm_llama3_70b)
-
-    if decision["decision"] == "rewrite":
-      print("DECISION: rewrite")
-      return {"messages": [{"role": "ai", "content": json.dumps({"disagree":decision})}]} # use spliting technique to get what is wanted 
-    elif decision["decision"] == "generate":
-      print("DECISION: generate")
-      return {"messages": [{"role": "ai", "content": json.dumps({"success":"generate"})}]}
-    else:
-      print("DECISION: error")
-      return {"messages": [{"role": "ai", "content": json.dumps({"error":decision})}]}
+    answer = call_llm(query, answer_to_user_prompt, answer_to_user_schema, groq_llm_llama3_70b, partial_variables={"ai_personality_traits": ai_personality_traits})
   except Exception as e:
-    print("Exception Triggered")
-    return {"messages": [{"role": "ai", "content": json.dumps({"error":e})}]} 
-
-
+    return e
 '''
 RETRIEVAL
 Client User Flow:
@@ -274,14 +232,11 @@ Client User Flow:
                get document name, AI personality traits needed to perform retrieval and answer user >
                   > x2 retrieval layers: at treshold 0.62 for valid answer and one more at 0.5 to have some other type of questions
                  - if no data retrieved:
-                     perform internet search and tell user disclaimer that we didn't find answer in our business data
+                     tell user disclaimer that we didn't find answer in our business data
                      but this what an internet search info about it. Then provide retrieved question form retrieved data at 0.5 if any
                       get the questions to show user which kind of question we have and can answer as sample to inform user.
 '''
-    # end the graph if it is unsafe and set env var that app will fetch
-    document_title = os.getenv("DOCUMENT_TITLE")
-    # no need to make it JSON or Dict, we just will inject it in prompt at the right place
-    ai_personality_trait = os.getenv("AI_PERSONALITY_TRAIT")
+
 
 # Initialize states
 workflow = StateGraph(MessagesState)
@@ -290,7 +245,9 @@ workflow = StateGraph(MessagesState)
 workflow.add_node("error_handler", error_handler)
 workflow.add_node("analyse_user_query_safety", analyse_user_query_safety)
 workflow.add_node("summarize_user_to_clear_question", summarize_user_to_clear_question)
-workflow.add_node("retrieve_answer")
+workflow.add_node("retrieve_answer_agent")
+workflow.add_node("tool_retrieve_answer_node", tool_retrieve_answer_node)
+worklfow.add_node("answer_to_user", answer_to_user)
 
 # edges
 workflow.set_entry_point("analyse_user_query_safety")
@@ -302,18 +259,12 @@ workflow.add_conditional_edges(
   "summarize_user_to_clear_question",
   question_rephrased_or_error
 )
-
-
-# tool edges
-workflow.add_edge("tool_api_choose_agent", "tool_agent_decide_which_api_node")
-# edges
-workflow.add_edge("tool_agent_decide_which_api_node", "find_documentation_online_agent")
-workflow.add_edge("find_documentation_online_agent", "tool_search_node")
-workflow.add_edge("tool_search_node", "documentation_writer")
-workflow.add_conditional_edges(
-  "documentation_writer",
-  evaluate_doc_or_error
+workflow.add_edge("retrieve_answer_agent", "tool_retrieve_answer_node")
+workflow.add__conditonal_edge(
+  "tool_retrieve_answer_node", 
+  retrieved_answer_or_not
 )
+
 
 # end
 workflow.add_edge("error_handler", END)

@@ -55,13 +55,14 @@ def prompt_creation(target_prompt_human_system_or_ai: Dict[str, Any], **kwargs: 
     #    input_variables=[]
     #)
 
-def llm_call(query: str, prompt_template_part: str, schema: str, llm: ChatGroq) -> Dict:
+def call_llm(query: str, prompt_template_part: str, schema: str, llm: ChatGroq, partial_variables={}) -> Dict:
 
 
   prompt = PromptTemplate(
     template=prompt_template_part,
     input_variables=["query", "response_schema"],
-    partial_variables={},
+    # this has to be a dict
+    partial_variables=partial_variables,
   )
   print("Prompt before call structured output: ", prompt)
 
@@ -75,7 +76,7 @@ def llm_call(query: str, prompt_template_part: str, schema: str, llm: ChatGroq) 
       print(" '```markdown' in response")
       # parse response and clean it to limit errors of not valid json error when transforming to dictionary
       response_parsed = response.content.split("```")[1].strip("markdown").strip().replace("`", "")
- 
+
       # 1. Replace escaped underscores first to avoid double-replacing backslashes.
       response_parsed = response_parsed.replace("\\_", "_")
       print("Parsed response underscores: ", response_parsed)

@@ -10,7 +10,7 @@ from langchain_community.tools import (
   DuckDuckGoSearchRun,
   DuckDuckGoSearchResults
 )
-from llms.llms import (
+from agents.llms.llms import (
   groq_llm_mixtral_7b,
   groq_llm_llama3_8b,
   groq_llm_llama3_8b_tool_use,
@@ -18,9 +18,6 @@ from llms.llms import (
   groq_llm_llama3_70b_tool_use,
   groq_llm_gemma_7b,
 )
-# DOCKER REMOTE CODE EXECUTION
-# eg.: print(run_script_in_docker("test_dockerfile", "./app.py"))
-# from docker_agent.execution_of_agent_in_docker_script import run_script_in_docker # returns `Tuple[str, str]` stdout,stderr
 from dotenv import load_dotenv
 
 
@@ -50,5 +47,56 @@ tool_search_node = ToolNode([search])
 llm_with_internet_search_tool = groq_llm_llama3_70b_tool_use.bind_tools([search])
 
 """
-NEED TOOL TO PERFORM RETRIEVAL OF DATA
+TOOL TO PERFORM RETRIEVAL OF DATA
 """
+# retrieval tool
+@tool
+def retrieve_answer(query: str, state: MessagesState = MessagesState()):
+  """
+  Retrieves answer best answer from user query
+
+  Parameter:
+  query: str = user question
+
+  returns:
+  retrieved answer for that specific user question
+  """
+
+  # vars
+  query: str = os.getenv("REPHRASED_USER_QUERY")
+  # we will perform two retrieval with different scores
+  score063: float = float(os.getenv("SCORE064"))
+  score055: float = float(os.getenv("SCORE055"))
+  top_n: int = int(os.getenv("TOP_N"))
+  vector_responses: dict = {}
+
+ # Perform vector search with score if semantic search is not relevant
+ try:
+   vector_response_063 = answer_retriever(query, score063, top_n)
+   print("JSON RESPONSE 063: ", json.dumps(vector_response_063, indent=2))
+   vector_response_055 = answer_retriever(query, score055, top_n)
+   print("JSON RESPONSE 063: ", json.dumps(vector_response_063, indent=2))
+
+   if vector_response_063:
+     # update to vector_response
+     vector_responses["score_063"] = vector_response_063
+   if vector_response_055:
+     # update to vector_response
+     vector_responses["score_055"] = vector_response_055
+   # here in conditional adge we will look for "vector_responses" key like
+   return {"messages": [{"role": "ai", "content": json.dumps(vector_responses)}]}
+  except Exception as e:
+    print(f"An error occured while trying to perform vectordb search query {e}")
+    return {"messages": [{"role": "ai", "content": json.dumps({"error_vector": f"An error occured while trying to perform vectordb search query: {e}"})}]}
+
+  # If no relevant result found, return a default response, and perform maybe after that an internet search and cache the query and the response
+  return {"messages": [{"role": "ai", "content": json.dumps({"nothing": "nothing_in_cache_nor_vectordb"})}]}
+
+
+####################################
+### THIS TO BE USED AND EXPORTED ###
+####################################
+# retrieve_answer tool node
+tool_retrieve_answer_node = ToolNode([retrieve_answer])
+# LLMs WITH BINDED TOOLS
+llm_with_retrieve_answer_tool_choice = groq_llm_llama3_70b_tool_use.bind_tools([retrieve_answer])
