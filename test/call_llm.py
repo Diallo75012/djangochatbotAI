@@ -18,7 +18,7 @@ from langchain.prompts import (
   AIMessagePromptTemplate
 )
 # to run next graphs
-from agents.llms.llms import (
+from llms import (
   groq_llm_mixtral_7b,
   groq_llm_llama3_8b,
   groq_llm_llama3_8b_tool_use,
@@ -31,8 +31,8 @@ from dotenv import load_dotenv, set_key
 
 
 # load env vars
-load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path=".vars", override=True)
+load_dotenv(dotenv_path='../.env', override=False)
+load_dotenv(dotenv_path="../.vars", override=True)
 
 # creation of prompts
 def prompt_creation(target_prompt_human_system_or_ai: Dict[str, Any], **kwargs: Any) -> str: #-> PromptTemplate:

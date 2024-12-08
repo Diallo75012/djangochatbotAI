@@ -446,3 +446,30 @@ We will use python first until the workflow is dont and works fine and then, `We
 
 Decision here initally was to perform internet search if we don't find andswer, but it goes against the purpose of the app which is just to get the answer from business data recorded otherwise get nothing. I have decided to not deliver `nothing` to client user but to provide a disclaimer that we haven't found an answer and that's we have answers to some other questions like ... and here I have decided to show one question or two which were clothe to be selected as valid answers but did fail the relevant score test. I will just just use a lower relevant socre to reveal some question that look like the one that user have asked for as example for user.
 So not internet search! (for this version/ for the moment...etc..)
+
+# Embeddings and retrieval
+We will use the `document titles` to create the `collections` of data embedded:
+- Business user will be storing data and `embedding` it with that `document title` as `collection`
+- Client user will be selecting on the webui the `document_title` from side bar dropdown and this will be the targeted `collection` to perform `retrieval` 
+
+# Ollama issues and embeddings
+```bash
+# install command
+curl -fsSL https://ollama.com/install.sh | sh
+```
+- `OllamaEmbeddings` class deprecated if imported from langchain community:
+  - need to install: `pip install -U langchain-ollama` and use `from langchain-ollama import OllamaEmbeddings`
+  - The new place of import is now `from langchain-ollama` and not langchain community
+  - the class `OllamaEmbeddings` have changed and not supporting temperature as parameter, so i got rid of it (was at 0.1)
+
+# to be able to draw agent workflow
+```bash
+sudo apt-get update
+sudo apt-get install graphviz graphviz-dev
+pip install pygraphviz
+```
+- And, make sure that the `get_graph()` method is called on the object created holding the workflow (`workflow.compile(checkpointer=checkpointer)`)
+ 
+
+# Next:
+- make the full workflow of embedding data when business user enter new records (create/update) and also to delete embedding collection when business user deletes data

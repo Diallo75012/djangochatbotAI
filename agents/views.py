@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from app_utils import (
-  custom_chunk_and_embed_to_vectordb.py,
-  is_path_or_text.py,
-  process_query.py,
+from agents.app_utils import (
+  custom_chunk_and_embed_to_vectordb,
+  is_path_or_text,
+  process_query,
   retrieve_answer,
 )
-from graph import retrieval_agent_graph
+from agents.graph import retrieval_agent_graph
 from dotenv import load_dotenv
 
 # load env vars

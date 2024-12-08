@@ -10,7 +10,7 @@ from langchain_community.tools import (
   DuckDuckGoSearchRun,
   DuckDuckGoSearchResults
 )
-from agents.llms.llms import (
+from llms import (
   groq_llm_mixtral_7b,
   groq_llm_llama3_8b,
   groq_llm_llama3_8b_tool_use,
@@ -18,13 +18,13 @@ from agents.llms.llms import (
   groq_llm_llama3_70b_tool_use,
   groq_llm_gemma_7b,
 )
-from agents.app_utils import retrieve_answer
+import retrieve_answer
 from dotenv import load_dotenv
 
 
 # load env vars
-load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path=".vars", override=True)
+load_dotenv(dotenv_path='../.env', override=False)
+load_dotenv(dotenv_path="../.vars", override=True)
 
 
 # TOOLS

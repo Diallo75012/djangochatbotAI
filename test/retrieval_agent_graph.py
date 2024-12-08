@@ -3,13 +3,13 @@ import json
 # for typing func parameters and outputs and states
 from typing import Dict, List, Tuple, Any, Optional, Union
 # structured output
-from agents.structured_output.structured_output import (
+from structured_output import (
   analyse_user_query_safety_schema,
   summarize_user_to_clear_question_schema,
   answer_to_user_schema,
 )
 # prompts
-from agents.prompts.prompts import (
+from prompts import (
   analyse_user_query_safety_prompt,
   summarize_user_to_clear_question_prompt,
   retrieve_answer_prompt,
@@ -17,18 +17,14 @@ from agents.prompts.prompts import (
   disclaimer,
 )
 # utils
-from agents.app_utils import (
-  call_llm,
-  prompt_creation,
-  beautiful_graph_output,
-)
+import call_llm, prompt_creation, beautiful_graph_output
 # Tools
-from agents.tools.tools import (
+from tools import (
   llm_with_retrieve_answer_tool_choice,
   tool_retrieve_answer_node,
 )
 # LLMs
-from agents.llms.llms import (
+from llms import (
   groq_llm_mixtral_7b,
   groq_llm_llama3_8b,
   groq_llm_llama3_8b_tool_use,
@@ -47,8 +43,8 @@ from dotenv import load_dotenv, set_key
 
 
 # load env vars
-load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path=".vars.env", override=True)
+load_dotenv(dotenv_path='../.env', override=False)
+load_dotenv(dotenv_path="../.vars.env", override=True)
 
 # Helper functions
 def message_to_dict(message):
@@ -308,7 +304,7 @@ def error_handler(state: MessagesState):
   messages = state['messages']
   
   # Log the graph errors in a file
-  with open("./logs/retrieval_graph_logs.log", "a", encoding="utf-8") as conditional:
+  with open("../logs/retrieval_graph_logs.log", "a", encoding="utf-8") as conditional:
       json_error_message = messages[-1].content
       conditional.write(f"\n\n{json_error_message}\n\n")
   '''
@@ -370,7 +366,7 @@ workflow.add_edge("answer_to_user", END)
 
 # compile
 checkpointer = MemorySaver()
-c = workflow.compile(checkpointer=checkpointer)
+user_query_processing_stage = workflow.compile(checkpointer=checkpointer)
 
 ###############################
 ## GRAPH CODE LOGIC ABOVE IT ##
@@ -398,9 +394,9 @@ def retrieval_agent_team(user_query):
       output = beautiful_graph_output.beautify_output(step)
       print(f"Step {count}: {output}")
       final_output = json.dumps(step)
-  
+
   # subgraph drawing
-  graph_image = workflow.compile(checkpointer=checkpointer).get_graph().draw_png()
+  graph_image = user_query_processing_stage.get_graph().draw_png()
   with open("retrieval_agent_team.png", "wb") as f:
     f.write(graph_image)
 
@@ -417,7 +413,7 @@ def retrieval_agent_team(user_query):
 
 
 if __name__ == '__main__':
-
+  import json
   load_dotenv()
   user_query = os.getenv("USER_INITIAL_QUERY")
   retrieval_agent_team(user_query)

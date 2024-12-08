@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 
 #### UTILITY FUNCTIONS & CONF. VARS
 # load env vars
-load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path=".vars", override=True)
+load_dotenv(dotenv_path='../.env', override=False)
+load_dotenv(dotenv_path="../.vars", override=True)
 
 # Use Ollama to create embeddings
 # in the OllamaEmbeddings class, temperature parameter is not supported anymore

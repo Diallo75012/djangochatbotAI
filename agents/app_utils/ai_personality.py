@@ -1,4 +1,5 @@
-from dotenv import load_dotenv()
+from dotenv import load_dotenv
+from typing import Dict, List, Tuple, Any, Optional
 
 
 # load env vars
