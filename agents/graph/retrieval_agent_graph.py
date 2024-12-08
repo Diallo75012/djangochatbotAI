@@ -209,6 +209,10 @@ def retrieved_answer_or_not(state: MessagesState):
 
 # NODE
 def answer_to_user(state: MessagesState):
+
+  '''
+    Different tyoes of answers at the end graph: "response_nothing", "response_063", "response_055"
+  '''
   messages = state['messages']
   
   ## GETTNG ALL VARS NEEDED
@@ -237,8 +241,6 @@ def answer_to_user(state: MessagesState):
       "nothing": "nothing_in_cache_nor_vectordb"
     }
   '''
-  # end the graph if it is unsafe and set env var that app will fetch
-  document_title = os.getenv("DOCUMENT_TITLE")
   # no need to make it JSON or Dict, we just will inject it in prompt at the right place
   # so ai_personality_traits should be saved to env vars using jsom.dumps and here json.loads to get traits and use a function to inject in prompt with default value if some generic fields are missing.
   ai_personality_traits = os.getenv("AI_PERSONALITY_TRAITS")
@@ -261,7 +263,7 @@ def answer_to_user(state: MessagesState):
       response_nothing = fianl_answer_nothing["response"]
       return {"messages": [{"role": "ai", "content": json.dumps({"response_nothing": response_nothing})}]}
     except Exception as e:
-      return {"messages": [{"role": "ai", "content": json.dumps({"error_reponse_nothing": e})}]}
+      return {"messages": [{"role": "ai", "content": json.dumps({"error_response_nothing": e})}]}
 
   # FLOW ANSWERING USER WITH ANSWER FOUND    
   if vector_db_answer["score_063"]:
@@ -280,7 +282,7 @@ def answer_to_user(state: MessagesState):
       response_063 = fianl_answer_063["response"]
       return {"messages": [{"role": "ai", "content": json.dumps({"response_063": response_063})}]}
     except Exception as e:
-      return {"messages": [{"role": "ai", "content": json.dumps({"error_reponse_063": e})}]}
+      return {"messages": [{"role": "ai", "content": json.dumps({"error_response_063": e})}]}
 
   # FLOW WITH SIMILAR QUESTION BUT NO ANSWER FOUND  
   else:
@@ -300,7 +302,7 @@ def answer_to_user(state: MessagesState):
       response_063 = fianl_answer_055["response"]
       return {"messages": [{"role": "ai", "content": json.dumps({"response_055": response_055})}]}
     except Exception as e:
-      return {"messages": [{"role": "ai", "content": json.dumps({"error_reponse_055": e})}]} 
+      return {"messages": [{"role": "ai", "content": json.dumps({"error_response_055": e})}]} 
 
 # error handling
 def error_handler(state: MessagesState):
@@ -381,6 +383,7 @@ TO GET MAYBE LATER SOMETHING LIKE VISUAL REPRESENTATION...
 def retrieval_agent_team(user_query):
   print("Retrieval Agents AI Team Startooooooo !!!")
   print(f"Query: '{user_query}'")
+  final-output = None
 
   count = 0
   for step in user_query_processing_stage.stream(
@@ -399,8 +402,17 @@ def retrieval_agent_team(user_query):
   graph_image = retrieval_agent_team.get_graph().draw_png()
   with open("retrieval_agent_team.png", "wb") as f:
     f.write(graph_image)
-  
-  return user_query_processing_stage
+
+  # Ensure final_output is JSON formatted for downstream consumption
+  if isinstance(final_output, str):
+    try:
+      # Ensure valid JSON; if not, wrap in a standard error message
+      json.loads(final_output)
+    except json.JSONDecodeError:
+      final_output = json.dumps({"error": "Invalid final output format"})
+
+  return final_output
+
 
 '''
 if __name__ == '__main__':

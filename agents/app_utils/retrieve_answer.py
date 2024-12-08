@@ -23,7 +23,10 @@ CONNECTION_STRING = PGVector.connection_string_from_db_params(
     user=os.getenv("DBUSER"),
     password=os.getenv("DBPASSWORD"),
 )
-COLLECTION_NAME = os.getenv("COLLECTION_NAME")
+
+# we use document_title as collection name as it will be used by business user on his side when creating embedding
+# this makes the search more targeted and accurate as it will fetch only from targeted area of embeddings
+COLLECTION_NAME = os.getenv("DOCUMENT_TITLE")
 
 
 def vector_db_retrieve(collection: str, connection: str, embedding: OllamaEmbeddings) -> PGVector:
@@ -76,3 +79,15 @@ def answer_retriever(query: str, relevance_score: float, top_n: int) -> List[Dic
         'score': vector['score'],
       })
   return results
+
+def retrieval_view_response_transmit(retrieval_graph_output_json_loads, list_answers, list_errors):
+  # handle errors
+  for err in list_errors:
+    if err in retrieval_json:
+      response = json.dumps({ err: retrieval_json[err]})
+      return response
+  # handle answers
+  for answer in list_answers:
+    if answer in retrieval_json:
+      response = json.dumps({answer: retrieval_json[answer]})
+      return response
