@@ -26,7 +26,9 @@ from agents.graph import retrieval_agent_graph
 from dotenv import load_dotenv
 
 
-load_dotenv()
+# load env vars
+load_dotenv(dotenv_path='.env', override=False)
+load_dotenv(dotenv_path=".vars.env", override=True)
 
 # Connecting to Memcached
 mc = memcache.Client(['127.0.0.1:11211'], debug=1)

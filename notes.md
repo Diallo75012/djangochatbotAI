@@ -434,13 +434,11 @@ as the code is compile and used by Pyo# we can't see the `println!'s` instead we
   - Embedding Flow:
     -> enters data >
          - data is store in database
-         - data is put in dataframe >
-           No Chunking needed (Cooool!) >
-             embedding document creation >
-               - document_title is embedding document name
+         - embedding document creation from database rows >
+               - document_title is embedding document name 
+                 so "Collection name" {Question:Answer; metadata:document_title}
                - answer is embedded with question to have more context for retrieval
                  and this will be one doc. This is why it is not need to Chunk, just get dataframe rows
-
 
 We will use python first until the workflow is dont and works fine and then, `We Rust it!`
 

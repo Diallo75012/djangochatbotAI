@@ -11,6 +11,8 @@ urlpatterns = [
   #path('embed-data', views.embedData, name='EmbedData'),
   # route for retrieval to be implemented in Rust
   path('retrieve-data', views.retrieveData, name='retrieve-data'),
+  # route for embedding to be done on document title(which will be collection name)
+  path('embed-data', views.embedData, name='embed-data'),
   # route for data manipulation in DB to be implemented in Rust
   #path('', views., name=''),
   # route for other utils functions to be implemented in Rust
