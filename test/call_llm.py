@@ -81,15 +81,6 @@ def call_llm(query: str, prompt_template_part: str, schema: str, llm: ChatGroq, 
       # 1. Replace escaped underscores first to avoid double-replacing backslashes.
       response_parsed = response_parsed.replace("\\_", "_")
       print("Parsed response underscores: ", response_parsed)
-      # 2. Normalize multiple newlines into single ones.
-      #response_parsed = response_parsed.replace("\n\n", "\n")
-      #print("Parsed response double line return: ", response_parsed)
-      # 3. Escape single newlines for JSON representation (this ensures newlines are preserved as literal `\n`).
-      #response_parsed = response_parsed.replace("\n", "\\n")
-      #print("Parsed response escape slash of line return: ", response_parsed)
-      # 4. Finally, escape backslashes. This is done last to ensure we don't affect earlier replacements.
-      #response_parsed = response_parsed.replace("\\", "\\\\")
-      #print("Parsed response replace double backslashes: ", response_parsed)
 
     else:
       print(" '```' in not response")

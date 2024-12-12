@@ -8,13 +8,19 @@ schema_example={
   "needed": "Answer 'YES' or 'NO' depending on if the code requires a requirements.txt file."
 }
 
-analyse_user_query_safety_schema = {
-  "safe": "can only take the string value 'True' or 'False'. set to 'True' if the user query is considered as being safe.",
-  "unsafe": "can only take the string value 'True' or 'False'. set to 'False' if the user query is considered as being unsafe."
-}
+analyse_user_query_safety_schema = '''
+  '{
+    "safe": "valid or invalid. Set to 'valid' if the user query is considered safe. Set to 'invalid' otherwise.",
+    "unsafe": "valid or invalid. Set to 'valid' if the user query is considered unsafe. Set to 'invalid' otherwise."
+  }'
+'''
 
 summarize_user_to_clear_question_schema = {
   "question": "user question is rephrased to a clear question and only one question."
+}
+
+retrieve_answer_schema = {
+  "retrieval": "the data that have been retrieved from vector database search in valid JSON format. So here just return what you have received as data but in valid JSON format."
 }
 
 answer_to_user_schema = {
@@ -28,3 +34,5 @@ answer_to_user_schema = {
     "response": "answer user making sure that you use your personality trait and be warm to user but polite. Apologize as no data have been found after user query. Use this disclaimer: {disclaimer}."
   },
 }
+
+

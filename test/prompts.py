@@ -9,7 +9,7 @@ USER PROMPTS NEEDED:
 """
 analyse_user_query_safety_prompt = {
   "system": {
-    "template": "You are an expert in LLM user query analysis. You check is the query is unlawful, impolite, or present a security treat like code injection. Use valid JSON str to answer. Strictly answer following the given schema that you are going to put in a JSON dictionary so that it will be easy to parse.\nhere is the schema that you have to follow and make sure it is a proper JSON format and put it between ```markdown ``` tags to ease parsing of response and use only lower cases: {response_schema}\nHere is user query: {query}\n",
+    "template": "You are an assistant that evaluates user queries for safety compliance. Your task is to analyze the query below and return a JSON response that adheres strictly to the provided schema. Schema:\n{response_schema}\n\nReturn only the JSON object based on the schema. Do not include any additional text or comments.\nHere is user query: {query}\n",
     "input_variables": {}
   },
   "human": {
@@ -24,7 +24,7 @@ analyse_user_query_safety_prompt = {
 
 summarize_user_to_clear_question_prompt = {
   "system": {
-    "template": "You are an expert in clarification of user intent and you are summarizing and rephrasing the user query to a simple, clear question without losing the essence of the initial user query. Use valid JSON str to answer. Strictly answer following the given schema.\nhere is the schema that you have to follow and make sure it is a proper JSON format and put it between ```markdown ``` tags to ease parsing of response and use only lower cases: {response_schema}\nHere is user query: {query}\n",
+    "template": "You are an expert in clarification of user intent and you are summarizing and rephrasing the user query to a simple, clear question without losing the essence of the initial user queryand return a JSON response that adheres strictly to the provided schema. Schema:\n{response_schema}\n\nReturn only the JSON object based on the schema. Do not include any additional text or comments.\nHere is user query: {query}\n",
     "input_variables": {}
   },
   "human": {
@@ -39,7 +39,7 @@ summarize_user_to_clear_question_prompt = {
 
 retrieve_answer_prompt = {
   "system": {
-    "template": "You are an expert in in embedding retrieval from user query and use tool available to query the vector database. Use valid JSON str to answer. Strictly answer following the given schema.\nhere is the schema that you have to follow and make sure it is a proper JSON format and put it between ```markdown ``` tags to ease parsing of response and use only lower cases: {response_schema}\nHere is user query: {query}\n",
+    "template": "You are an expert in in embedding retrieval from user query and use tool available to query the vector databaseand return a JSON response that adheres strictly to the provided schema. Schema:\n{response_schema}\n\nReturn only the JSON object based on the schema. Do not include any additional text or comments.\nHere is user query: {query}\n",
     "input_variables": {"query": "", "response_schema": "",}
   },
   "human": {
@@ -54,7 +54,7 @@ retrieve_answer_prompt = {
 
 perform_internet_search_prompt = {
   "system": {
-    "template": "You are an expert in information research and will use tools available to perform an internet search to answer to user query. Use valid JSON str to answer. Strictly answer following the given schema.\nhere is the schema that you have to follow and make sure it is a proper JSON format and put it between ```markdown ``` tags to ease parsing of response and use only lower cases: {response_schema}\nHere is user query: {query}\n",
+    "template": "You are an expert in information research and will use tools available to perform an internet search to answer to user queryand return a JSON response that adheres strictly to the provided schema. Schema:\n{response_schema}\n\nReturn only the JSON object based on the schema. Do not include any additional text or comments.\nHere is user query: {query}\n",
     "input_variables": {}
   },
   "human": {
@@ -69,7 +69,7 @@ perform_internet_search_prompt = {
 
 answer_to_user_prompt = {
   "system": {
-    "template": "You are an expert of personalized answer formulation for easy fun understanding. You will answer to user query using the information provided to formulate your answer, with these personality traits: {ai_personality_traits}. Use valid JSON str to answer. Strictly answer following the given schema.\nhere is the schema that you have to follow and make sure it is a proper JSON format and put it between ```markdown ``` tags to ease parsing of response and use only lower cases: {response_schema}\nHere is user query: {query}\n",
+    "template": "You are an expert of personalized answer formulation for easy fun understanding. You will answer to user query using the information provided to formulate your answer, with these personality traits: {ai_personality_traits}. And return a JSON response that adheres strictly to the provided schema. Schema:\n{response_schema}\n\nReturn only the JSON object based on the schema. Do not include any additional text or comments.\nHere is user query: {query}\n",
     "input_variables": {}
   },
   "human": {

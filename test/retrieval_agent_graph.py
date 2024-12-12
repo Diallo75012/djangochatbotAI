@@ -7,7 +7,10 @@ from structured_output import (
   analyse_user_query_safety_schema,
   summarize_user_to_clear_question_schema,
   answer_to_user_schema,
+  retrieve_answer_schema,
 )
+from json_dumps_manager import safe_json_dumps
+from token_count_helper import token_counter
 # prompts
 from prompts import (
   analyse_user_query_safety_prompt,
@@ -99,13 +102,14 @@ def analyse_user_query_safety(state: MessagesState):
 
   if last_message == os.getenv("USER_INITIAL_QUERY"):
     query = prompt_creation.prompt_creation(analyse_user_query_safety_prompt["human"], user_initial_query=last_message)
+    print("query: ", query)
   else:
     return {"messages": [{"role": "ai", "content": json.dumps({"error": "User query to start graph different from environment variable set for user query."})}]}
   
   # get the answer as we want it using structured output schema directly injected in prompt
   try:
     decision = call_llm.call_llm(query, analyse_user_query_safety_prompt["system"]["template"], analyse_user_query_safety_schema, groq_llm_llama3_70b)
-    if decision.safe.lower() == "true":
+    if decision["safe"].lower() == "valid":
       return {"messages": [{"role": "ai", "content": json.dumps({"safe":"safe"})}]}
     return {"messages": [{"role": "ai", "content": json.dumps({"unsafe": "unsafe"})}]}
   except Exception as e:
@@ -136,7 +140,7 @@ def summarize_user_to_clear_question(state: MessagesState):
 
   # rephrase user intial query to a question
   try:
-    clear_question = call_llm.call_llm(query, summarize_user_to_clear_question_prompt["system"]["template"], summarize_user_to_clear_schema, groq_llm_llama3_70b)
+    clear_question = call_llm.call_llm(query, summarize_user_to_clear_question_prompt["system"]["template"], summarize_user_to_clear_question_schema, groq_llm_llama3_70b)
     if clear_question:
       question = clear_question["question"]
       set_key(".vars.env", "REPHRASED_USER_QUERY", question)
@@ -159,11 +163,73 @@ def question_rephrased_or_error(state: MessagesState):
 # NODE
 def retrieve_answer_agent(state: MessagesState):
   rephrased_user_query = os.getenv("REPHRASED_USER_QUERY")
-  prompt = prompt_creation.prompt_creation(retrieve_answer_prompt["system"], query=rephrased_user_query, response_schema=retrieve_answer_prompt_schema)
-  response = llm_with_retrieve_answer_tool_choice.invoke(json.dumps(prompt))
+  #prompt = prompt_creation.prompt_creation(retrieve_answer_prompt["system"], query=rephrased_user_query, response_schema=retrieve_answer_schema)
+  #print("Retrieve answer agent prompt: ", prompt, "len prompt: ", len(prompt), "token count: ", token_counter(prompt))
+  #response = llm_with_retrieve_answer_tool_choice.invoke(json.dumps(prompt))
+  #print("Response from retrieve answer agent: ", response)
   # return response for the answer_retriever tool to be able to perform the retrieval task from this llm binded tool choice
-  # return {"messages": [response]}
-  return {"messages": [{"role": "ai", "content": json.dumps({"response": response})}]}
+
+  # Prepare the schema for the tool call
+  '''
+  tool_schema = {
+    "query": rephrased_user_query
+  }
+  '''
+  tool_schema = {
+    "messages": [
+      {
+      "content": {
+        "function": "retrieve_answer_action",
+        "arguments": {
+          "query": f"{rephrased_user_query}"
+        }
+      },
+      "additional_kwargs": {},
+      "response_metadata": {
+        "token_usage": {
+          "completion_tokens": 21,
+          "prompt_tokens": 5130,
+          "total_tokens": 5151,
+          "completion_time": 0.028,
+          "prompt_time": 1.429650192,
+          "queue_time": 0.0011769999999999836,
+          "total_time": 1.457650192
+        },
+        "model_name": "llama-3.2-11b-vision-preview",
+        "system_fingerprint": "fp_9cb648b966",
+        "finish_reason": "stop",
+        "logprobs": "junko"
+      },
+      "tool_calls": [
+        {
+          "name": "retrieve_answer_action",
+          "args": {
+            "query": f"{rephrased_user_query}"
+          }
+        }
+      ],
+      "usage_metadata": {
+        "input_tokens": 5130,
+        "output_tokens": 21,
+        "total_tokens": 5151
+      },
+      "id": "run-d0758597-5e2b-4a0a-8eda-4ea53d398522-0",
+      "role": "ai"
+      } 
+    ]
+  }
+
+  print("Retrieve Answer Tool Schema: ", tool_schema)
+  # Directly invoke the ToolNode
+  try:
+    response = tool_retrieve_answer_node.invoke(tool_schema)
+    print("Tool Node Response: ", response)
+    return {"messages": [response]}
+  except Exception as e:
+    print(f"Error during tool node execution: {e}")
+    return {"messages": [{"role": "ai", "content": json.dumps({"error": str(e)})}]}
+
+  #return {"messages": [{"role": "ai", "content": json.dumps({"response": response})}]}
 
 # CONDITIONAL EDGE
 def retrieved_answer_or_not(state: MessagesState):
@@ -171,7 +237,8 @@ def retrieved_answer_or_not(state: MessagesState):
   Here we will capture the answer fromt he state which is success or error
   '''
   messages = state["messages"]
-  last_message = json.loads(messages[-1].content)["response"]
+  last_message = messages[-1].content
+  print("Last message in retrieed_answer_or_not: ", last_message)
 
   '''
     # Last Message Should Look Like Returns
@@ -212,7 +279,8 @@ def answer_to_user(state: MessagesState):
   
   ## GETTNG ALL VARS NEEDED
   # last_message is the vector retrieved or not from database
-  vector_db_answer = json.loads(messages[-1].content)
+  vector_db_answer = messages[-1].content
+  print("vector_db_answer: ", vector_db_answer)
   '''
     # Last Message Should Look Like Returns. I hasn't change since retrieval (same)
     {
@@ -245,7 +313,7 @@ def answer_to_user(state: MessagesState):
   '''
     Nedd here to add if statements to check last messsage what is the level of retrieval if any and call llm then to make the final answer
   '''
-
+  '''
   # FLOW ZERO ANSWER
   if vector_db_answer["nothing"]:
     disclaimer_nothing = disclaimer["nothing"].format(user_initial_question=user_initial_query_rephrased)
@@ -298,6 +366,8 @@ def answer_to_user(state: MessagesState):
       return {"messages": [{"role": "ai", "content": json.dumps({"response_055": response_055})}]}
     except Exception as e:
       return {"messages": [{"role": "ai", "content": json.dumps({"error_response_055": e})}]} 
+    '''
+  return {"messages": [{"role": "ai", "content": json.dumps({"error": vector_db_answer})}]} 
 
 # error handling
 def error_handler(state: MessagesState):
@@ -341,7 +411,7 @@ workflow.add_node("error_handler", error_handler)
 workflow.add_node("analyse_user_query_safety", analyse_user_query_safety)
 workflow.add_node("summarize_user_to_clear_question", summarize_user_to_clear_question)
 workflow.add_node("retrieve_answer_agent", retrieve_answer_agent)
-workflow.add_node("tool_retrieve_answer_node", tool_retrieve_answer_node)
+#workflow.add_node("tool_retrieve_answer_node", tool_retrieve_answer_node)
 workflow.add_node("answer_to_user", answer_to_user)
 
 # edges
@@ -354,9 +424,9 @@ workflow.add_conditional_edges(
   "summarize_user_to_clear_question",
   question_rephrased_or_error
 )
-workflow.add_edge("retrieve_answer_agent", "tool_retrieve_answer_node")
+#workflow.add_edge("retrieve_answer_agent", "tool_retrieve_answer_node")
 workflow.add_conditional_edges(
-  "tool_retrieve_answer_node", 
+  "retrieve_answer_agent", 
   retrieved_answer_or_not
 )
 
@@ -393,7 +463,10 @@ def retrieval_agent_team(user_query):
     else:
       output = beautiful_graph_output.beautify_output(step)
       print(f"Step {count}: {output}")
-      final_output = json.dumps(step)
+      try:
+        final_output = safe_json_dumps(step)
+      except TypeError:
+        final_output = safe_json_dumps(step)
 
   # subgraph drawing
   graph_image = user_query_processing_stage.get_graph().draw_png()
