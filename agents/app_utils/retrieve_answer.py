@@ -2,7 +2,8 @@ import os
 import json
 import psycopg2
 from typing import List, Dict, Any
-from langchain_community.vectorstores.pgvector import PGVector, DistanceStrategy
+# will need to update this import so to use psycopg3 as langchain_community stuff are being deprecated and integrated to langchain normal flow
+from langchain_community.vectorstores.pgvector import PGVector, DistanceStrategy # still psycopg2 here
 # OllamaEmbeddings is dec=precated when imported from langchain_community
 # from langchain_community.embeddings import OllamaEmbeddings
 from langchain_ollama import OllamaEmbeddings
@@ -18,6 +19,17 @@ load_dotenv(dotenv_path=".vars", override=True)
 # in the OllamaEmbeddings class, temperature parameter is not supported anymore
 embeddings = OllamaEmbeddings(model="mistral:7b") # temperature=float(os.getenv("EMBEDDINGS_TEMPERATURE")))
 
+# use if pgvector require psycopg3
+"""
+# db connection vars
+driver=os.getenv("DRIVER") # not psycopg2 as now it required psycopg3 (we install both: pip install psycopg2 psycopg)
+host=os.getenv("DBHOST")
+port=int(os.getenv("DBPORT"))
+database=os.getenv("DBNAME")
+user=os.getenv("DBUSER")
+password=os.getenv("DBPASSWORD")
+CONNECTION_STRING = f"postgresql+{driver}://{user}:{password}@{host}:{port}/{database}"
+"""
 CONNECTION_STRING = PGVector.connection_string_from_db_params(
     driver=os.getenv("DRIVER"), # psycopg2
     host=os.getenv("DBHOST"),

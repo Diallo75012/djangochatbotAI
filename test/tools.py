@@ -1,4 +1,5 @@
 import os
+import json
 # for typing func parameters and outputs and states
 from typing import Dict, List, Tuple, Any, Optional
 # one is @tool decorator and the other Tool class
@@ -26,7 +27,7 @@ from dotenv import load_dotenv
 
 # load env vars
 load_dotenv(dotenv_path='../.env', override=False)
-load_dotenv(dotenv_path="../.vars", override=True)
+load_dotenv(dotenv_path="../.vars.env", override=True)
 
 
 # TOOLS

@@ -108,7 +108,7 @@ def analyse_user_query_safety(state: MessagesState):
   
   # get the answer as we want it using structured output schema directly injected in prompt
   try:
-    decision = call_llm.call_llm(query, analyse_user_query_safety_prompt["system"]["template"], schema, groq_llm_llama3_70b)
+    decision = call_llm.call_llm(query, analyse_user_query_safety_prompt["system"]["template"], analyse_user_query_schema, groq_llm_llama3_70b)
     if decision.safe.lower() == "true":
       return {"messages": [{"role": "ai", "content": json.dumps({"safe":"safe"})}]}
     return {"messages": [{"role": "ai", "content": json.dumps({"unsafe": "unsafe"})}]}
@@ -140,7 +140,7 @@ def summarize_user_to_clear_question(state: MessagesState):
   
   # rephrase user intial query to a question
   try:
-    clear_question = call_llm.call_llm(query, summarize_user_to_clear_question_prompt["system"]["template"], schema, groq_llm_llama3_70b)
+    clear_question = call_llm.call_llm(query, summarize_user_to_clear_question_prompt["system"]["template"], summarize_user_to_clear_schema, groq_llm_llama3_70b)
     if clear_question:
       question = clear_question["question"]
       set_key(".vars.env", "REPHRASED_USER_QUERY", question)

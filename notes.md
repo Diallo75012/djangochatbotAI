@@ -471,3 +471,316 @@ pip install pygraphviz
 
 # Next:
 - make the full workflow of embedding data when business user enter new records (create/update) and also to delete embedding collection when business user deletes data
+
+# test command for embedding route
+Try to send data to embedding route to check if it works fine.
+```bash
+curl -X POST http://127.0.0.1:8000/agents/embed-data/ \
+-H "Content-Type: application/json" \
+-d '{
+  "document_title": "Business Strategies 2024",
+  "question_answer_data": [
+    {"question": "What is the vision for 2024?", "answer": "To expand globally."},
+    {"question": "What are the key goals?", "answer": "Increase market share by 25%."}
+  ]
+}'
+
+```
+
+# Next
+- need to debug by running server
+- then need to test curl command above sending data to be embedded to see if it works
+- then need to implement to business data creation/update flow
+- then need to have data in vector related to docuemnt deleted when business user deletes the data
+
+
+# Logging
+eg.:
+```python
+import os
+# we have the choice to use either of those two to have logs rotation
+from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+        # JSON better for Prometheus and ELK
+        'json': {  # Better for Prometheus, Loki, or ELK stacks
+            'format': '{"time": "%(asctime)s", "level": "%(levelname)s", "name": "%(name)s", "message": "%(message)s"}'
+        },
+    },
+    'handlers': {
+        'file_debug': {
+            'level': 'DEBUG',
+            # this for logs rotation
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            # log file location
+            'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
+            'when': 'midnight',
+            # Keep logs for 7 days
+            'backupCount': 7,
+            # Choose this formatter JSON better for Prometheus and ELK
+            'formatter': 'json',
+        },
+        'file_info': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/info.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'file_warning': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/warning.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'file_error': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/error.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'file_critical': {
+            'level': 'CRITICAL',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/critical.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file_debug', 'file_info', 'file_warning', 'file_error', 'file_critical', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'myapp': {
+            'handlers': ['file_debug', 'file_info', 'file_warning', 'file_error', 'file_critical', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+- eg. of use in code :
+import logging
+# here is where you can set the name of the loggers to match the name of the one in settings.py
+# better to have those same as the application name so we know where it is coming from directly
+logger = logging.getLogger('myapp')
+logger.debug("This is a debug message.")
+
+```
+**Fetching Logs with Prometheus or Other Tools**
+- Prometheus with Loki: Use Loki as a log aggregation tool. It works seamlessly with Prometheus.
+  - Install promtail, a log collector, and point it to your log files.
+  - Configure promtail to scrape the JSON logs from your Django project.
+
+- ElasticSearch (ELK Stack):
+  - Use Filebeat or Logstash to ship logs to ElasticSearch.
+  - Parse the JSON logs for advanced search and filtering.
+
+- AWS CloudWatch or GCP Logging:
+  - Use SDKs or agents to push logs from your Django server to these managed log services.
+
+
+# Issues:
+- langchain PGVector have changed, it is now using `psycogp3` [see latest doc at ->](https://python.langchain.com/docs/integrations/vectorstores/pgvector/) : 
+  - install both psycopg2 and psycopg3: `pip install psycopg2 psycopg`
+  - use this psycogp3 connection uri: CONNECTION_STRING = "postgresql+psycopg://user:password@host:port/dbname"
+
+- langchain PGVector has a `use_jsonb=True` which is going to take care of converting metadata to jsonb format. json is going to be deprecated
+- langchain PGVector document embedding now have to use `add_documents(documents=list_of_documents)` to call on the PGVector() created object
+- Therefore no more `documents=` when creating the PGVector object
+- **we had before:**
+```python
+"""Create and store embeddings in PGVector."""
+db_create = PGVector.from_documents(
+  embedding=embeddings,
+  documents=doc,
+  collection_name=collection,
+  connection_string=connection,
+  distance_strategy=DistanceStrategy.COSINE,
+  #distance_strategy="cosine", # can be "eucledian", "hamming", "cosine"EUCLEDIAN, COSINE, HAMMING
+)
+```
+- **we have now:**
+```python
+"""Create and store embeddings in PGVector."""
+db_create = PGVector.from_documents(
+  embedding=embeddings,
+  collection_name=collection,
+  connection=connection,
+  distance_strategy=DistanceStrategy.COSINE,
+  #distance_strategy="cosine", # can be "eucledian", "hamming", "cosine"EUCLEDIAN, COSINE, HAMMING
+  use_jsonb=True,
+)
+
+add_documents(documents=list_of_documents)
+```
+- worked fine when following documentation
+- this is curl command to test but need to disable decorator for login required and user test and also when getting data from database get rid of request user:
+```python
+# disable decorator and get rid of user check when getting info from db
+@csrf_exempt
+#@login_required(login_url='users:loginbusinessuser')
+#@user_passes_test(is_business_user, login_url='users:loginbusinessuser')
+def embedData(request, pk):
+
+  # fetch required data from databaase to prepare documents to be embedded
+  business_document = get_object_or_404(BusinessUserData, pk=pk) #user=request.user)
+```
+```bash
+# curl command to test from terminal
+curl -X POST http://127.0.0.1:8000/agents/embed-data/11/ -H "Content-Type: application/json"**
+```
+
+# requirements packaging in a more concise way using pip-chill
+```bash
+# install
+pip install pip-chill
+# use
+pip-chill > requriements.txt
+```
+
+
+# Prompts length calculation using TikToken
+```bash
+# install
+pip install tiktoken
+```
+- for Openai based models:
+```bash
+import tiktoken
+
+def count_tokens(text: str, model: str = "gpt-3.5-turbo") -> int:
+    """
+    Count the number of tokens in a given text for a specified model.
+
+    Args:
+        text (str): The input string to be tokenized.
+        model (str): The model's tokenizer to use (default: "gpt-3.5-turbo").
+
+    Returns:
+        int: The number of tokens.
+    """
+    try:
+        # Get the tokenizer for the model
+        encoding = tiktoken.encoding_for_model(model)
+    except KeyError:
+        # Fallback to a default encoding if the model is not recognized
+        encoding = tiktoken.get_encoding("cl100k_base")
+    
+    # Tokenize the input text and count tokens
+    num_tokens = len(encoding.encode(text))
+    return num_tokens
+
+# Example usage
+text = "This is an example text to count tokens."
+model_name = "gpt-3.5-turbo"
+print(f"Number of tokens: {count_tokens(text, model_name)}")
+
+```
+- for other models, you need to have informartion about how they tokenize and probably use this custom script
+```bash
+import tiktoken
+
+# Define a custom encoding (you need to provide vocabulary or rules)
+custom_encoding = tiktoken.get_encoding("cl100k_base")  # Use a base encoding scheme
+
+text = "Example text for tokenization."
+num_tokens = len(custom_encoding.encode(text))
+print(f"Number of tokens: {num_tokens}")
+```
+
+# issue calling llm with tools
+Groq return that context is too long so i can't use the tool like in the past, i can call the tool node directly using the right schema.
+Also when using super context very long one llm, it couldn't format the schema properly making errors. I used llama3 vision as context is super huge but not made for tool call. very `not clever`.... It was actualy puting the function in content mixed with the query in arguments... and not selecting tool in `tool_call` 
+- full schema example but not needed full to call tool:
+```json
+{
+  "messages": [
+    {
+      "content": {
+        "function": "retrieve_answer_action",
+        "arguments": {
+          "query": "Which is the largest capital city in Asia?"
+        }
+      },
+      "additional_kwargs": {},
+      "response_metadata": {
+        "token_usage": {
+          "completion_tokens": 21,
+          "prompt_tokens": 5130,
+          "total_tokens": 5151,
+          "completion_time": 0.028,
+          "prompt_time": 1.429650192,
+          "queue_time": 0.0011769999999999836,
+          "total_time": 1.457650192
+        },
+        "model_name": "llama-3.2-11b-vision-preview",
+        "system_fingerprint": "fp_9cb648b966",
+        "finish_reason": "stop",
+        "logprobs": null
+      },
+      "tool_calls": [
+        {
+          "name": "retrieve_answer_action",
+          "args": {
+            "query": "Which is the largest capital city in Asia?"
+          }
+        }
+      ],
+      "usage_metadata": {
+        "input_tokens": 5130,
+        "output_tokens": 21,
+        "total_tokens": 5151
+      },
+      "id": "run-d0758597-5e2b-4a0a-8eda-4ea53d398522-0",
+      "role": null
+    }
+  ]
+}
+
+```
+
+
+- instead just call the .run() with the parameter in it on the Toolnode:
+```python
+...
+rephrased_user_query = os.getenv("REPHRASED_USER_QUERY")
+# Prepare the schema for the tool call
+tool_schema = {
+  "query": rephrased_user_query
+}
+print("Retrieve Answer Tool Schema: ", tool_schema)
+# Directly invoke the ToolNode
+try:
+  response = tool_retrieve_answer_node.invoke(tool_schema, state=state)
+...
+```
+
+
+what is the biggest capital city in Asia?
+0.4 <class 'str'>
+Type docs_and_similarity_score:  <class 'list'> 
+Content:  [(Document(id='2', metadata={'id': 2, 'answer': 'Tokyo for population density', 'question': 'what is the biggest capital city in Asia?', 'document_title': 'tokyo'}, page_content='what is the biggest capital city in Asia? Tokyo for population density'), 0.423141683527101), (Document(id='1', metadata={'id': 1, 'answer': 'Edo city', 'question': 'what was the previous name of Tokyo?', 'document_title': 'tokyo'}, page_content='what was the previous name of Tokyo? Edo city'), nan)]
+An error occured while trying to perform vectordb search query Expecting value: line 1 column 1 (char 0)
+Expecting value: line 1 column 1 (char 0)

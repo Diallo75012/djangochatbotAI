@@ -17,6 +17,7 @@ from langchain.prompts import (
   HumanMessagePromptTemplate,
   AIMessagePromptTemplate
 )
+from agents.app_utils.formatters import string_to_dict
 # to run next graphs
 from agents.llms.llms import (
   groq_llm_mixtral_7b,
@@ -72,7 +73,16 @@ def call_llm(query: str, prompt_template_part: str, schema: str, llm: ChatGroq, 
     response = prompt_and_model.invoke({"query": query, "response_schema": schema})
     print("RESPONSE: ", response.content)
     # parse content from dict
-    if "```markdown" in response.content:
+    if "```json" in response.content:
+      print(" '```json' in response")
+      # parse response and clean it to limit errors of not valid json error when transforming to dictionary
+      response_parsed = response.content.split("```")[1].strip("json").strip().replace("`", "")
+
+      # 1. Replace escaped underscores first to avoid double-replacing backslashes.
+      response_parsed = response_parsed.replace("\\_", "_")
+      print("Parsed response underscores: ", response_parsed)
+
+    elif "```markdown" in response.content:
       print(" '```markdown' in response")
       # parse response and clean it to limit errors of not valid json error when transforming to dictionary
       response_parsed = response.content.split("```")[1].strip("markdown").strip().replace("`", "")
@@ -80,16 +90,6 @@ def call_llm(query: str, prompt_template_part: str, schema: str, llm: ChatGroq, 
       # 1. Replace escaped underscores first to avoid double-replacing backslashes.
       response_parsed = response_parsed.replace("\\_", "_")
       print("Parsed response underscores: ", response_parsed)
-      # 2. Normalize multiple newlines into single ones.
-      #response_parsed = response_parsed.replace("\n\n", "\n")
-      #print("Parsed response double line return: ", response_parsed)
-      # 3. Escape single newlines for JSON representation (this ensures newlines are preserved as literal `\n`).
-      #response_parsed = response_parsed.replace("\n", "\\n")
-      #print("Parsed response escape slash of line return: ", response_parsed)
-      # 4. Finally, escape backslashes. This is done last to ensure we don't affect earlier replacements.
-      #response_parsed = response_parsed.replace("\\", "\\\\")
-      #print("Parsed response replace double backslashes: ", response_parsed)
-
     else:
       print(" '```' in not response")
       if "```python" in response.content:
@@ -101,6 +101,7 @@ def call_llm(query: str, prompt_template_part: str, schema: str, llm: ChatGroq, 
       else:
         response_parsed = response.content
     # transform to dict
+    print("Response parsed: ", response_parsed)
     response_content_to_dict = string_to_dict(response_parsed)
     print("Response content dict: ", response_content_to_dict)
     return response_content_to_dict

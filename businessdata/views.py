@@ -34,6 +34,7 @@ def addBusinessData(request):
   '''
 
   form = BusinessUserDataForm()
+
   if request.method == 'POST':
     form = BusinessUserDataForm(request.POST)
     if form.is_valid():
@@ -45,25 +46,31 @@ def addBusinessData(request):
         request,
         "Business data added successfully! Wait a for embedding validation."
       )
+      
+      ##### API CALL TO EMBED DOCUMENTS #####
+      """
+        ##### CAN BE DECOUPLED IN THE FUTURE FOR CRON JOBS AND NOTIFICATION TO BUSINESS USER WHEN READY TO BE USED BY CLIENT USER #####
+        ##### WILL NEED TO CREATE ADDITION ROW IN BUSSINESSDATA MODEL BOOLEAN FOR EMBEDDED COMPLETE OR NOT AND HAVE DATA AVAILABLE #####
+        ##### SO WILL NEED TO HAVE THE DOCUMENT PRESENT IN THE DROPDOWN ONLY IF DATA IS FLAGGED `TRUE` FOR THE NEW EMBEDDED CHECK COLUMN IN DB #####
+      """
       # get the id of the document_title saved to make a call to the embedding route which will use that id to start working
-      business_document = get_object_or_404(BusinessUserData, document_title=business_data.document_title, business_user=request.user)
+      business_document = get_object_or_404(BusinessUserData, document_title=business_data.document_title, user=request.user)
       document_title_id = business_document.id
       # Reverse the URL for the 'embed-data' route with the given document_title_id (pk)
       embed_data_url = reverse("embed-data", kwargs={"pk": document_title_id})
       # Construct the full URL using the request's base URI
       full_url = request.build_absolute_uri(embed_data_url)
-      payload = json.dumps(
-        {
-          "question_answer": [business_document.question_answer_data],
-          "document_title": business_document.document_title
-        }
-      )
+      # no payload send as we don't want to have a size limit
+      # but will fetch data fom database to create embeddings on the fly using document id
+      # document title will be the collection name there, and question/answers will be looped through to create doc to embed
+      # with document title as metadata
       try:
-        # call the route with all data already fetched from DB so no need it to fetch it again there
-        response = requests.post(full_url, data=json.dumps(payload), headers={"Content-Type": "application/json"})
+        # call the route using post request for the moment if we need to add data to payload (which is empty in this code version)
+        response = requests.post(full_url, headers={"Content-Type": "application/json"})
         # Check the response status
         if response.status_code == 200:
-          print("Embedding created successfully:", response.json())
+          response_success = json.loads(response)["success"]
+          print("Embedding created successfully:", response_success)
           messages.success(
             request,
             "Business data added successfully! Wait a for embedding validation."
@@ -71,12 +78,14 @@ def addBusinessData(request):
           return redirect("businessdata:addbusinessdata")
         else:
           '''
-           Log erro to Devops/Security team
+           Log error to Devops/Security team
           '''
+          response_error = json.loads(response)["error"]
           messages.error(
             request,
-            f"Failed to create embedding. Status code: {response.status_code}, Response: {response.text}"
+            f"Failed to create embedding. Status code: {response.status_code}, Response: {response_error}"
           )
+          return redirect("businessdata:addbusinessdata")
 
       except requests.exceptions.RequestException as e:
         '''
@@ -86,13 +95,14 @@ def addBusinessData(request):
           request,
           f"Error making the request: {e}"
         )
-
+        return redirect("businessdata:addbusinessdata")
 
     else:
       messages.error(
         request,
         "Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format)."
       )
+
   context = {'form': form}
   # JSON validation should be handled at the form level, no need to submit if it is not good JSON/Dict
   return render(request, 'business/addbusinessdata.html', context)

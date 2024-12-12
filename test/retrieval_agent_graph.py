@@ -26,6 +26,8 @@ from tools import (
   llm_with_retrieve_answer_tool_choice,
   tool_retrieve_answer_node,
 )
+# Retrieve Vector 
+from retrieve_answer import retrieve_answer_action
 # LLMs
 from llms import (
   groq_llm_mixtral_7b,
@@ -163,68 +165,13 @@ def question_rephrased_or_error(state: MessagesState):
 # NODE
 def retrieve_answer_agent(state: MessagesState):
   rephrased_user_query = os.getenv("REPHRASED_USER_QUERY")
-  #prompt = prompt_creation.prompt_creation(retrieve_answer_prompt["system"], query=rephrased_user_query, response_schema=retrieve_answer_schema)
-  #print("Retrieve answer agent prompt: ", prompt, "len prompt: ", len(prompt), "token count: ", token_counter(prompt))
-  #response = llm_with_retrieve_answer_tool_choice.invoke(json.dumps(prompt))
-  #print("Response from retrieve answer agent: ", response)
-  # return response for the answer_retriever tool to be able to perform the retrieval task from this llm binded tool choice
+  state = MessagesState()
 
-  # Prepare the schema for the tool call
-  '''
-  tool_schema = {
-    "query": rephrased_user_query
-  }
-  '''
-  tool_schema = {
-    "messages": [
-      {
-      "content": {
-        "function": "retrieve_answer_action",
-        "arguments": {
-          "query": f"{rephrased_user_query}"
-        }
-      },
-      "additional_kwargs": {},
-      "response_metadata": {
-        "token_usage": {
-          "completion_tokens": 21,
-          "prompt_tokens": 5130,
-          "total_tokens": 5151,
-          "completion_time": 0.028,
-          "prompt_time": 1.429650192,
-          "queue_time": 0.0011769999999999836,
-          "total_time": 1.457650192
-        },
-        "model_name": "llama-3.2-11b-vision-preview",
-        "system_fingerprint": "fp_9cb648b966",
-        "finish_reason": "stop",
-        "logprobs": "junko"
-      },
-      "tool_calls": [
-        {
-          "name": "retrieve_answer_action",
-          "args": {
-            "query": f"{rephrased_user_query}"
-          }
-        }
-      ],
-      "usage_metadata": {
-        "input_tokens": 5130,
-        "output_tokens": 21,
-        "total_tokens": 5151
-      },
-      "id": "run-d0758597-5e2b-4a0a-8eda-4ea53d398522-0",
-      "role": "ai"
-      } 
-    ]
-  }
-
-  print("Retrieve Answer Tool Schema: ", tool_schema)
-  # Directly invoke the ToolNode
   try:
-    response = tool_retrieve_answer_node.invoke(tool_schema)
+    #response = tool_retrieve_answer_node.invoke(tool_schema)
+    response = retrieve_answer_action(rephrased_user_query, state)
     print("Tool Node Response: ", response)
-    return {"messages": [response]}
+    return {"messages": [{"role": "ai", "content": response}]}
   except Exception as e:
     print(f"Error during tool node execution: {e}")
     return {"messages": [{"role": "ai", "content": json.dumps({"error": str(e)})}]}
@@ -261,13 +208,17 @@ def retrieved_answer_or_not(state: MessagesState):
       "nothing": "nothing_in_cache_nor_vectordb"
     }
   '''
-
-  
-  if "vector_responses" or "nothing" in last_message:
-    # we will evaluate 055 vs 063 in "answer_user" node
-    return "answer_to_user"
-  elif "error_vector" in last_message:
+  vector_responses = json.load(last_message)
+  if "error_vector" in vector_responses:
     return "error_handler"
+  else:
+    for vector_responses in last_message:
+      if "vector_responses" or "nothing" in last_message:
+        # we will evaluate 055 vs 063 in "answer_user" node
+        return "answer_to_user"
+      else:
+        return "error_handler"
+
 
 # NODE
 def answer_to_user(state: MessagesState):
@@ -313,7 +264,7 @@ def answer_to_user(state: MessagesState):
   '''
     Nedd here to add if statements to check last messsage what is the level of retrieval if any and call llm then to make the final answer
   '''
-  '''
+
   # FLOW ZERO ANSWER
   if vector_db_answer["nothing"]:
     disclaimer_nothing = disclaimer["nothing"].format(user_initial_question=user_initial_query_rephrased)
@@ -366,8 +317,6 @@ def answer_to_user(state: MessagesState):
       return {"messages": [{"role": "ai", "content": json.dumps({"response_055": response_055})}]}
     except Exception as e:
       return {"messages": [{"role": "ai", "content": json.dumps({"error_response_055": e})}]} 
-    '''
-  return {"messages": [{"role": "ai", "content": json.dumps({"error": vector_db_answer})}]} 
 
 # error handling
 def error_handler(state: MessagesState):
@@ -411,7 +360,6 @@ workflow.add_node("error_handler", error_handler)
 workflow.add_node("analyse_user_query_safety", analyse_user_query_safety)
 workflow.add_node("summarize_user_to_clear_question", summarize_user_to_clear_question)
 workflow.add_node("retrieve_answer_agent", retrieve_answer_agent)
-#workflow.add_node("tool_retrieve_answer_node", tool_retrieve_answer_node)
 workflow.add_node("answer_to_user", answer_to_user)
 
 # edges
@@ -424,7 +372,6 @@ workflow.add_conditional_edges(
   "summarize_user_to_clear_question",
   question_rephrased_or_error
 )
-#workflow.add_edge("retrieve_answer_agent", "tool_retrieve_answer_node")
 workflow.add_conditional_edges(
   "retrieve_answer_agent", 
   retrieved_answer_or_not
