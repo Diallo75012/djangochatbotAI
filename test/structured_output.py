@@ -9,8 +9,8 @@ schema_example={
 }
 
 analyse_user_query_safety_schema = {
-  "safe": "can only take the value 'true' or 'false'. set to 'true' if the user query is considered as being safe.",
-  "unsafe": "can only take the value 'true' or 'false'. set to 'false' if the user query is considered as being unsafe."
+  "safe": "can only take the string value 'True' or 'False'. set to 'True' if the user query is considered as being safe.",
+  "unsafe": "can only take the string value 'True' or 'False'. set to 'False' if the user query is considered as being unsafe."
 }
 
 summarize_user_to_clear_question_schema = {

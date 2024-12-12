@@ -9,7 +9,7 @@ USER PROMPTS NEEDED:
 """
 analyse_user_query_safety_prompt = {
   "system": {
-    "template": "You are an expert in LLM user query analysis. You check is the query is unlawful, impolite, or present a security treat like code injection. Use valid JSON str to answer. Strictly answer following the given schema.\nhere is the schema that you have to follow and make sure it is a proper JSON format and put it between ```markdown ``` tags to ease parsing of response and use only lower cases: {response_schema}\nHere is user query: {query}\n",
+    "template": "You are an expert in LLM user query analysis. You check is the query is unlawful, impolite, or present a security treat like code injection. Use valid JSON str to answer. Strictly answer following the given schema that you are going to put in a JSON dictionary so that it will be easy to parse.\nhere is the schema that you have to follow and make sure it is a proper JSON format and put it between ```markdown ``` tags to ease parsing of response and use only lower cases: {response_schema}\nHere is user query: {query}\n",
     "input_variables": {}
   },
   "human": {

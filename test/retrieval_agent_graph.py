@@ -104,7 +104,7 @@ def analyse_user_query_safety(state: MessagesState):
   
   # get the answer as we want it using structured output schema directly injected in prompt
   try:
-    decision = call_llm.call_llm(query, analyse_user_query_safety_prompt["system"]["template"], schema, groq_llm_llama3_70b)
+    decision = call_llm.call_llm(query, analyse_user_query_safety_prompt["system"]["template"], analyse_user_query_safety_schema, groq_llm_llama3_70b)
     if decision.safe.lower() == "true":
       return {"messages": [{"role": "ai", "content": json.dumps({"safe":"safe"})}]}
     return {"messages": [{"role": "ai", "content": json.dumps({"unsafe": "unsafe"})}]}
@@ -133,10 +133,10 @@ def summarize_user_to_clear_question(state: MessagesState):
 
   user_initial_query = os.getenv("USER_INITIAL_QUERY")
   query = prompt_creation.prompt_creation(summarize_user_to_clear_question_prompt["human"], user_initial_query=user_initial_query)
-  
+
   # rephrase user intial query to a question
   try:
-    clear_question = call_llm.call_llm(query, summarize_user_to_clear_question_prompt["system"]["template"], schema, groq_llm_llama3_70b)
+    clear_question = call_llm.call_llm(query, summarize_user_to_clear_question_prompt["system"]["template"], summarize_user_to_clear_schema, groq_llm_llama3_70b)
     if clear_question:
       question = clear_question["question"]
       set_key(".vars.env", "REPHRASED_USER_QUERY", question)
@@ -159,7 +159,7 @@ def question_rephrased_or_error(state: MessagesState):
 # NODE
 def retrieve_answer_agent(state: MessagesState):
   rephrased_user_query = os.getenv("REPHRASED_USER_QUERY")
-  prompt = prompt_creation.prompt_creation(retrieve_answer_prompt["system"], query=rephrased_user_query, response_schema=retrieve_answer_prompt_schema) 
+  prompt = prompt_creation.prompt_creation(retrieve_answer_prompt["system"], query=rephrased_user_query, response_schema=retrieve_answer_prompt_schema)
   response = llm_with_retrieve_answer_tool_choice.invoke(json.dumps(prompt))
   # return response for the answer_retriever tool to be able to perform the retrieval task from this llm binded tool choice
   # return {"messages": [response]}
@@ -172,7 +172,7 @@ def retrieved_answer_or_not(state: MessagesState):
   '''
   messages = state["messages"]
   last_message = json.loads(messages[-1].content)["response"]
-  
+
   '''
     # Last Message Should Look Like Returns
     {
@@ -260,7 +260,7 @@ def answer_to_user(state: MessagesState):
     except Exception as e:
       return {"messages": [{"role": "ai", "content": json.dumps({"error_response_nothing": e})}]}
 
-  # FLOW ANSWERING USER WITH ANSWER FOUND    
+  # FLOW ANSWERING USER WITH ANSWER FOUND
   if vector_db_answer["score_063"]:
     # get answer
     answers_063 = vector_db_answer["score_063"]["answer"]
@@ -279,7 +279,7 @@ def answer_to_user(state: MessagesState):
     except Exception as e:
       return {"messages": [{"role": "ai", "content": json.dumps({"error_response_063": e})}]}
 
-  # FLOW WITH SIMILAR QUESTION BUT NO ANSWER FOUND  
+  # FLOW WITH SIMILAR QUESTION BUT NO ANSWER FOUND
   else:
     if vector_db_answer["score_055"]:
       # get question

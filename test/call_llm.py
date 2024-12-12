@@ -17,6 +17,7 @@ from langchain.prompts import (
   HumanMessagePromptTemplate,
   AIMessagePromptTemplate
 )
+from formatters import string_to_dict
 # to run next graphs
 from llms import (
   groq_llm_mixtral_7b,
