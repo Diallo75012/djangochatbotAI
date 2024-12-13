@@ -1,6 +1,7 @@
 import os
 import json
 import psycopg2
+import math
 from typing import List, Dict, Any
 from langgraph.graph import MessagesState
 #from langchain_community.vectorstores.pgvector import PGVector, DistanceStrategy
@@ -62,17 +63,26 @@ def retrieve_relevant_vectors(query: str, top_n: int = 3) -> List[Dict[str, Any]
 
   # Iterate over each tuple in the result
   for doc, score in docs_and_similarity_score[:top_n]:
-    # Parse the JSON content from the Document
-    data = json.loads(doc.page_content)
+    # Skip entries with NaN scores
+    if score is None or math.isnan(score):
+      print(f"Skipping document with NaN score: {doc.metadata}")
+      continue
+
+    print("Score: ", score)
+
+    try:
+      # Parse the JSON content from the Document
+      data = json.loads(doc.page_content)
+    except json.JSONDecodeError as e:
+      print(f"Error parsing page_content for document {doc.metadata['id']}: {e}")
+      continue
 
     # Iterate through the parsed JSON data to extract relevant info
     for info in data:
       # Append the extracted info to the results list
-      '''
-      HERE WE WILL NEED TO ADJUST IT DEPENDING OF THE DOC FORMATING WHEN EMBEDDING
-      '''
       results.append({'question': info['question'], 'answer': info['answer'], 'score': score})
 
+  print("Results from retrieve_relevant_vectors: ", results)
   return results
 
 
@@ -85,14 +95,16 @@ def answer_retriever(query: str, relevance_score: float, top_n: int) -> List[Dic
   print("Type relevant_vectors: ", type(relevant_vectors), "\nContent: ", relevant_vectors)
   results = []
   for vector in relevant_vectors:
-    if vector["score"] > relevance_score:
-      print("Vector: ", vector, ", Vectore score: ", vector["score"], f" vs relevant score: {relevance_score}")
-      print("Vector: ", vector)
-      results.append({
-        'question': vector['question'],
-        'answer': vector['answer'],
-        'score': vector['score'],
-      })
+    if vector["score"] != None:
+      print("Vector score: ", vector["score"])
+      if vector["score"] > relevance_score:
+        print("Vector: ", vector, ", Vectore score: ", vector["score"], f" vs relevant score: {relevance_score}")
+        print("Vector: ", vector)
+        results.append({
+          'question': vector['question'],
+          'answer': vector['answer'],
+          'score': vector['score'],
+        })
   return results
 
 def retrieval_view_response_transmit(retrieval_graph_output_json_loads, list_answers, list_errors):
@@ -121,11 +133,9 @@ def retrieve_answer_action():
   returns:
   retrieved answer for that specific user question
   """
-
   # vars
   query: str = os.getenv("REPHRASED_USER_QUERY")
   # we will perform two retrieval with different scores
-  print(os.getenv("SCORE064") , type(os.getenv("SCORE064")))
   score063: float = float(os.getenv("SCORE064"))
   score055: float = float(os.getenv("SCORE055"))
   top_n: int = int(os.getenv("TOP_N"))
@@ -135,9 +145,6 @@ def retrieve_answer_action():
   try:
     vector_response_063 = answer_retriever(query, score063, top_n)
     print("JSON RESPONSE 063: ", json.dumps(vector_response_063, indent=2))
-    vector_response_055 = answer_retriever(query, score055, top_n)
-    print("JSON RESPONSE 055: ", json.dumps(vector_response_055, indent=2))
-
     '''
       # Returns
       {
@@ -146,24 +153,33 @@ def retrieve_answer_action():
         'score': vector['score'],
       }
     '''
-
     if vector_response_063:
       # update to vector_response
       vector_responses["score_063"] = vector_response_063
+
+  except Exception as e:
+    print(f"An error occured while trying to perform vectordb search 063 query {e}")
+    return e
+    #return {"messages": [{"role": "ai", "content": json.dumps({"error_vector": f"An error occured while trying to perform vectordb search 063 query: {e}"})}]}
+
+  try:
+    vector_response_055 = answer_retriever(query, score055, top_n)
+    print("JSON RESPONSE 055: ", json.dumps(vector_response_055, indent=2))
     if vector_response_055:
       # update to vector_response
       vector_responses["score_055"] = vector_response_055
-    # here in conditional adge we will look for "vector_responses" key like
-    print("vector responses dict: ", vector_responses)
-    return vector_responses
-    #return {"messages": [{"role": "ai", "content": json.dumps(vector_responses)}]}
   except Exception as e:
-    print(f"An error occured while trying to perform vectordb search query {e}")
+    print(f"An error occured while trying to perform vectordb search 055 query {e}")
     return e
-    #return {"messages": [{"role": "ai", "content": json.dumps({"error_vector": f"An error occured while trying to perform vectordb search query: {e}"})}]}
+    #return {"messages": [{"role": "ai", "content": json.dumps({"error_vector": f"An error occured while trying to perform vectordb search 055 query: {e}"})}]}
 
-  # If no relevant result found, return a default response, and perform maybe after that an internet search and cache the query and the response
-  return "nothingu"
-  # return {"messages": [{"role": "ai", "content": json.dumps({"nothing": "nothing_in_cache_nor_vectordb"})}]}
+  if vector_responses:
+    print("Vector responses: ", vector_responses)
+    return vector_responses
+    #return {"messages": [{"role": "ai", "content": json.dumps(vector_responses)}]} 
+  else:
+    # If no relevant result found, return a default response, and perform maybe after that an internet search and cache the query and the response
+    return "nothingu"
+    # return {"messages": [{"role": "ai", "content": json.dumps({"nothing": "nothing_in_cache_nor_vectordb"})}]}
 
 print(retrieve_answer_action())

@@ -777,10 +777,61 @@ try:
 ...
 ```
 
-
+```code
 what is the biggest capital city in Asia?
 0.4 <class 'str'>
 Type docs_and_similarity_score:  <class 'list'> 
 Content:  [(Document(id='2', metadata={'id': 2, 'answer': 'Tokyo for population density', 'question': 'what is the biggest capital city in Asia?', 'document_title': 'tokyo'}, page_content='what is the biggest capital city in Asia? Tokyo for population density'), 0.423141683527101), (Document(id='1', metadata={'id': 1, 'answer': 'Edo city', 'question': 'what was the previous name of Tokyo?', 'document_title': 'tokyo'}, page_content='what was the previous name of Tokyo? Edo city'), nan)]
 An error occured while trying to perform vectordb search query Expecting value: line 1 column 1 (char 0)
 Expecting value: line 1 column 1 (char 0)
+
+[
+  (Document(
+     id='2', 
+     metadata={
+       'id': 2, 
+       'answer': 'Tokyo for population density', 
+       'question': 'what is the biggest capital city in Asia?', 
+       'document_title': 'tokyo'
+     }, 
+     page_content='what is the biggest capital city in Asia? Tokyo for population density'), 
+     0.423141683527101
+  ), 
+  (Document(
+     id='1', 
+     metadata={
+       'id': 1, 
+       'answer': 'Edo city', 
+       'question': 'what was the previous name of Tokyo?', 
+       'document_title': 'tokyo'
+     }, 
+     page_content='what was the previous name of Tokyo? Edo city'), 
+     nan
+  )
+]
+
+# now get this from running retriever alone:
+Type docs_and_similarity_score:  <class 'list'> 
+Content:  [(Document(id='2', metadata={'id': 2, 'answer': 'Tokyo for population density', 'question': 'what is the biggest capital city in Asia?', 'document_title': 'tokyo'}, page_content='what is the biggest capital city in Asia? Tokyo for population density'), 0.423141683527101), (Document(id='1', metadata={'id': 1, 'answer': 'Edo city', 'question': 'what was the previous name of Tokyo?', 'document_title': 'tokyo'}, page_content='what was the previous name of Tokyo? Edo city'), nan)]
+Score:  0.423141683527101
+Error parsing page_content for document 2: Expecting value: line 1 column 1 (char 0)
+Skipping document with NaN score: {'id': 1, 'answer': 'Edo city', 'question': 'what was the previous name of Tokyo?', 'document_title': 'tokyo'}
+Results from retrieve_relevant_vectors:  []
+Type relevant_vectors:  <class 'list'> 
+Content:  []
+JSON RESPONSE 063:  []
+Type docs_and_similarity_score:  <class 'list'> 
+Content:  [(Document(id='2', metadata={'id': 2, 'answer': 'Tokyo for population density', 'question': 'what is the biggest capital city in Asia?', 'document_title': 'tokyo'}, page_content='what is the biggest capital city in Asia? Tokyo for population density'), 0.423141683527101), (Document(id='1', metadata={'id': 1, 'answer': 'Edo city', 'question': 'what was the previous name of Tokyo?', 'document_title': 'tokyo'}, page_content='what was the previous name of Tokyo? Edo city'), nan)]
+Score:  0.423141683527101
+Error parsing page_content for document 2: Expecting value: line 1 column 1 (char 0)
+Skipping document with NaN score: {'id': 1, 'answer': 'Edo city', 'question': 'what was the previous name of Tokyo?', 'document_title': 'tokyo'}
+Results from retrieve_relevant_vectors:  []
+Type relevant_vectors:  <class 'list'> 
+Content:  []
+JSON RESPONSE 055:  []
+nothingu
+
+```
+
+- Will need to fix the logic in the function to get the answer fromt he metadata and not from the document content which is here just for similarity and have more context...
+- I have decided that the metadata will contain the response and we might actually only embed the question to increase the relevance score as user will just send a question and we searching against that...
