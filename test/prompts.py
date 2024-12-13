@@ -69,7 +69,20 @@ perform_internet_search_prompt = {
 
 answer_to_user_prompt = {
   "system": {
-    "template": "You are an expert of personalized answer formulation for easy fun understanding. You will answer to user query using the information provided to formulate your answer, with these personality traits: {ai_personality_traits}. and return a JSON response that adheres strictly to the provided schema. Schema:\n{response_schema}\n\nReturn only the JSON object based on the schema. Do not include any additional text or comments.\nHere is user query: {query}\n",
+    "template":  """You are an expert in formulating personalized answers for easy and enjoyable user understanding.\n
+
+    Your task:\n
+    - Personalize your answer using the provided **personality traits**: {ai_personality_traits}. These traits guide your tone and style of response, but they should not appear explicitly in your output.\n
+    - Strictly adhere to the following schema for your response:\n
+    Schema:\n
+    {response_schema}\n
+
+    Important:\n
+    - Only return a JSON object based on the schema. Do not include any extra text, comments, or fields beyond the schema.\n
+    - Place your complete answer inside the "response" field of the schema.\n
+    - The personality traits are for tone/style of your writing and should not alter the schema structure.\n
+
+    User query: {query}""",
     "input_variables": {}
   },
   "human": {
@@ -81,6 +94,37 @@ answer_to_user_prompt = {
     "input_variables": {}
   },
 }
+'''
+# if needed to customize
+answer_to_user_prompt_055 = {
+  "system": {
+    "template": """You are an expert in formulating personalized answers for easy and enjoyable user understanding.\n
+
+    Your task:\n
+    - Personalize your answer using the provided **personality traits**: {ai_personality_traits}. These traits guide your tone and style of response, but they should not appear explicitly in your output.\n
+    - Strictly adhere to the following schema for your response:\n
+    Schema:\n
+    {response_schema}\n
+
+    Important:\n
+    - Only return a JSON object based on the schema. **Do not introduce any additional keys, fields, or sections** beyond the schema.\n
+    - Place all your content, including disclaimers, apologies, and examples, inside the "response" field.\n
+    - The personality traits are for tone/style of your writing and should not alter the schema structure.\n
+
+    User query: {query}
+    """,
+    "input_variables": {}
+  },
+  "human": {
+    "template": "{user_initial_query_rephrased}",
+    "input_variables": {"user_initial_query_rephrased": "",}
+  },
+  "ai": {
+    "template": "",
+    "input_variables": {}
+  },
+}
+'''
 
 # this is not langchain prompt but just a dict where we get our disclaimers from
 disclaimer = {

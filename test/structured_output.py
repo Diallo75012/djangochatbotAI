@@ -27,11 +27,14 @@ answer_to_user_schema = {
   "answer_if_063": {
     "response": "answer the user making sure that it expresses you personality trait and stay polite but warm with user. Use this answer: {answer_with_disclaimer}"
   },
+  #"answer_if_055": {
+  #  "response": "answer user using this disclaimer: {disclaimer} as no relevant data have been found but those are similar queries that can be asked in order to get an answer, so that user know how to formulate question. Apologize and make sure you use your personality trait to answer in a certain way but staying polite."
+  #},
   "answer_if_055": {
-    "response": "answer user using this disclaimer: {disclaimer} as no relevant data have been found but those are similar queries that can be asked in order to get an answer, so that user know how to formulate question. Apologize and make sure you use your personality trait to answer in a certain way but staying polite."
+    "response": "Apologize politely, indicating no direct answer was found. Use a disclaimer way of answering and additionally, provide a list of example questions the user could ask for relevant answers: {disclaimer}. Ensure the tone reflects your personality traits."
   },
   "answer_if_nothing": {
-    "response": "answer user making sure that you use your personality trait and be warm to user but polite. Apologize as no data have been found after user query. Use this disclaimer: {disclaimer}."
+    "response": "Apologize politely, indicating no direct answer was found. Use a disclaimer way of answering like: {disclaimer}. Ensure the tone reflects your personality traits."
   },
 }
 

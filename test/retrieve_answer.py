@@ -150,6 +150,10 @@ def retrieve_answer_action(state: MessagesState):
   returns:
   retrieved answer for that specific user question
   """
+  #messages = state['messages']
+  #last_message = messages[-1].content
+  rephrased_user_query = os.getenv("REPHRASED_USER_QUERY")
+  
   # vars
   query: str = os.getenv("REPHRASED_USER_QUERY")
   # we will perform two retrieval with different scores

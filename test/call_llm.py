@@ -83,7 +83,6 @@ def call_llm(query: str, prompt_template_part: str, schema: str, llm: ChatGroq, 
       print("Parsed response underscores: ", response_parsed)
 
     else:
-      print(" '```' in not response")
       if "```python" in response.content:
         print(" '```python' in response")
         # parse response and clean it to limit errors of not valid json error when transforming to dictionary
@@ -91,6 +90,7 @@ def call_llm(query: str, prompt_template_part: str, schema: str, llm: ChatGroq, 
         response_parsed = response_parsed.replace("\\_", "_")
         print("Parsed response underscores: ", response_parsed)
       else:
+        print(" '```' not in response")
         response_parsed = response.content
     # transform to dict
     response_content_to_dict = string_to_dict(response_parsed)
