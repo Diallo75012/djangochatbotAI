@@ -833,5 +833,60 @@ nothingu
 
 ```
 
-- Will need to fix the logic in the function to get the answer fromt he metadata and not from the document content which is here just for similarity and have more context...
+# Next
+- Will need to fix the logic in the function to get the answer from the metadata and not from the document content which is here just for similarity and have more context...
 - I have decided that the metadata will contain the response and we might actually only embed the question to increase the relevance score as user will just send a question and we searching against that...
+- Need to improve function logic and catch errors gracefully 
+- Need to implement only question embedding in document content and in the retrieval get the answer from the metadata answer
+
+#### All keys that need to be checked in agent retriever node:
+```code
+error_vector, answers, nothing
+top_n > 1
+'score_064_*'
+'score_055_*'
+top_n = 1
+vector_responses["score_063"]
+'score_064'
+'score_055'
+```
+#### all keys to check in agent app views after retrieval agents are done:
+```code
+'response_nothing'
+'error_response_nothing'
+```
+
+
+[{
+  'answer': answer['answer'],
+  'score': answer['score'],
+  'question': answer['question']
+}]
+
+# Where are we at:
+- ok now the retrieval works for the different scenarios, answer yes, answer questions only, answer no.
+- Need to create the AI_PERSONALITY_TRAITS en var or find where we do set those.
+- [x] **set AI_PERSONALITY_TRAITS as i don't find it set anywhere** : found this, it set at the normal place in `clientchat` views and using `agents.app_utils.ai_personality` module to create the dictionary and format it and in `view.py` of `clientchat` we are saving the `AI_PERSONALITY_TRAITS`  env var
+- we have to embed only the questions in the content part of the document
+- we can start plugging in the retrieval graph by moving the functions to the agent app from the test folder and start server and try the flow from user request to UI answer reception: start raw answer and then improve it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

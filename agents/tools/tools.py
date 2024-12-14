@@ -1,4 +1,5 @@
 import os
+import json
 # for typing func parameters and outputs and states
 from typing import Dict, List, Tuple, Any, Optional
 # one is @tool decorator and the other Tool class
@@ -12,10 +13,12 @@ from langchain_community.tools import (
 )
 from agents.llms.llms import (
   groq_llm_mixtral_7b,
+  groq_llm_mixtral_larger,
   groq_llm_llama3_8b,
   groq_llm_llama3_8b_tool_use,
   groq_llm_llama3_70b,
   groq_llm_llama3_70b_tool_use,
+  groq_llm_llama3_vision_large,
   groq_llm_gemma_7b,
 )
 from agents.app_utils import retrieve_answer
@@ -47,14 +50,15 @@ tool_search_node = ToolNode([search])
 # LLMs WITH BINDED TOOLS
 llm_with_internet_search_tool = groq_llm_llama3_70b_tool_use.bind_tools([search])
 
+
 """
 TOOL TO PERFORM RETRIEVAL OF DATA
 """
 # retrieval tool
 @tool
-def retrieve_answer(query: str, state: MessagesState = MessagesState()):
+def retrieve_answer_action(query: str, state: MessagesState = MessagesState()):
   """
-  Retrieves answer best answer from user query
+  Retrieves best answer for user query from the vector database
 
   Parameter:
   query: str = user question
@@ -107,6 +111,10 @@ def retrieve_answer(query: str, state: MessagesState = MessagesState()):
 ### THIS TO BE USED AND EXPORTED ###
 ####################################
 # retrieve_answer tool node
-tool_retrieve_answer_node = ToolNode([retrieve_answer])
+tool_retrieve_answer_node = ToolNode([retrieve_answer_action])
 # LLMs WITH BINDED TOOLS
-llm_with_retrieve_answer_tool_choice = groq_llm_llama3_70b_tool_use.bind_tools([retrieve_answer])
+# trying with larger context llm as i get groq error for to large request when using llama 70b tool use
+# groq_llm_llama3_vision_large.bind_tools([retrieve_answer_action])
+# groq_llm_mixtral_larger.bind_tools([retrieve_answer_action])
+# groq_llm_llama3_70b_tool_use.bind_tools([retrieve_answer_action])
+llm_with_retrieve_answer_tool_choice = groq_llm_llama3_vision_large.bind_tools([retrieve_answer_action])

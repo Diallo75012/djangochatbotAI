@@ -73,16 +73,7 @@ def call_llm(query: str, prompt_template_part: str, schema: str, llm: ChatGroq, 
     response = prompt_and_model.invoke({"query": query, "response_schema": schema})
     print("RESPONSE: ", response.content)
     # parse content from dict
-    if "```json" in response.content:
-      print(" '```json' in response")
-      # parse response and clean it to limit errors of not valid json error when transforming to dictionary
-      response_parsed = response.content.split("```")[1].strip("json").strip().replace("`", "")
-
-      # 1. Replace escaped underscores first to avoid double-replacing backslashes.
-      response_parsed = response_parsed.replace("\\_", "_")
-      print("Parsed response underscores: ", response_parsed)
-
-    elif "```markdown" in response.content:
+    if "```markdown" in response.content:
       print(" '```markdown' in response")
       # parse response and clean it to limit errors of not valid json error when transforming to dictionary
       response_parsed = response.content.split("```")[1].strip("markdown").strip().replace("`", "")
@@ -90,18 +81,24 @@ def call_llm(query: str, prompt_template_part: str, schema: str, llm: ChatGroq, 
       # 1. Replace escaped underscores first to avoid double-replacing backslashes.
       response_parsed = response_parsed.replace("\\_", "_")
       print("Parsed response underscores: ", response_parsed)
+
     else:
-      print(" '```' in not response")
       if "```python" in response.content:
         print(" '```python' in response")
         # parse response and clean it to limit errors of not valid json error when transforming to dictionary
         response_parsed = response.content.split("```")[1].strip("python").strip().replace("`", "")
         response_parsed = response_parsed.replace("\\_", "_")
         print("Parsed response underscores: ", response_parsed)
+      elif "```json" in response.content:
+        print(" '```json' in response")
+        # parse response and clean it to limit errors of not valid json error when transforming to dictionary
+        response_parsed = response.content.split("```")[1].strip("json").strip().replace("`", "")
+        response_parsed = response_parsed.replace("\\_", "_")
+        print("Parsed response underscores: ", response_parsed)
       else:
+        print(" '```' not in response")
         response_parsed = response.content
     # transform to dict
-    print("Response parsed: ", response_parsed)
     response_content_to_dict = string_to_dict(response_parsed)
     print("Response content dict: ", response_content_to_dict)
     return response_content_to_dict

@@ -9,6 +9,8 @@ from agents.app_utils import (
   retrieve_answer,
   embed_data,
 )
+# retrieval agent
+from agents.graph.retrieval_agent_graph import retrieval_agent_team
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
@@ -63,8 +65,11 @@ def callLlmApi(request):
 @user_passes_test(is_business_user, login_url='users:loginbusinessuser')
 def retrieveData(request):
   user_query = os.getenv("USER_INITIAL_QUERY")
-  retrieval_response = retrieval_agent_graph(user_query)
+  retrieval_response = retrieval_agent_team(user_query)
   retrieval_json = json.loads(retrieval_response)
+  '''
+  THIS UNDER NEED TO BE ADAPTED TO POSSIBLE OUTCOMES
+  '''
   # all error types returned by graph: "error", "error_vector", "error_reponse_nothing", "error_reponse_063", "error_reponse_055"
   list_errors = ["error", "error_vector", "error_response_nothing", "error_response_063", "error_response_055"]
   list_answers = ["response_nothing", "response_063", "response_055"]

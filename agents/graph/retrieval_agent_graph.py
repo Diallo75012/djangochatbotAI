@@ -7,6 +7,7 @@ from agents.structured_output.structured_output import (
   analyse_user_query_safety_schema,
   summarize_user_to_clear_question_schema,
   answer_to_user_schema,
+  retrieve_answer_schema,
 )
 # prompts
 from agents.prompts.prompts import (
@@ -14,9 +15,13 @@ from agents.prompts.prompts import (
   summarize_user_to_clear_question_prompt,
   retrieve_answer_prompt,
   answer_to_user_prompt,
+  # only if needed custom answer prompt
+  #answer_to_user_prompt_055,
   disclaimer,
 )
 # utils
+from agents.app_utils.json_dumps_manager import safe_json_dumps
+from agents.app_utils.token_count_helper import token_counter
 from agents.app_utils import (
   call_llm,
   prompt_creation,
@@ -27,6 +32,8 @@ from agents.tools.tools import (
   llm_with_retrieve_answer_tool_choice,
   tool_retrieve_answer_node,
 )
+# Retrieve Vector
+from agents.app_utils.retrieve_answer import retrieve_answer_action
 # LLMs
 from agents.llms.llms import (
   groq_llm_mixtral_7b,
@@ -103,13 +110,14 @@ def analyse_user_query_safety(state: MessagesState):
 
   if last_message == os.getenv("USER_INITIAL_QUERY"):
     query = prompt_creation.prompt_creation(analyse_user_query_safety_prompt["human"], user_initial_query=last_message)
+    print("query: ", query)
   else:
     return {"messages": [{"role": "ai", "content": json.dumps({"error": "User query to start graph different from environment variable set for user query."})}]}
   
   # get the answer as we want it using structured output schema directly injected in prompt
   try:
-    decision = call_llm.call_llm(query, analyse_user_query_safety_prompt["system"]["template"], analyse_user_query_schema, groq_llm_llama3_70b)
-    if decision.safe.lower() == "true":
+    decision = call_llm.call_llm(query, analyse_user_query_safety_prompt["system"]["template"], analyse_user_query_safety_schema, groq_llm_llama3_70b)
+    if decision["safe"].lower() == "valid":
       return {"messages": [{"role": "ai", "content": json.dumps({"safe":"safe"})}]}
     return {"messages": [{"role": "ai", "content": json.dumps({"unsafe": "unsafe"})}]}
   except Exception as e:
@@ -137,10 +145,10 @@ def summarize_user_to_clear_question(state: MessagesState):
 
   user_initial_query = os.getenv("USER_INITIAL_QUERY")
   query = prompt_creation.prompt_creation(summarize_user_to_clear_question_prompt["human"], user_initial_query=user_initial_query)
-  
+
   # rephrase user intial query to a question
   try:
-    clear_question = call_llm.call_llm(query, summarize_user_to_clear_question_prompt["system"]["template"], summarize_user_to_clear_schema, groq_llm_llama3_70b)
+    clear_question = call_llm.call_llm(query, summarize_user_to_clear_question_prompt["system"]["template"], summarize_user_to_clear_question_schema, groq_llm_llama3_70b)
     if clear_question:
       question = clear_question["question"]
       set_key(".vars.env", "REPHRASED_USER_QUERY", question)
@@ -157,17 +165,26 @@ def question_rephrased_or_error(state: MessagesState):
   last_message = messages[-1].content
 
   if 'success' in last_message:
-    return "retrieve_answer_agent"
+    #return "retrieve_answer_agent"
+    return "retrieve_answer_action"
   return "error_handler"
 
 # NODE
 def retrieve_answer_agent(state: MessagesState):
   rephrased_user_query = os.getenv("REPHRASED_USER_QUERY")
-  prompt = prompt_creation.prompt_creation(retrieve_answer_prompt["system"], query=rephrased_user_query, response_schema=retrieve_answer_prompt_schema) 
-  response = llm_with_retrieve_answer_tool_choice.invoke(json.dumps(prompt))
-  # return response for the answer_retriever tool to be able to perform the retrieval task from this llm binded tool choice
-  # return {"messages": [response]}
-  return {"messages": [{"role": "ai", "content": json.dumps({"response": response})}]}
+  state_history = MessagesState()
+
+  try:
+    #response = tool_retrieve_answer_node.invoke(tool_schema)
+    response = retrieve_answer_action(state_history)
+    print("Retriever node response: ", response, type(response))
+    # we return the response from the retriever which is already in the right format for state update
+    return 
+  except Exception as e:
+    print(f"Error during tool node execution: {e}")
+    return {"messages": [{"role": "ai", "content": json.dumps({"error": str(e)})}]}
+
+  #return {"messages": [{"role": "ai", "content": json.dumps({"response": response})}]}
 
 # CONDITIONAL EDGE
 def retrieved_answer_or_not(state: MessagesState):
@@ -175,119 +192,136 @@ def retrieved_answer_or_not(state: MessagesState):
   Here we will capture the answer fromt he state which is success or error
   '''
   messages = state["messages"]
-  last_message = json.loads(messages[-1].content)["response"]
-  
+  print("Retrieved answer or not mssages: ", messages[-1].content)
+  #last_message = json.loads(messages[-1].content[-1])
+  last_message = json.loads(messages[-1].content)
+  print("Last message in retrieved_answer_or_not: ", last_message, type(last_message))
+
   '''
-    # Last Message Should Look Like Returns
-    {
-      "score_063": {
-        'question': vector['question'],
-        'answer': vector['answer'],
-        'score': vector['score'],
-      },
-      "score_055": {
-        'question': vector['question'],
-        'answer': vector['answer'],
-        'score': vector['score'],
-      },
-    }
-
-  OR
-
-    { 
-      "nothing": "nothing_in_cache_nor_vectordb"
-    }
+  # first keys to check
+  error_vector, answers, nothing
+  # then for answers key
+  top_n > 1
+  'score_064_*'
+  'score_055_*'
+  top_n = 1
+  'score_064'
+  'score_055'
   '''
-
-  
-  if "vector_responses" or "nothing" in last_message:
-    # we will evaluate 055 vs 063 in "answer_user" node
-    return "answer_to_user"
-  elif "error_vector" in last_message:
+  if "error_vector" in last_message:
     return "error_handler"
+  elif "nothing" in last_message:
+    #ai_messages = AIMessage(content="nothing")
+    state["messages"].append({"role": "ai", "content": "nothing"})
+    return "answer_to_user"
+  else:
+    #ai_messages = AIMessage(content="answers")
+    state["messages"].append({"role": "ai", "content": "answers"})
+    return "answer_to_user"
+      
+
+
 
 # NODE
 def answer_to_user(state: MessagesState):
 
   '''
-    Different tyoes of answers at the end graph: "response_nothing", "response_063", "response_055"
+    we check first the last message if equal to: answers or nothing
+    Then we answer directly if nothing
+    OR we need to fetch the answer from the previous message, so the `-2` message one.
   '''
+  print("full state in answer to user: ", state)
   messages = state['messages']
-  
-  ## GETTNG ALL VARS NEEDED
-  # last_message is the vector retrieved or not from database
-  vector_db_answer = json.loads(messages[-1].content)
+  last_message = json.loads(messages[-1].content)
+  print("Last message from answer to user: ", last_message, type(last_message))
   '''
-    # Last Message Should Look Like Returns. I hasn't change since retrieval (same)
-    {
-      # get answer from this one
-      "score_063": {
-        'question': vector['question'],
-        'answer': vector['answer'],
-        'score': vector['score'],
-      },
-      # get questions from this one if no 0063
-      "score_055": {
-        'question': vector['question'],
-        'answer': vector['answer'],
-        'score': vector['score'],
-      },
-    }
-
-  OR
-
-    { 
-      "nothing": "nothing_in_cache_nor_vectordb"
-    }
+    {"answers": {"score_063_1": "Tokyo for population density", "score_055_1": "what is the biggest capital city in Asia?"}}
   '''
-  # no need to make it JSON or Dict, we just will inject it in prompt at the right place
-  # so ai_personality_traits should be saved to env vars using jsom.dumps and here json.loads to get traits and use a function to inject in prompt with default value if some generic fields are missing.
-  ai_personality_traits = os.getenv("AI_PERSONALITY_TRAITS")
   user_initial_query_rephrased = os.getenv("REPHRASED_USER_QUERY")
-  query = prompt_creation.prompt_creation(answer_to_user_prompt["human"], user_initial_query_rephrased=user_initial_query_rephrased)
   
-  '''
-    Nedd here to add if statements to check last messsage what is the level of retrieval if any and call llm then to make the final answer
-  '''
+  ai_personality = "("
+  ai_personality_traits = json.loads(os.getenv("AI_PERSONALITY_TRAITS"))
+  print("ai_personality_traits: ", ai_personality_traits, type(ai_personality_traits))
+  for k, v in ai_personality_traits.items():
+    ai_personality += f"{k} is {v}, "
+  ai_personality = ai_personality[:-1] + ")"
+  print("Ai personality: ", ai_personality)
+  
+  query = prompt_creation.prompt_creation(answer_to_user_prompt["human"], user_initial_query_rephrased=user_initial_query_rephrased)
+  answer_063 = ""
+  question_055 = ""
 
-  # FLOW ZERO ANSWER
-  if vector_db_answer["nothing"]:
+  # inject ai_personality_traits in system prompt:
+  answer_to_user_prompt_ai_personality_injected = answer_to_user_prompt["system"]["template"].format(ai_personality_traits=json.dumps(ai_personality), response_schema="{response_schema}", query="{query}")
+  # if using customized prompt
+  #answer_to_user_prompt_ai_personality_injected_055 = answer_to_user_prompt_055["system"]["template"].format(ai_personality_traits=json.dumps(ai_personality), response_schema="{response_schema}", query="{query}")
+  #print("answer_to_user_prompt_ai_personality_injected_055: ", answer_to_user_prompt_ai_personality_injected_055)
+
+  # FLOW ZERO ANSWER  
+  if "nothing" in last_message:
+    # answer accordingly! using AI or not
+
     disclaimer_nothing = disclaimer["nothing"].format(user_initial_question=user_initial_query_rephrased)
     # get schema and inject variables in schema
     schema_if_nothing = answer_to_user_schema["answer_if_nothing"]["response"].format(disclaimer=disclaimer_nothing)
     # call llm and then stop graph returning final answer to user
     try:
-      final_answer_nothing = call_llm.call_llm(query, answer_to_user_prompt["system"]["template"], schema_if_nothing, groq_llm_llama3_70b)
+      final_answer_nothing = call_llm.call_llm(query, answer_to_user_prompt_ai_personality_injected, schema_if_nothing, groq_llm_llama3_70b)
       # get the 'response' from the schema
-      response_nothing = fianl_answer_nothing["response"]
+      response_nothing = final_answer_nothing["response"]
       return {"messages": [{"role": "ai", "content": json.dumps({"response_nothing": response_nothing})}]}
     except Exception as e:
-      return {"messages": [{"role": "ai", "content": json.dumps({"error_response_nothing": e})}]}
+      return {"messages": [{"role": "ai", "content": json.dumps({"error_response_nothing": e})}]}    
 
-  # FLOW ANSWERING USER WITH ANSWER FOUND    
-  if vector_db_answer["score_063"]:
-    # get answer
-    answers_063 = vector_db_answer["score_063"]["answer"]
-    disclaimer_answer_found_but_disclaim_accuracy = disclaimer["answer_found_but_disclaim_accuracy"].format(
-      user_initial_question=user_initial_query_rephrased,
-      answer_found_in_vector_db=answer_063,
-    )
-    schema_if_063 = answer_to_user_schema["answer_if_063"]["response"].format(
-      answer_with_disclaimer=disclaimer_answer_found_but_disclaim_accuracy
-    )
-    try:
-      final_answer_063 = call_llm.call_llm(query, answer_to_user_prompt["system"]["template"], schema_if_063, groq_llm_llama3_70b)
-      # get the 'response' from the schema
-      response_063 = fianl_answer_063["response"]
-      return {"messages": [{"role": "ai", "content": json.dumps({"response_063": response_063})}]}
-    except Exception as e:
-      return {"messages": [{"role": "ai", "content": json.dumps({"error_response_063": e})}]}
+  # FLOW ANSWERS VALID OR PARTIAL EXAMPLES
+  elif "answers" in last_message:
+    answers_dict_of_dict = last_message
+    print("Answers Dict of Dict in Answer_to_user node: ", answers_dict_of_dict)
 
-  # FLOW WITH SIMILAR QUESTION BUT NO ANSWER FOUND  
-  else:
-    if vector_db_answer["score_055"]:
-      # get question
-      question_055 = vector_db_answer["score_055"]["question"]
+    # now just check if answer come from the higher score band or the lower one to tailor the answer type
+    # we loop through and check those keys: get all answers
+    for k, v in answers_dict_of_dict["answers"].items():
+      # this is our valid answers flow
+      if "063" in k:
+        # get answer
+        answer_063 = answer_063 + v + ". "
+      # this is our mitigated answer flow
+      # we will just advice user by saying not found but we have this kind of questions answers 
+      # and then show sample of those questions from retrieval result score 055
+      elif "055" in k:
+        # get answer
+        question_055 = question_055 + v + ". "
+
+    # FLOW ANSWERING USER WITH ANSWER FOUND: VALID
+    # we want to send good answers if we have some in priority, if there is none, next conditional will be triggered
+    # as we could have both 063 and 055 but if tehre is 063 we ignore here 055 and just answer with good answers
+    # 055 is just a backup answer
+    if answer_063 != "":
+      print("answer_063: ", answer_063)
+      disclaimer_answer_found_but_disclaim_accuracy = disclaimer["answer_found_but_disclaim_accuracy"].format(
+        user_initial_question=user_initial_query_rephrased,
+        answer_found_in_vector_db=answer_063,
+      )
+      schema_if_063 = answer_to_user_schema["answer_if_063"]["response"].format(
+        answer_with_disclaimer=disclaimer_answer_found_but_disclaim_accuracy
+      )
+      try:
+        final_answer_063 = call_llm.call_llm(query, answer_to_user_prompt_ai_personality_injected, schema_if_063, groq_llm_llama3_70b)
+        print("final answer 063: ", final_answer_063)
+        # get the 'response' from the schema
+        # why ? i don't know but there is sometimes a key in response `text` so dict in dict and we need to extract it.
+        if isinstance(final_answer_063.get("response"), dict) and "text" in final_answer_063["response"]:
+          response_063 = final_answer_063["response"]["text"]
+          return {"messages": [{"role": "ai", "content": json.dumps({"response": response_063})}]}
+        else:
+          response_063 = final_answer_063["response"]
+          return {"messages": [{"role": "ai", "content": json.dumps({"response": response_063})}]}
+      except Exception as e:
+        return {"messages": [{"role": "ai", "content": json.dumps({"error": e})}]}
+
+    # FLOW WITH SIMILAR QUESTION BUT NO ANSWER FOUND
+    if question_055 != "" and answer_063 == "":
+      print("question_055: ", question_055)
       disclaimer_only_this_type_of_questions_example_show_to_user = disclaimer["example_of_questions_having_answers"].format(
         user_initial_question=user_initial_query_rephrased,
         type_of_questions_example_show_to_user=question_055,
@@ -295,20 +329,24 @@ def answer_to_user(state: MessagesState):
       schema_if_055 = answer_to_user_schema["answer_if_055"]["response"].format(
         disclaimer=disclaimer_only_this_type_of_questions_example_show_to_user
       )
-    try:
-      final_answer_055 = call_llm.call_llm(query, answer_to_user_prompt["system"]["template"], schema_if_055, groq_llm_llama3_70b)
-      # get the 'response' from the schema
-      response_063 = fianl_answer_055["response"]
-      return {"messages": [{"role": "ai", "content": json.dumps({"response_055": response_055})}]}
-    except Exception as e:
-      return {"messages": [{"role": "ai", "content": json.dumps({"error_response_055": e})}]} 
+      try:
+        final_answer_055 = call_llm.call_llm(query, answer_to_user_prompt_ai_personality_injected, schema_if_055, groq_llm_llama3_70b)
+        # get the 'response' from the schema
+        if isinstance(final_answer_055.get("response"), dict) and "text" in final_answer_055["response"]:
+          response_055 = final_answer_055["response"]["text"]
+          return {"messages": [{"role": "ai", "content": json.dumps({"response": response_055})}]}
+        else:
+          response_055 = final_answer_055["response"]
+          return {"messages": [{"role": "ai", "content": json.dumps({"response": response_055})}]}
+      except Exception as e:
+        return {"messages": [{"role": "ai", "content": json.dumps({"error": e})}]} 
 
 # error handling
 def error_handler(state: MessagesState):
   messages = state['messages']
   
   # Log the graph errors in a file
-  with open("./logs/retrieval_graph_logs.log", "a", encoding="utf-8") as conditional:
+  with open("../logs/retrieval_graph_logs.log", "a", encoding="utf-8") as conditional:
       json_error_message = messages[-1].content
       conditional.write(f"\n\n{json_error_message}\n\n")
   '''
@@ -344,8 +382,8 @@ workflow = StateGraph(MessagesState)
 workflow.add_node("error_handler", error_handler)
 workflow.add_node("analyse_user_query_safety", analyse_user_query_safety)
 workflow.add_node("summarize_user_to_clear_question", summarize_user_to_clear_question)
-workflow.add_node("retrieve_answer_agent", retrieve_answer_agent)
-workflow.add_node("tool_retrieve_answer_node", tool_retrieve_answer_node)
+# workflow.add_node("retrieve_answer_agent", retrieve_answer_agent)
+workflow.add_node("retrieve_answer_action", retrieve_answer_action)
 workflow.add_node("answer_to_user", answer_to_user)
 
 # edges
@@ -358,9 +396,9 @@ workflow.add_conditional_edges(
   "summarize_user_to_clear_question",
   question_rephrased_or_error
 )
-workflow.add_edge("retrieve_answer_agent", "tool_retrieve_answer_node")
 workflow.add_conditional_edges(
-  "tool_retrieve_answer_node", 
+  #"retrieve_answer_agent",
+  "retrieve_answer_action",
   retrieved_answer_or_not
 )
 
@@ -370,7 +408,7 @@ workflow.add_edge("answer_to_user", END)
 
 # compile
 checkpointer = MemorySaver()
-c = workflow.compile(checkpointer=checkpointer)
+user_query_processing_stage = workflow.compile(checkpointer=checkpointer)
 
 ###############################
 ## GRAPH CODE LOGIC ABOVE IT ##
@@ -397,10 +435,13 @@ def retrieval_agent_team(user_query):
     else:
       output = beautiful_graph_output.beautify_output(step)
       print(f"Step {count}: {output}")
-      final_output = json.dumps(step)
-  
+      try:
+        final_output = safe_json_dumps(step)
+      except TypeError:
+        final_output = safe_json_dumps(step)
+
   # subgraph drawing
-  graph_image = workflow.compile(checkpointer=checkpointer).get_graph().draw_png()
+  graph_image = user_query_processing_stage.get_graph().draw_png()
   with open("retrieval_agent_team.png", "wb") as f:
     f.write(graph_image)
 
@@ -415,10 +456,10 @@ def retrieval_agent_team(user_query):
   return final_output
 
 
-
+"""
 if __name__ == '__main__':
-
+  import json
   load_dotenv()
   user_query = os.getenv("USER_INITIAL_QUERY")
   retrieval_agent_team(user_query)
-
+"""

@@ -89,6 +89,12 @@ def call_llm(query: str, prompt_template_part: str, schema: str, llm: ChatGroq, 
         response_parsed = response.content.split("```")[1].strip("python").strip().replace("`", "")
         response_parsed = response_parsed.replace("\\_", "_")
         print("Parsed response underscores: ", response_parsed)
+      elif "```json" in response.content:
+        print(" '```json' in response")
+        # parse response and clean it to limit errors of not valid json error when transforming to dictionary
+        response_parsed = response.content.split("```")[1].strip("json").strip().replace("`", "")
+        response_parsed = response_parsed.replace("\\_", "_")
+        print("Parsed response underscores: ", response_parsed)
       else:
         print(" '```' not in response")
         response_parsed = response.content

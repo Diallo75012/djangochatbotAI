@@ -118,16 +118,3 @@ tool_retrieve_answer_node = ToolNode([retrieve_answer_action])
 # groq_llm_llama3_70b_tool_use.bind_tools([retrieve_answer_action])
 llm_with_retrieve_answer_tool_choice = groq_llm_llama3_vision_large.bind_tools([retrieve_answer_action])
 
-
-
-
-
-
-
-
-
-
-
-
-
-

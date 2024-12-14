@@ -78,3 +78,7 @@
 
 {"error": "An error occured while trying to rephrase user query: An error occured while calling llm: Error converting string to dictionary: Expecting value: line 1 column 1 (char 0)"}
 
+
+
+{"error_vector": "An error occured while trying to perform vectordb search 063 query: model \"mistral:7b\" not found, try pulling it first"}
+
