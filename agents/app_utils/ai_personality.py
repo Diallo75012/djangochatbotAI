@@ -1,3 +1,5 @@
+import os
+import ast
 from dotenv import load_dotenv
 from typing import Dict, List, Tuple, Any, Optional
 
@@ -48,7 +50,7 @@ def personality_trait_formatting(trait_dict) -> dict:
       "chatbot_expertise": chatbot_expertise,
     }
   """
-  ai_personality_env_var = os.getenv("AI_PERSONALITY_TRAIT")
+  ai_personality_env_var = os.getenv("DEFAULT_AI_PERSONALITY_TRAIT")
   ai_personality_default = string_to_dict(ai_personality_env_var)
   # we made sure to have same key names for dafault and custom clintuser/businessuser defined AI personality trait
   for k, v in trait_dict.items():

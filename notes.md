@@ -850,29 +850,53 @@ vector_responses["score_063"]
 'score_064'
 'score_055'
 ```
+
+# all error types returned by graph: "error", "error_vector", "error_reponse_nothing", "error_reponse_063", "error_reponse_055"
+```python
+list_errors = ["error", "error_vector", "error_response_nothing", "error_response_063", "error_response_055"]
+list_answers = ["response_nothing", "response_063", "response_055"]
+```
+
 #### all keys to check in agent app views after retrieval agents are done:
 ```code
 'response_nothing'
 'error_response_nothing'
 ```
-
-
+```code
 [{
   'answer': answer['answer'],
   'score': answer['score'],
   'question': answer['question']
 }]
+```
 
 # Where are we at:
-- ok now the retrieval works for the different scenarios, answer yes, answer questions only, answer no.
-- Need to create the AI_PERSONALITY_TRAITS en var or find where we do set those.
+- [x] ok now the retrieval works for the different scenarios, answer yes, answer questions only, answer no.
+- [x] Need to create the AI_PERSONALITY_TRAITS en var or find where we do set those.
 - [x] **set AI_PERSONALITY_TRAITS as i don't find it set anywhere** : found this, it set at the normal place in `clientchat` views and using `agents.app_utils.ai_personality` module to create the dictionary and format it and in `view.py` of `clientchat` we are saving the `AI_PERSONALITY_TRAITS`  env var
-- we have to embed only the questions in the content part of the document
-- we can start plugging in the retrieval graph by moving the functions to the agent app from the test folder and start server and try the flow from user request to UI answer reception: start raw answer and then improve it.
+- [x] we have to embed only the questions in the content part of the document
+- [x] we can start plugging in the retrieval graph by moving the functions to the agent app from the test folder and start server and try the flow from user request to UI answer reception: start raw answer and then improve it.
 
 
+# think at logging to file instead of printing everywhere
+```python
+import logging
+
+# this for timestamps
+logging.basicConfig(format='%(asctime)s %(message)s')
+# this for the logginf message with the level of logging
+logging.warning('is when this event was logged.') 
+
+# need to do the configs better in settings.py
+We have commented out advance logging settings and need to work on it
+```
 
 
+# Next
+
+- need to test webui as the flow goes but not sure why but we are not able to retrieve even with very low score.
+- need to handle the error when default bot doesn't exist for selected document
+- need to review the connection between bot settings and the business data, as it is too restrictive, we should be able to create several bot settings independently but just linked to a business user in one to one but not one to one to business data
 
 
 

@@ -124,11 +124,13 @@ def answer_retriever(query: str, relevance_score: float, top_n: int) -> List[Dic
       })
   return results
 
+# helper function if needed to parse from list of possible answers/error and et a json.dumps() response
+# for the moment we will use other way of handling that by always returning json.dumps() and consistent key
 def retrieval_view_response_transmit(retrieval_graph_output_json_loads, list_answers, list_errors):
   # handle errors
-  for err in list_errors:
-    if err in retrieval_json:
-      response = json.dumps({ err: retrieval_json[err]})
+  for error in list_errors:
+    if error in retrieval_json:
+      response = json.dumps({ error: retrieval_json[err]})
       return response
   # handle answers
   for answer in list_answers:

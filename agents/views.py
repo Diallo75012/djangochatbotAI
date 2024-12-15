@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 from django.shortcuts import render
 from django.http import HttpResponse
 from agents.app_utils import (
@@ -8,6 +9,7 @@ from agents.app_utils import (
   process_query,
   retrieve_answer,
   embed_data,
+  delete_embeddings,
 )
 # retrieval agent
 from agents.graph.retrieval_agent_graph import retrieval_agent_team
@@ -51,7 +53,9 @@ BUSINESS_COLLECTION_NAME = os.getenv("BUSINESS_COLLECTION_NAME")
 # check if user is business and use this in decorator to it test
 def is_business_user(user):
   return user.groups.filter(name='business').exists()
-
+# check if user is client and use this in decorator to it test
+def is_client_user(user):
+  return user.groups.filter(name='client').exists()
 
 def callLlmApi(request):
   return HttpResponse("calling API")
@@ -61,35 +65,60 @@ def callLlmApi(request):
 '''
 
 @csrf_exempt
-@login_required(login_url='users:loginbusinessuser')
-@user_passes_test(is_business_user, login_url='users:loginbusinessuser')
+@login_required(login_url='users:loginclientuser')
+@user_passes_test(is_client_user, login_url='users:loginclientuser')
 def retrieveData(request):
   user_query = os.getenv("USER_INITIAL_QUERY")
-  retrieval_response = retrieval_agent_team(user_query)
-  retrieval_json = json.loads(retrieval_response)
-  '''
-  THIS UNDER NEED TO BE ADAPTED TO POSSIBLE OUTCOMES
-  '''
-  # all error types returned by graph: "error", "error_vector", "error_reponse_nothing", "error_reponse_063", "error_reponse_055"
-  list_errors = ["error", "error_vector", "error_response_nothing", "error_response_063", "error_response_055"]
-  list_answers = ["response_nothing", "response_063", "response_055"]
+  try:
+    # retrieval response while like: `{"messages": [{"role": "ai", "content": json.dumps({"response": response_055})}]}`
+    retrieval_response = retrieval_agent_team(user_query)
+    print("Retrieval Response RAW from agents to django view: ", json.loads(retrieval_response), type(json.loads(retrieval_response)))
+    # here we target the content of the dict returned and json.load it (deserialize): json.dumps({"response": response_055})}
+    retrieval_response_json = json.loads(retrieval_response)
+    retrieval_message_content_json = json.loads(retrieval_response_json['answer_to_user']['messages'][-1]['content'])
+    # we should here get the dictionary like (could be an `error` as well): {"response": response_055} 
+    print("retrieval_message_content_json: ", retrieval_message_content_json, type(retrieval_message_content_json), "retrieval_message_content_json Keys(): ", retrieval_message_content_json.keys())
 
-  # response here will be type json_dumps() so we can sent it like that and json.load it in javascript passing through the client_chat view which has the csrf token
-  # key of dict is `"answer"`
-  response = retrieve_answer.retrieval_view_response_transmit(retrieval_json, list_answers, list_errors)
-  return HttpResponse(response, content_type='application/json', status=200)
+    '''
+      make sure to send either 'error': <response error> OR 'answer': <response answer> in dict and json.dumps() that is what is the `clientchat` is waiting for
+    '''
+    
+    for k, v in retrieval_message_content_json.items():
+      if k == "response_nothing":
+        response_transmit = {"answer": v}
+        print(f"Found Response: {response_transmit}")
+        return HttpResponse(json.dumps(response_transmit), content_type='application/json', status=200)
+      elif k == "response":
+        response_transmit = {"answer": v}
+        print(f"Found Response: {response_transmit}")
+        return HttpResponse(json.dumps(response_transmit), content_type='application/json', status=200)
+      else:
+        response_transmit = {"error": v}
+        print(f"Response Error: {response_transmit}")
+        return HttpResponse(json.dumps(response_transmit), content_type='application/json', status=400)
+
+  except requests.exceptions.RequestException as e:
+    # log also here for Devops/Security 
+    error_message = {"error": f"An error occured while trying to retrieveData: {e}"}
+    print(error_message)
+    return HttpResponse(json.dumps(error_message), content_type="applicatiion/json", status=500)
+  except Exception as e:
+    # log also here for Devops/Security 
+    error_message = {"error": f"An exception error occured while trying to retrievedata: {e}"}
+    print(error_message)
+    return HttpResponse(json.dumps(error_message), content_type="applicatiion/json", status=400)
 
 
 # we need this decorator for internal API calls to not require any CSRF token
 # decorators are read from next to function to out
 # here is the correct order, we check the test if user is business, if user is logged in, and examplt csrf token for internal API call
 @csrf_exempt
-#@login_required(login_url='users:loginbusinessuser')
-#@user_passes_test(is_business_user, login_url='users:loginbusinessuser')
+@login_required(login_url='users:loginbusinessuser')
+@user_passes_test(is_business_user, login_url='users:loginbusinessuser')
 def embedData(request, pk):
 
   # fetch required data from databaase to prepare documents to be embedded
-  business_document = get_object_or_404(BusinessUserData, pk=pk) #user=request.user)
+  business_document = get_object_or_404(BusinessUserData, pk=pk, user=request.user)
   business_document_title = business_document.document_title
   business_document_question_answer = business_document.question_answer_data
   print("business question answers: ", business_document_question_answer, type(business_document_question_answer))
@@ -109,6 +138,8 @@ def embedData(request, pk):
       # format the document to be embedded using langchain `Document` on the fly and add to list of docs
       count += 1
       doc = Document(
+        # in content we just put question
+        # as this is what we are searching against for and will get answer from metadata
         page_content=f"{question} {answer}",
         metadata= {
           "document_title": business_document_title,
@@ -133,7 +164,7 @@ def embedData(request, pk):
       '''
        Create logs for Devops/Security team
       '''
-      print("e: ", e)
+      print("error trying to embed data: ", e)
       response = json.dumps({"error": f"An error occured while trying to create embeddings: {e}"})
       return HttpResponse(response, content_type="application/json", status=400)
 
@@ -143,11 +174,34 @@ def embedData(request, pk):
   '''
   return HttpResponse(response, content_type="application/json", status=405)
 
+@csrf_exempt
+@login_required(login_url='users:loginbusinessuser')
+@user_passes_test(is_business_user, login_url='users:loginbusinessuser')
+def deleteEmbeddingCollection(request, pk):
 
+  # get the document name using the document id sent through the request to delete embeddings
+  business_document = get_object_or_404(BusinessUserData, pk=pk, user=request.user)
+  business_document_title = business_document.document_title
 
-
-
-
+  if request.method == 'POST':
+    try:
+      # conenction string is defined at the top of this fine Global scope so we can access to it
+      delete_collection = delete_embeddings.delete_embedding_collection(CONNECTION_STRING, business_document_title)
+      # delete_collection is a string
+      if "success" in delete_collection:
+        response = json.dumps({"success": f"Collesciton {business_document_title} deleted successfully."})
+        return HttpResponse(response, content_type="application/json", status=200)
+      else:
+        # we return delete_collection variable as it has the error message str
+        response = json.dumps({"error": f"An error received while trying to delete collection {business_document_title}: {delete_collection}"})
+        return HttpResponse(response, content_type="application/json", status=400)
+    except Exception as e:
+      '''
+       Create logs for Devops/Security team
+      '''
+      print("error trying delete embeddings: ", e)
+      response = json.dumps({"error": f"An error occured while trying to delete embedding collection {business_document_title}: {e}"})
+      return HttpResponse(response, content_type="application/json", status=400)
 
 
 

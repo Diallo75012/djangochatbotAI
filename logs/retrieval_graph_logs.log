@@ -1,84 +1,24 @@
 
 
-{"error": "An error occured while trying to analyze user input content: name 'schema' is not defined"}
+{"error": "An error occured while trying to rephrase user query: An error occured while calling llm: Error converting string to dictionary: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"}
 
 
 
-{"error": "An error occured while trying to analyze user input content: name 'schema' is not defined"}
+{"error": "An error occured while trying to rephrase user query: An error occured while calling llm: Error converting string to dictionary: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"}
 
 
 
-{"error": "An error occured while trying to analyze user input content: name 'schema' is not defined"}
+{"error": "An error occured while trying to rephrase user query: An error occured while calling llm: Error converting string to dictionary: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"}
 
 
 
-{"error": "An error occured while trying to analyze user input content: name 'schema' is not defined"}
+{"error": "An error occured while trying to rephrase user query: An error occured while calling llm: Error converting string to dictionary: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"}
 
 
 
-{"error": "An error occured while trying to analyze user input content: name 'schema' is not defined"}
+{"error": "An error occured while trying to rephrase user query: An error occured while calling llm: Error converting string to dictionary: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"}
 
 
 
-{"error": "An error occured while trying to analyze user input content: name 'schema' is not defined"}
-
-
-
-{"error": "An error occured while trying to analyze user input content: An error occured while calling llm: name 'string_to_dict' is not defined"}
-
-
-
-{"error": "An error occured while trying to analyze user input content: An error occured while calling llm: Error converting string to dictionary: invalid syntax (<unknown>, line 1)"}
-
-
-
-{"error": "An error occured while trying to analyze user input content: An error occured while calling llm: Error converting string to dictionary: invalid syntax (<unknown>, line 1)"}
-
-
-
-{"error": "An error occured while trying to analyze user input content: An error occured while calling llm: Error converting string to dictionary: invalid syntax (<unknown>, line 1)"}
-
-
-
-{"error": "An error occured while trying to analyze user input content: An error occured while calling llm: Error converting string to dictionary: invalid syntax (<unknown>, line 1)"}
-
-
-
-{"error": "An error occured while trying to analyze user input content: An error occured while calling llm: Error converting string to dictionary: invalid syntax (<unknown>, line 1)"}
-
-
-
-{"error": "An error occured while trying to analyze user input content: An error occured while calling llm: Error converting string to dictionary: invalid syntax (<unknown>, line 1)"}
-
-
-
-{"error": "An error occured while trying to analyze user input content: An error occured while calling llm: 'Input to PromptTemplate is missing variables {\" \\'safe\\'\"}.  Expected: [\" \\'safe\\'\", \\'query\\', \\'response_schema\\'] Received: [\\'query\\', \\'response_schema\\']\\nNote: if you intended { \\'safe\\'} to be part of the string and not a variable, please escape it with double curly braces like: \\'{{ \\'safe\\'}}\\'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT '"}
-
-
-
-{"error": "An error occured while trying to analyze user input content: An error occured while calling llm: name 'response_content_to_dict' is not defined"}
-
-
-
-{"error": "An error occured while trying to analyze user input content: An error occured while calling llm: Error converting string to dictionary: Expecting value: line 1 column 1 (char 0)"}
-
-
-
-{"error": "An error occured while trying to analyze user input content: An error occured while calling llm: Error converting string to dictionary: Expecting value: line 1 column 1 (char 0)"}
-
-
-
-{"error": "An error occured while trying to analyze user input content: An error occured while calling llm: Error converting string to dictionary: Expecting value: line 1 column 1 (char 0)"}
-
-
-
-{"error": "An error occured while trying to rephrase user query: name 'summarize_user_to_clear_schema' is not defined"}
-
-
-
-{"error": "An error occured while trying to rephrase user query: An error occured while calling llm: Error converting string to dictionary: Expecting value: line 1 column 1 (char 0)"}
-
-
-
-{"error_vector": "An error occured while trying to perform vectordb search 063 query: model \"mistral:7b\" not found, try pulling it first"}
+{"error": "An error occured while trying to rephrase user query: An error occured while calling llm: Error converting string to dictionary: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"}
 

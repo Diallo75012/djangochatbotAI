@@ -346,7 +346,7 @@ def error_handler(state: MessagesState):
   messages = state['messages']
   
   # Log the graph errors in a file
-  with open("../logs/retrieval_graph_logs.log", "a", encoding="utf-8") as conditional:
+  with open("logs/retrieval_graph_logs.log", "a", encoding="utf-8") as conditional:
       json_error_message = messages[-1].content
       conditional.write(f"\n\n{json_error_message}\n\n")
   '''
@@ -355,8 +355,9 @@ def error_handler(state: MessagesState):
     # we might need to have a thread running for the graph running environment
     # all error types returned by graph: "error", "error_vector", "error_reponse_nothing", "error_reponse_063", "error_reponse_055"
   '''
+  print(f"Error Handler: ", messages[-1].content)
   
-  return {"messages": [{"role": "ai", "content": messages[-1].content}]}
+  return {"messages": [{"role": "ai", "content": json.dumps({"error_handler": messages[-1].content})}]}
 
 '''
 RETRIEVAL
@@ -437,8 +438,8 @@ def retrieval_agent_team(user_query):
       print(f"Step {count}: {output}")
       try:
         final_output = safe_json_dumps(step)
-      except TypeError:
-        final_output = safe_json_dumps(step)
+      except TypeError as e:
+        final_output = json.dumps({"error": f"Invalid final output format: {e}"})
 
   # subgraph drawing
   graph_image = user_query_processing_stage.get_graph().draw_png()
@@ -453,6 +454,13 @@ def retrieval_agent_team(user_query):
     except json.JSONDecodeError:
       final_output = json.dumps({"error": "Invalid final output format"})
 
+  # final_output_agent content should be of type json.dumps() as we json.dumped all transmitted messages
+  #final_output_agent = final_output["messages"][-1]["content"]
+  '''
+    write final out to a file for debugging
+  '''
+  with open("logs/retrieval_agent_final_output.log", "w", encoding="utf-8") as final_output_log:
+    final_output_log.write(json.dumps({"final_output": final_output}))
   return final_output
 
 

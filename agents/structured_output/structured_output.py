@@ -25,16 +25,16 @@ retrieve_answer_schema = {
 
 answer_to_user_schema = {
   "answer_if_063": {
-    "response": "answer the user making sure that it expresses you personality trait and stay polite but warm with user. Use this answer: {answer_with_disclaimer}"
+    "response": "answer the user making sure that it expresses you personality trait and stay polite but warm with user and the key of the dictionary is: response. Use this answer: {answer_with_disclaimer}"
   },
   #"answer_if_055": {
   #  "response": "answer user using this disclaimer: {disclaimer} as no relevant data have been found but those are similar queries that can be asked in order to get an answer, so that user know how to formulate question. Apologize and make sure you use your personality trait to answer in a certain way but staying polite."
   #},
   "answer_if_055": {
-    "response": "Apologize politely, indicating no direct answer was found. Use a disclaimer way of answering and additionally, provide a list of example questions the user could ask for relevant answers: {disclaimer}. Ensure the tone reflects your personality traits."
+    "response": "Apologize politely, indicating no direct answer was found. Use a disclaimer way of answering and additionally, provide a list of example questions the user could ask for relevant answers: {disclaimer}. Ensure the tone reflects your personality traits and the key of the dictionary is: response."
   },
   "answer_if_nothing": {
-    "response": "Apologize politely, indicating no direct answer was found. Use a disclaimer way of answering like: {disclaimer}. Ensure the tone reflects your personality traits."
+    "response": "Apologize politely, indicating no direct answer was found. Use a disclaimer way of answering like: {disclaimer}. Ensure the tone reflects your personality traits. and the key of the dictionary is: response"
   },
 }
 
