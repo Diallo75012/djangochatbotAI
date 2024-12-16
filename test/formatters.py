@@ -19,6 +19,11 @@ def string_to_dict(string: str) -> Dict[str, Any]:
   except json.JSONDecodeError as e:
     raise ValueError(f"Error converting string to dictionary: {e}")
 
+
+# this will normalize the collection names to have those lowercases and no space in between words but a dash `"-"`
+def collection_normalize_name(collection_name: str):
+  return collection_name.replace(" ", "-").strip().lower()
+
 """
 string = '{"safe": "valid", "unsafe": "invalid"}'
 if "```json" in string:

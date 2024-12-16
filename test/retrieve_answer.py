@@ -10,6 +10,7 @@ from langchain_postgres.vectorstores import PGVector, DistanceStrategy
 # from langchain_community.embeddings import OllamaEmbeddings
 from langchain_ollama import OllamaEmbeddings
 from dotenv import load_dotenv
+from formatters import collection_normalize_name
 
 
 #### UTILITY FUNCTIONS & CONF. VARS
@@ -51,6 +52,8 @@ def vector_db_retrieve(collection: str, connection: str, embedding: OllamaEmbedd
     collection_name=collection,
     connection=connection,
     embeddings=embedding,
+    #distance_strategy=DistanceStrategy.COSINE,
+    #use_jsonb=True,
   )
 
 def retrieve_relevant_vectors(query: str, top_n: int = 3) -> List[Dict[str, Any]]:
@@ -63,6 +66,7 @@ def retrieve_relevant_vectors(query: str, top_n: int = 3) -> List[Dict[str, Any]
 
   # Iterate over each tuple in the result
   if top_n > 1:
+    print("docs_and_similarity_score(if): ", docs_and_similarity_score)
     for doc, score in docs_and_similarity_score[:top_n]:
       print("Top_n > 1 -> Doc: ", doc, "\nScore: ", score, "\nDoc metadata answer: ", doc.metadata["answer"])
       # we just grab the answer from the metadata
@@ -81,7 +85,9 @@ def retrieve_relevant_vectors(query: str, top_n: int = 3) -> List[Dict[str, Any]
           # gracefully continue don't break the app
           continue
   else:
+    print("docs_and_similarity_score(else): ", docs_and_similarity_score)
     for doc, score in docs_and_similarity_score:
+      print("Doc: ", doc, "Score: ", score)
       print("Top_n = 1 -> Doc: ", doc, "\nScore: ", score, "\nDoc metadata answer: ", doc.metadata["answer"])
       # we just grab the answer from the metadata
       answer = doc.metadata["answer"]
@@ -139,8 +145,9 @@ def retrieval_view_response_transmit(retrieval_graph_output_json_loads, list_ans
 ##########################################################
 ### INSTEAD USE THIS ONE FUNCTION TO PERFORM RETRIEVAL ###
 ##########################################################
+
 def retrieve_answer_action(state: MessagesState):
-# def retrieve_answer_action():
+#def retrieve_answer_action():
   """
   Retrieves best answer for user query from the vector database
 
@@ -153,13 +160,16 @@ def retrieve_answer_action(state: MessagesState):
   #messages = state['messages']
   #last_message = messages[-1].content
   rephrased_user_query = os.getenv("REPHRASED_USER_QUERY")
-  
+
   # vars
   query: str = os.getenv("REPHRASED_USER_QUERY")
+  print("query: ", query)
   # we will perform two retrieval with different scores
-  score063: float = float(os.getenv("SCORE064"))
+  score063: float = float(os.getenv("SCORE063"))
   score055: float = float(os.getenv("SCORE055"))
+  print("score 063: ", score063, ", score055: ", score055)
   top_n: int = int(os.getenv("TOP_N"))
+  print("top_n", top_n, type(top_n))
   vector_responses: dict = {}
 
   # Perform vector search with score if semantic search is not relevant
@@ -210,10 +220,69 @@ def retrieve_answer_action(state: MessagesState):
   if vector_responses:
     print("Vector responses: ", vector_responses)
     #return vector_responses
-    return {"messages": [{"role": "ai", "content": json.dumps({"answers": vector_responses})}]} 
+    return {"messages": [{"role": "ai", "content": json.dumps({"answers": vector_responses})}]}
   else:
     # If no relevant result found, return a default response, and perform maybe after that an internet search and cache the query and the response
     #return "nothingu"
     return {"messages": [{"role": "ai", "content": json.dumps({"nothing": "nothing_in_cache_nor_vectordb"})}]}
 
+
+
+
+######################################
+### TEST EMBEDDING THEN RETRIEVE   ###
+######################################
+
+import embed_data
+from langchain.docstore.document import Document
+
+# test embed then retrieve:
+def embed(business_document_question_answer, business_document_title):
+
+
+  count = 0
+  list_of_docs = []
+  business_document_title = collection_normalize_name(business_document_title)
+  print("formatted business document title: ", business_document_title)
+  # loop through the list
+  for question, answer in business_document_question_answer.items():
+    print("quesiton_answer: ", question, answer)
+    # format the document to be embedded using langchain `Document` on the fly and add to list of docs
+    count += 1
+    doc = Document(
+      # in content we just put question
+      # as this is what we are searching against for and will get answer from metadata
+      page_content=f"{question} {answer}",
+      metadata= {
+        "document_title": business_document_title,
+        "question": question,
+        "answer": answer,
+         "id": count,
+      }
+    )
+    print(f"Doc {count}: {doc}")
+    list_of_docs.append(doc)
+  # try to embed each set of question answers
+  try:
+    # here the collection will use document_title as name. put `doc` in a list `[]`. document title is the business collection name
+    print(f"Embedding document {count}... please wait...")
+    embed_data_result = embed_data.vector_db_create(list_of_docs, business_document_title , CONNECTION_STRING, embeddings)
+  except Exception as e:
+    print(f"An exception occured while trying to embed data: {e}")
+
+
+business_document_question_answer: dict = {
+  "What is a manga kissa?": "A manga kissa is a Japanese café where you can read manga, relax, and sometimes use private booths.",
+  "Can I stay overnight at a manga kissa?": "Yes, many manga kissa offer overnight plans with reclining seats or private booths.",
+  "Do manga kissa have internet?": "Yes, manga kissa typically provide high-speed internet and computers for browsing.",
+  "What snacks are available at manga kissa?": "Snacks include instant noodles, drinks, and sometimes free soft drinks or coffee.",
+  "Are manga kissa expensive?": "Rates are affordable, starting around 400-600 yen per hour. Overnight packages may cost 1,500-2,000 yen.",
+  "Can foreigners visit manga kissa?": "Yes, manga kissa are open to everyone, though some may have limited English support.",
+  "What facilities do manga kissa offer?": "Facilities include manga collections, private booths, internet access, showers, and reclining seats.",
+  "Are manga kissa suitable for families?": "Some manga kissa are family-friendly, but others cater more to solo travelers or adults.",
+  "What is the atmosphere of a manga kissa?": "It is quiet and cozy, designed for relaxation and reading manga.",
+  "Where can I find manga kissa in Tokyo?": "You can find manga kissa in Akihabara, Shinjuku, and Ikebukuro, among other areas in Tokyo."
+}
+
+#print(embed(business_document_question_answer, "Tokyo Manga Kissa Guide"))
 #print(retrieve_answer_action())

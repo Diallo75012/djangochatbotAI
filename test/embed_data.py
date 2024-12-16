@@ -8,11 +8,10 @@ from langchain_postgres.vectorstores import PGVector, DistanceStrategy
 from langchain.docstore.document import Document
 from langchain_ollama import OllamaEmbeddings
 from dotenv import load_dotenv
-from agents.app_utils import formatters
 
 
-load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path=".vars", override=True)
+load_dotenv(dotenv_path='../.env', override=False)
+load_dotenv(dotenv_path="../.vars", override=True)
 
 embeddings = OllamaEmbeddings(model="mistral:7b") # temperature=float(os.getenv("EMBEDDINGS_TEMPERATURE")))
 
@@ -35,10 +34,10 @@ CONNECTION_STRING = PGVector.connection_string_from_db_params(
 )
 """
 
-BUSINESS_COLLECTION_NAME = foramtters.collection_normalize_name(os.getenv("BUSINESS_COLLECTION_NAME"))
+BUSINESS_COLLECTION_NAME = os.getenv("BUSINESS_COLLECTION_NAME")
 
 def vector_db_create(docs: List[Document], collection: str = BUSINESS_COLLECTION_NAME, connection: str = CONNECTION_STRING, embeddings: OllamaEmbeddings = embeddings) -> PGVector|dict:
-  # `docs` parameter is plurial but we sill send list with only one doc to embeb one by one (the loop occurs in the `agents/views`, this is just helper function)
+
   print("Collection name fom the vector_db_create function: ", collection)
   print("Type docs: ", type(docs))
   try:
@@ -54,32 +53,11 @@ def vector_db_create(docs: List[Document], collection: str = BUSINESS_COLLECTION
     """
       See here what to return
     """
+    for doc in docs:
+      print("Doc: ", doc, "Metadata: ", doc.metadata)
     # use this method to embed the list of documents, docs here comes already as list of documents
     db_create.add_documents(documents=docs, ids=[doc.metadata["id"] for doc in docs])
     return {"success": f"Data correctly embedded!"}
   except Exception as e:
     print(f"An error occurred while trying to embed in vector db -> {e}")
     return e
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

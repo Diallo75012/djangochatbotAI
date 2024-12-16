@@ -10,6 +10,7 @@ from agents.app_utils import (
   retrieve_answer,
   embed_data,
   delete_embeddings,
+  formatters,
 )
 # retrieval agent
 from agents.graph.retrieval_agent_graph import retrieval_agent_team
@@ -82,7 +83,7 @@ def retrieveData(request):
     '''
       make sure to send either 'error': <response error> OR 'answer': <response answer> in dict and json.dumps() that is what is the `clientchat` is waiting for
     '''
-    
+
     for k, v in retrieval_message_content_json.items():
       if k == "response_nothing":
         response_transmit = {"answer": v}
@@ -122,15 +123,14 @@ def embedData(request, pk):
   business_document_title = business_document.document_title
   business_document_question_answer = business_document.question_answer_data
   print("business question answers: ", business_document_question_answer, type(business_document_question_answer))
-  # will store all custom docs to be embedded
-  list_of_docs = []
   # will count the number of documents embeded
   count = 0
-  
+
   if request.method == 'POST':
 
     # set env var for business collection name which will have document_title as name for if we need it in the helper function side
-    set_key(".vars.env", "BUSINESS_COLLECTION_NAME", json.dumps(business_document_title))
+    formatted_business_doc_title = formatters.collection_normalize_name(business_document_title)
+    set_key(".vars.env", "BUSINESS_COLLECTION_NAME", str(formatted_business_doc_title))
 
     # loop through the list
     for question, answer in business_document_question_answer.items():
@@ -148,25 +148,23 @@ def embedData(request, pk):
           "id": count,
         }
       )
-      list_of_docs.append(doc)
       print(f"Doc {count}: {doc}")
 
-    # try to embed each set of question answers
-    try:
-      # here the collection will use document_title as name. put `doc` in a list `[]`. document title is the business collection name
-      print("list of docs: ", list_of_docs)
-      embed_data_result = embed_data.vector_db_create(list_of_docs, business_document_title , CONNECTION_STRING, embeddings)
-      if "success" in embed_data_result:
-        print("embed data result: ", embed_data_result)
-        response = json.dumps({"success": f"(x{count}) Data successfully embeded, ready for client user retrieval."})
-        return HttpResponse(response, content_type="application/json", status=200)
-    except Exception as e:
-      '''
-       Create logs for Devops/Security team
-      '''
-      print("error trying to embed data: ", e)
-      response = json.dumps({"error": f"An error occured while trying to create embeddings: {e}"})
-      return HttpResponse(response, content_type="application/json", status=400)
+      # try to embed each set of question answers
+      try:
+        # here the collection will use document_title as name. put `doc` in a list `[]`. document title is the business collection name
+        embed_data_result = embed_data.vector_db_create([doc], business_document_title , CONNECTION_STRING, embeddings)
+        if "success" in embed_data_result:
+          print("embed data result: ", embed_data_result)
+          response = json.dumps({"success": f"(x{count}) Data successfully embeded, ready for client user retrieval."})
+          return HttpResponse(response, content_type="application/json", status=200)
+      except Exception as e:
+        '''
+         Create logs for Devops/Security team
+        '''
+        print("error trying to embed data: ", e)
+        response = json.dumps({"error": f"An error occured while trying to create embeddings: {e}"})
+        return HttpResponse(response, content_type="application/json", status=400)
 
   response = json.dumps({"error": "Get request not accepted for this route."})
   '''

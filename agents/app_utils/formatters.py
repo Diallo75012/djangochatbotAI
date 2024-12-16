@@ -20,3 +20,8 @@ def string_to_dict(string: str) -> Dict[str, Any]:
     return {k.lower(): v for k, v in dictionary.items()}
   except json.JSONDecodeError as e:
     raise ValueError(f"Error converting string to dictionary: {e}")
+
+# this will normalize the collection names to have those lowercases and no space in between words but a dash `"-"`
+def collection_normalize_name(collection_name: str):
+  return collection_name.replace(" ", "-").strip().lower()
+

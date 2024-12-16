@@ -202,10 +202,10 @@ def retrieved_answer_or_not(state: MessagesState):
   error_vector, answers, nothing
   # then for answers key
   top_n > 1
-  'score_064_*'
+  'score_063_*'
   'score_055_*'
   top_n = 1
-  'score_064'
+  'score_063'
   'score_055'
   '''
   if "error_vector" in last_message:

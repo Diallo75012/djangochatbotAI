@@ -21,7 +21,10 @@ from .models import ChatMessages
 import memcache
 # just for returning test when debugging other route redirects
 from django.http import HttpResponse, JsonResponse
-from agents.app_utils import ai_personality
+from agents.app_utils import (
+  ai_personality,
+  formatters,
+)
 from agents.graph import retrieval_agent_graph
 from dotenv import load_dotenv, set_key
 
@@ -71,9 +74,10 @@ def clientUserChat(request):
     # get document title to set it as en var for helper functions
     business_document = get_object_or_404(BusinessUserData, pk=int(document_title_id))
     document_title_name = business_document.document_title
-    print
+    print("document_title_name: ", dociment_title_name)
     # set env var for document title for Ai agent team to know what doc to retrieve from
-    set_key(".vars.env", "DOCUMENT_TITLE", json.dumps(document_title_name))
+    formatted_doc_title_name = formatters.collection_normalize_name(document_title_name)
+    set_key(".vars.env", "DOCUMENT_TITLE", str(formattted_doc_title_name))
     load_dotenv(dotenv_path=".vars.env", override=True)
 
     # Check if required chatbot fields are missing

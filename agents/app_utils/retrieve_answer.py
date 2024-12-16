@@ -10,6 +10,7 @@ from langchain_postgres.vectorstores import PGVector, DistanceStrategy
 # from langchain_community.embeddings import OllamaEmbeddings
 from langchain_ollama import OllamaEmbeddings
 from dotenv import load_dotenv
+from agents.app_utils import formatters
 
 
 #### UTILITY FUNCTIONS & CONF. VARS
@@ -42,7 +43,7 @@ CONNECTION_STRING = f"postgresql+{driver}://{user}:{password}@{host}:{port}/{dat
 
 # we use document_title as collection name as it will be used by business user on his side when creating embedding
 # this makes the search more targeted and accurate as it will fetch only from targeted area of embeddings
-COLLECTION_NAME = os.getenv("DOCUMENT_TITLE")
+COLLECTION_NAME = foramtters.collection_normalize_name(os.getenv("DOCUMENT_TITLE"))
 
 
 def vector_db_retrieve(collection: str, connection: str, embedding: OllamaEmbeddings) -> PGVector:
@@ -159,7 +160,7 @@ def retrieve_answer_action(state: MessagesState):
   # vars
   query: str = os.getenv("REPHRASED_USER_QUERY")
   # we will perform two retrieval with different scores
-  score063: float = float(os.getenv("SCORE064"))
+  score063: float = float(os.getenv("SCORE063"))
   score055: float = float(os.getenv("SCORE055"))
   top_n: int = int(os.getenv("TOP_N"))
   vector_responses: dict = {}

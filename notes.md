@@ -898,7 +898,16 @@ We have commented out advance logging settings and need to work on it
 - need to handle the error when default bot doesn't exist for selected document
 - need to review the connection between bot settings and the business data, as it is too restrictive, we should be able to create several bot settings independently but just linked to a business user in one to one but not one to one to business data
 
+# Issues with collection names
+**Can't retrieve even if score close to 0.01 or collection empty of embeddings**
+- some collections had double quote `""` and some other no.
+- the collections names were case sensitive apparently
+- I have created a helper function to normalize the collection names to lowercase strings `.lower()` and if space `" "` there will be a dash `"-"` to replace it: `.replace(" ", "-").lower()`
+- I have deleted all collections `delete frm langchain_collection;`
+- then retested embedding and retrieval and it worked fine thanks to [langchain documentation on Pgvector psycopg3](https://python.langchain.com/docs/integrations/vectorstores/pgvector/)
 
+# Next
+- need to incorporate those fixed issues which are all located in the test folder still and move those to respective locations
 
 
 
