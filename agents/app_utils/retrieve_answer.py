@@ -43,7 +43,7 @@ CONNECTION_STRING = f"postgresql+{driver}://{user}:{password}@{host}:{port}/{dat
 
 # we use document_title as collection name as it will be used by business user on his side when creating embedding
 # this makes the search more targeted and accurate as it will fetch only from targeted area of embeddings
-COLLECTION_NAME = foramtters.collection_normalize_name(os.getenv("DOCUMENT_TITLE"))
+COLLECTION_NAME = formatters.collection_normalize_name(os.getenv("DOCUMENT_TITLE"))
 
 
 def vector_db_retrieve(collection: str, connection: str, embedding: OllamaEmbeddings) -> PGVector:
@@ -52,6 +52,9 @@ def vector_db_retrieve(collection: str, connection: str, embedding: OllamaEmbedd
     collection_name=collection,
     connection=connection,
     embeddings=embedding,
+    # should work without this but we can check if need but i think that's `COSINE` is the default
+    #distance_strategy=DistanceStrategy.COSINE,
+    #use_jsonb=True,
   )
 
 def retrieve_relevant_vectors(query: str, top_n: int = 3) -> List[Dict[str, Any]]:
@@ -64,6 +67,7 @@ def retrieve_relevant_vectors(query: str, top_n: int = 3) -> List[Dict[str, Any]
 
   # Iterate over each tuple in the result
   if top_n > 1:
+    print("docs_and_similarity_score(if): ", docs_and_similarity_score)
     for doc, score in docs_and_similarity_score[:top_n]:
       print("Top_n > 1 -> Doc: ", doc, "\nScore: ", score, "\nDoc metadata answer: ", doc.metadata["answer"])
       # we just grab the answer from the metadata
@@ -82,7 +86,9 @@ def retrieve_relevant_vectors(query: str, top_n: int = 3) -> List[Dict[str, Any]
           # gracefully continue don't break the app
           continue
   else:
+    print("docs_and_similarity_score(else): ", docs_and_similarity_score)
     for doc, score in docs_and_similarity_score:
+      print("Doc: ", doc, "Score: ", score)
       print("Top_n = 1 -> Doc: ", doc, "\nScore: ", score, "\nDoc metadata answer: ", doc.metadata["answer"])
       # we just grab the answer from the metadata
       answer = doc.metadata["answer"]

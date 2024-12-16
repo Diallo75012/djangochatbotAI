@@ -2,6 +2,7 @@ import os
 import json
 import psycopg2
 import math
+import uuid
 from typing import List, Dict, Any
 from langgraph.graph import MessagesState
 #from langchain_community.vectorstores.pgvector import PGVector, DistanceStrategy
@@ -257,7 +258,8 @@ def embed(business_document_question_answer, business_document_title):
         "document_title": business_document_title,
         "question": question,
         "answer": answer,
-         "id": count,
+        # id's have to be unique otherwise pgvector can override the existing one even if in another collection
+         "id": uuid.uuid4(),
       }
     )
     print(f"Doc {count}: {doc}")

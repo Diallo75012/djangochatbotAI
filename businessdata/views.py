@@ -40,6 +40,7 @@ def addBusinessData(request):
   if request.method == 'POST':
     form = BusinessUserDataForm(request.POST)
     if form.is_valid():
+      # here we save to database
       business_data = form.save(commit=False)
       business_data.user = request.user
       print("Business user: ", request.user)
@@ -76,10 +77,11 @@ def addBusinessData(request):
           print("Embedding created successfully:", response_success)
           messages.success(
             request,
-            "Business data added successfully! Wait a for embedding validation."
+            "Business data added successfully! Embeddings Done! Data ready for client user questions."
           )
           return redirect("businessdata:addbusinessdata")
 
+        # if error we delete data from database as if not embedded no need it, the whole purpose is to embed it
         elif response.status_code == 302:
           # Handle unexpected redirects
           error_message = f"Error embedding route, Redirect detected to: {response.headers.get('Location')}"
@@ -88,8 +90,11 @@ def addBusinessData(request):
             request,
             f"We experience some issue with the embedding route, the whole team is working it and we apologize. Please try to save your data later."
           )
+          business_data_to_update = get_object_or_404(BusinessUserData, pk=document_title_id, user=request.user)
+          business_data_to_delete.delete()
           return HttpResponse(json.dumps({"error": error_message}), content_type="application/json", status=302)
-   
+
+        # if error we delete data from database as if not embedded no need it, the whole purpose is to embed it   
         else:
           '''
            Log error to Devops/Security team
@@ -99,8 +104,11 @@ def addBusinessData(request):
             request,
             f"Failed to create embedding. Status code: {response.status_code}, Response: {response_error}"
           )
+          business_data_to_update = get_object_or_404(BusinessUserData, pk=document_title_id, user=request.user)
+          business_data_to_delete.delete()
           return redirect("businessdata:addbusinessdata")
 
+      # if error we delete data from database as if not embedded no need it, the whole purpose is to embed it
       except requests.exceptions.RequestException as e:
         '''
          Log erro to Devops/Security team
@@ -109,6 +117,8 @@ def addBusinessData(request):
           request,
           f"Error making the request: {e}"
         )
+        business_data_to_update = get_object_or_404(BusinessUserData, pk=document_title_id, user=request.user)
+        business_data_to_delete.delete()
         return redirect("businessdata:addbusinessdata")
 
     else:
@@ -151,22 +161,15 @@ def updateBusinessData(request, pk):
 @user_passes_test(is_business_user, login_url='users:loginbusinessuser')
 def deleteBusinessData(request, pk):
   business_data_to_delete = get_object_or_404(BusinessUserData, id=pk, user=request.user)
+  print("business_data_to_delete: ", business_data_to_delete)
+  document_title = business_data_to_delete.document_title
+  document_title_id = pk
   '''
   Here get the document title so that we can delete it from the embeddings as it is the collection name.
   '''
   if request.method == "POST":
 
-
-    # delete from database
-    try:
-      business_data_to_delete.delete()
-      print("Database data have been successfully deleted.")
-    except Exception as e:
-      print(f"An error occured while trying to delete data from database: {e}")
-
     # delete from embedding collection
-    business_document = get_object_or_404(BusinessUserData, document_title=business_data.document_title, user=request.user)
-    document_title_id = business_document.id
     # Reverse the URL for the 'delete-embedding-collection' route with the given document_title_id (pk)
     delete_embed_data_url = reverse("agents:delete-embedding-collection", kwargs={"pk": document_title_id})
     # Construct the full URL using the request's base URI
@@ -206,6 +209,13 @@ def deleteBusinessData(request, pk):
         f"Error making the request: {e}"
       )
       return redirect("businessdata:addbusinessdata")
+
+    # delete from database
+    try:
+      business_data_to_delete.delete()
+      print("Database data have been successfully deleted.")
+    except Exception as e:
+      print(f"An error occured while trying to delete data from database: {e}")
 
   # here we return the confirmation message of data deletion
   messages.success(

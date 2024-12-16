@@ -26,6 +26,7 @@ from agents.app_utils import (
   call_llm,
   prompt_creation,
   beautiful_graph_output,
+  retrieve_answer,
 )
 # Tools
 from agents.tools.tools import (
@@ -165,11 +166,11 @@ def question_rephrased_or_error(state: MessagesState):
   last_message = messages[-1].content
 
   if 'success' in last_message:
-    #return "retrieve_answer_agent"
     return "retrieve_answer_action"
   return "error_handler"
 
 # NODE
+# this node is not used, we use directly the function that have been imported as node `"retrieve_answer_action"`
 def retrieve_answer_agent(state: MessagesState):
   rephrased_user_query = os.getenv("REPHRASED_USER_QUERY")
   state_history = MessagesState()
@@ -383,7 +384,7 @@ workflow = StateGraph(MessagesState)
 workflow.add_node("error_handler", error_handler)
 workflow.add_node("analyse_user_query_safety", analyse_user_query_safety)
 workflow.add_node("summarize_user_to_clear_question", summarize_user_to_clear_question)
-# workflow.add_node("retrieve_answer_agent", retrieve_answer_agent)
+#workflow.add_node("retrieve_answer_agent", retrieve_answer_agent)
 workflow.add_node("retrieve_answer_action", retrieve_answer_action)
 workflow.add_node("answer_to_user", answer_to_user)
 

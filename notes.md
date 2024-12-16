@@ -910,9 +910,143 @@ We have commented out advance logging settings and need to work on it
 - need to incorporate those fixed issues which are all located in the test folder still and move those to respective locations
 
 
+# some data created with chatgpt:
+```json
+"Tokyo Manga Kissa Guide": {
+ "What is a manga kissa?": "A manga kissa is a Japanese café where you can read manga, relax, and sometimes use private booths.",
+"Can I stay overnight at a manga kissa?": "Yes, many manga kissa offer overnight plans with reclining seats or private booths.",
+"Do manga kissa have internet?": "Yes, manga kissa typically provide high-speed internet and computers for browsing.",
+"What snacks are available at manga kissa?": "Snacks include instant noodles, drinks, and sometimes free soft drinks or coffee.",
+"Are manga kissa expensive?": "Rates are affordable, starting around 400-600 yen per hour. Overnight packages may cost 1,500-2,000 yen.",
+"Can foreigners visit manga kissa?": "Yes, manga kissa are open to everyone, though some may have limited English support.",
+"What facilities do manga kissa offer?": "Facilities include manga collections, private booths, internet access, showers, and reclining seats.",
+"Are manga kissa suitable for families?": "Some manga kissa are family-friendly, but others cater more to solo travelers or adults.",
+"What is the atmosphere of a manga kissa?": "It is quiet and cozy, designed for relaxation and reading manga.",
+"Where can I find manga kissa in Tokyo?": "You can find manga kissa in Akihabara, Shinjuku, and Ikebukuro, among other areas in Tokyo."
+}
+
+"Shibuya Fashion Trends": {
+"What is Shibuya fashion?": "Shibuya fashion is a mix of urban, trendy, and youth-driven styles popularized by the district.",
+"What is gyaru style?": "Gyaru is a flashy, glamorous fashion style with heavy makeup, bleached hair, and bold outfits.",
+"What is streetwear in Shibuya?": "Streetwear includes oversized hoodies, sneakers, and urban designs influenced by skate and hip-hop culture.",
+"What is the latest Shibuya fashion trend?": "Currently, oversized outerwear and monochromatic layering are trending in Shibuya.",
+"What is 'Harajuku' vs 'Shibuya' style?": "Harajuku is playful and experimental, while Shibuya is urban and polished.",
+"Where to shop for Shibuya styles?": "109 Shibuya, Parco, and boutique shops in the area are hotspots for trendy fashion.",
+"Is Shibuya fashion affordable?": "It depends; streetwear can be affordable, but designer brands can be expensive.",
+"Who influences Shibuya fashion?": "Young influencers, models, and pop culture icons drive Shibuya fashion trends.",
+"How do locals describe Shibuya style?": "Locals describe it as edgy, expressive, and reflective of youth culture.",
+"What is the connection between Shibuya and music?": "Shibuya's fashion is influenced by music scenes like J-pop, hip-hop, and EDM."
+}
+
+"Purikura Photo Booths in Japan": {
+"What is a purikura?": "A purikura is a Japanese photo booth that lets you take and decorate photos with effects.",
+"Where can I find purikura booths?": "Purikura booths are common in malls, arcades, and entertainment areas across Japan.",
+"How much does a purikura session cost?": "A purikura session typically costs around 400-600 yen.",
+"Can I customize my purikura photos?": "Yes, you can add stickers, text, and effects using touch screens after taking photos.",
+"How do purikura booths enhance photos?": "They enhance photos by smoothing skin, enlarging eyes, and adding fun effects.",
+"Can I print purikura photos?": "Yes, purikura photos are printed as stickers or small sheets immediately after the session.",
+"Can I save purikura photos digitally?": "Many modern purikura booths allow you to save photos digitally via QR codes or apps.",
+"Are purikura popular with tourists?": "Yes, tourists love purikura for its fun experience and unique photo designs.",
+"What are some tips for taking good purikura?": "Wear bright clothes, use poses, and experiment with effects for the best results.",
+"What makes purikura unique?": "Purikura stands out for its customization, group fun, and kawaii (cute) effects."
+}
+
+```
+
+# issue with embeddings being stores accross different colleciton
+I wonder if it is because in the metadata ids are not unique?
+**Godd guess: ChatGPT answer**
+```gpt
+Yes, your suspicion is correct. If documents from different collections share the same id (even though they belong to different collections), and the backend implementation for storing embeddings in PostgreSQL does not properly differentiate between collections when updating or replacing records, the embeddings could inadvertently overwrite each other.
+```
+- [x] So here we will use uuids to be sure to have unique ids in embedded document metadata, the businessdata when stored have already a field uuid, I will use that uuid and format it in a string that will get the `count` variable appended at the end, so when we create a list of docs from one collection they share same unique document uuid and different count so that it can't overlap with other documents ids (which will also be like `{businessdata.uuid}-[count]`) 
+
+# result of issue resolution
+```psql
+chatbotaidb=> select * from langchain_pg_collection;
+                 uuid                 |               name               | cmetadata 
+--------------------------------------+----------------------------------+-----------
+ c8aa8090-931c-419a-b750-41eedd1cc98f | purikura-photo-booths-in-japan   | null
+ 8a9b880c-a67e-4f64-9bbb-fbfa11c28416 | "purikura-photo-booths-in-japan" | null
+ d0c89574-7fa2-4e93-8a11-15fd8814980c | shibuya-fashion-trends           | null
+ e09e202a-8ea7-4552-adc1-445e2decd6f8 | tokyo-manga-kissa-guide          | null
+(4 rows)
+
+chatbotaidb=> delete from langchain_pg_collection where uuid='8a9b880c-a67e-4f64-9bbb-fbfa11c28416';
+DELETE 1
+chatbotaidb=> select * from langchain_pg_collection;
+                 uuid                 |              name              | cmetadata 
+--------------------------------------+--------------------------------+-----------
+ c8aa8090-931c-419a-b750-41eedd1cc98f | purikura-photo-booths-in-japan | null
+ d0c89574-7fa2-4e93-8a11-15fd8814980c | shibuya-fashion-trends         | null
+ e09e202a-8ea7-4552-adc1-445e2decd6f8 | tokyo-manga-kissa-guide        | null
+(3 rows)
+
+chatbotaidb=> select count(*) from langchain_pg_embedding where collection_id='c8aa8090-931c-419a-b750-41eedd1cc98f';
+ count 
+-------
+    10
+(1 row)
+
+chatbotaidb=> select count(*) from langchain_pg_embedding where collection_id='d0c89574-7fa2-4e93-8a11-15fd8814980c';
+ count 
+-------
+    10
+(1 row)
+
+chatbotaidb=> select count(*) from langchain_pg_embedding where collection_id='e09e202a-8ea7-4552-adc1-445e2decd6f8';
+ count 
+-------
+    10
+(1 row)
+
+chatbotaidb=> select document from langchain_pg_embedding where collection_id='e09e202a-8ea7-4552-adc1-445e2decd6f8';
+                                                                  document                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Do manga kissa have internet? Yes, manga kissa typically provide high-speed internet and computers for browsing.
+ Can foreigners visit manga kissa? Yes, manga kissa are open to everyone, though some may have limited English support.
+ What facilities do manga kissa offer? Facilities include manga collections, private booths, internet access, showers, and reclining seats.
+ What is a manga kissa? A manga kissa is a Japanese café where you can read manga, relax, and sometimes use private booths.
+ Are manga kissa expensive? Rates are affordable, starting around 400-600 yen per hour. Overnight packages may cost 1,500-2,000 yen.
+ Are manga kissa suitable for families? Some manga kissa are family-friendly, but others cater more to solo travelers or adults.
+ Can I stay overnight at a manga kissa? Yes, many manga kissa offer overnight plans with reclining seats or private booths.
+ Where can I find manga kissa in Tokyo? You can find manga kissa in Akihabara, Shinjuku, and Ikebukuro, among other areas in Tokyo.
+ What is the atmosphere of a manga kissa? It is quiet and cozy, designed for relaxation and reading manga.
+ What snacks are available at manga kissa? Snacks include instant noodles, drinks, and sometimes free soft drinks or coffee.
+(10 rows)
+
+chatbotaidb=> select document from langchain_pg_embedding where collection_id='d0c89574-7fa2-4e93-8a11-15fd8814980c';
+                                                                  document                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------
+ What is gyaru style? Gyaru is a flashy, glamorous fashion style with heavy makeup, bleached hair, and bold outfits.
+ What is Shibuya fashion? Shibuya fashion is a mix of urban, trendy, and youth-driven styles popularized by the district.
+ Is Shibuya fashion affordable? It depends; streetwear can be affordable, but designer brands can be expensive.
+ What is streetwear in Shibuya? Streetwear includes oversized hoodies, sneakers, and urban designs influenced by skate and hip-hop culture.
+ Who influences Shibuya fashion? Young influencers, models, and pop culture icons drive Shibuya fashion trends.
+ Where to shop for Shibuya styles? 109 Shibuya, Parco, and boutique shops in the area are hotspots for trendy fashion.
+ How do locals describe Shibuya style? Locals describe it as edgy, expressive, and reflective of youth culture.
+ What is 'Harajuku' vs 'Shibuya' style? Harajuku is playful and experimental, while Shibuya is urban and polished.
+ What is the latest Shibuya fashion trend? Currently, oversized outerwear and monochromatic layering are trending in Shibuya.
+ What is the connection between Shibuya and music? Shibuya's fashion is influenced by music scenes like J-pop, hip-hop, and EDM.
+(10 rows)
+
+chatbotaidb=> select document from langchain_pg_embedding where collection_id='c8aa8090-931c-419a-b750-41eedd1cc98f';
+                                                            document                                                            
+--------------------------------------------------------------------------------------------------------------------------------
+ How do purikura booths enhance photos? They enhance photos by smoothing skin, enlarging eyes, and adding fun effects.
+ How much does a purikura session cost? A purikura session typically costs around 400-600 yen.
+ What are some tips for taking good purikura? Wear bright clothes, use poses, and experiment with effects for the best results.
+ What is a purikura? A purikura is a Japanese photo booth that lets you take and decorate photos with effects.
+ What makes purikura unique? Purikura stands out for its customization, group fun, and kawaii (cute) effects.
+ Can I print purikura photos? Yes, purikura photos are printed as stickers or small sheets immediately after the session.
+ Where can I find purikura booths? Purikura booths are common in malls, arcades, and entertainment areas across Japan.
+ Are purikura popular with tourists? Yes, tourists love purikura for its fun experience and unique photo designs.
+ Can I customize my purikura photos? Yes, you can add stickers, text, and effects using touch screens after taking photos.
+ Can I save purikura photos digitally? Many modern purikura booths allow you to save photos digitally via QR codes or apps.
+(10 rows)
 
 
-
+```
 
 
 

@@ -74,10 +74,10 @@ def clientUserChat(request):
     # get document title to set it as en var for helper functions
     business_document = get_object_or_404(BusinessUserData, pk=int(document_title_id))
     document_title_name = business_document.document_title
-    print("document_title_name: ", dociment_title_name)
+    print("document_title_name: ", document_title_name)
     # set env var for document title for Ai agent team to know what doc to retrieve from
     formatted_doc_title_name = formatters.collection_normalize_name(document_title_name)
-    set_key(".vars.env", "DOCUMENT_TITLE", str(formattted_doc_title_name))
+    set_key(".vars.env", "DOCUMENT_TITLE", str(formatted_doc_title_name))
     load_dotenv(dotenv_path=".vars.env", override=True)
 
     # Check if required chatbot fields are missing
@@ -249,14 +249,23 @@ def clientUserChat(request):
       """
        we need here to provide default bot to not get error when the chatbot selected doesn't have any or see if it is in the javascript...
       """
-      default_chatbot = ""
+      ai_personality_default = os.getenv("DEFAULT_AI_PERSONALITY_TRAIT")
+      print("ai_personality_default : ", ai_personality_default)
+      default_chatbot = json.loads(ai_personality_default)
+      print("default chatbot fromen vars: ", default_chatbot, type(default_chatbot))
   except IndexError as e:
     print(f"Error while trying to get the chatbot name, probably no chatbot records: {e}")
     default_chatbot = ""
 
   # get default avatar if nothing set
   user_default_avatar = user.clientuser.picture.url if user.clientuser.picture else '/images/clientuser_dummy_hachiko.png'
-  chatbot_default_avatar = default_chatbot.avatar.url if default_chatbot.avatar else '/images/chatbot_dummy.png'
+  if hasattr(default_chatbot, "avatar"):
+    chatbot_default_avatar = default_chatbot.avatar.url if default_chatbot.avatar else '/images/chatbot_dummy.png'
+  elif isinstance(default_chatbot, dict) and "avatar" in default_chatbot:
+    chatbot_default_avatar = default_chatbot["avatar"]["url"] if default_chatbot["avatar"] else '/images/chatbot_dummy.png'
+  else:
+    chatbot_default_avatar = '/images/chatbot_dummy.png'
+
   # get business data to use jinja fields
   business_data = BusinessUserData.objects.all()
 
