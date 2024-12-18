@@ -1045,11 +1045,24 @@ chatbotaidb=> select document from langchain_pg_embedding where collection_id='c
  Can I save purikura photos digitally? Many modern purikura booths allow you to save photos digitally via QR codes or apps.
 (10 rows)
 
-
 ```
 
+# issues with updating business data and embeddings
+Had the issue of having the same data being embedded even if i had updated the database.
+After investigating I have noticed that the data need to be saved to database first as the agent embedding route is getting information from database to create new embeddings.
 
+- needed to embed data only if question answer is updated: did create a state variable of previous question answer data and compared the string lenght using json.dumps() against the data updated, and embedding woudl only be started if it differs in length.
+- then commited the changes to database and start embedding
+- if error in embeddings we keep the data by just reverting back to the state of previous question answer that we save int he database to recover it back.
+- the route agents embedding is fetching from database in our logic so if user only updates document name and chatbot settings, update business data will just perform normal updates of database.
 
+Also I got the confirmation that embedding data using same colleciton name overrrides and not increment what has been set their previously
+# Next:
+- [x] Need to fix the chatbotsettings and be able to create as many as I want as business user
+- [x] Need to make the update business data adding the embedding route to it with the logic of create embedding which will override what is there by reembedding all data (more or truncated depends on update)
+
+# Next:
+- can start working on replacing AI agent helper functions by rust functions
 
 
 

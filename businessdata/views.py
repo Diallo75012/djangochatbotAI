@@ -132,26 +132,104 @@ def addBusinessData(request):
   return render(request, 'business/addbusinessdata.html', context)
 
 # update business data
+# this route will update the data normally but if it is questions and answers changed will update embeddings
+# when embeddings are saved we keep the state of previous question answer data
+# so that we can revert database state to it if embeddings fails
+# we need to save database update first because the embedding route in agents is getting the question answers from database,
+# so it has to be committed here first
 @login_required(login_url='users:loginbusinessuser')
 @user_passes_test(is_business_user, login_url='users:loginbusinessuser')
 def updateBusinessData(request, pk):
   business_data_to_update = get_object_or_404(BusinessUserData, pk=pk, user=request.user)
   form = BusinessUserDataUpdateForm(instance=business_data_to_update)
 
+  # Store the previous state of question_answer_data
+  previous_question_answers = business_data_to_update.question_answer_data
+  previous_question_answers_length = len(json.dumps(previous_question_answers))
+
   if request.method == 'POST':
     form = BusinessUserDataUpdateForm(request.POST, instance=business_data_to_update)
     if form.is_valid():
-      form.save()
-      messages.success(
-        request,
-        "Data has been updated successfully."
-      )
-      return redirect("businessdata:businessdatamanagement")
+      # Commit the updated data to the database
+      updated_data = form.save(commit=False)
+      new_question_answers_length = len(json.dumps(updated_data.question_answer_data))
+
+      # Check if `question_answer_data` has changed
+      if previous_question_answers_length != new_question_answers_length:
+        # `question_answer_data` has changed; trigger embedding logic
+        document_title_id = updated_data.id
+        embed_data_url = reverse("agents:embed-data", kwargs={"pk": document_title_id})
+        full_url = request.build_absolute_uri(embed_data_url)
+        session = requests.Session()
+
+        try:
+          updated_data.save()  # Commit the new data before embeddings so that agent route gets new data
+          # Call embedding route
+          response = session.post(full_url, headers={"Content-Type": "application/json"}, cookies=request.COOKIES)
+
+          if response.status_code == 200:
+            # Embedding successful
+            response_success = response.json()["success"]
+            print("Embedding updated successfully:", response_success)
+            messages.success(
+              request,
+              "Data has been updated successfully, and embeddings are valid!"
+            )
+            return redirect("businessdata:businessdatamanagement")
+
+          elif response.status_code == 302:
+            # Unexpected redirect
+            error_message = f"Error embedding route, Redirect detected to: {response.headers.get('Location')}"
+            print(error_message)
+            # Rollback to previous state
+            updated_data.question_answer_data = previous_question_answers
+            updated_data.save()
+            messages.error(
+               request,
+            "Embedding validation failed. Changes have been rolled back."
+            )
+            return redirect("businessdata:updatebusinessdata", pk=pk)
+
+          else:
+            # Handle embedding failure
+            response_error = json.loads(response.text).get("error", "Unknown error occurred.")
+            print("Embedding failed:", response_error)
+            # Rollback to previous state
+            updated_data.question_answer_data = previous_question_answers
+            updated_data.save()
+            messages.error(
+              request,
+              f"Embedding validation failed. Changes have been rolled back. Error: {response_error}"
+            )
+            return redirect("businessdata:updatebusinessdata", pk=pk)
+
+        except requests.exceptions.RequestException as e:
+          # Request failure
+          print(f"Error during embedding request: {e}")
+          # Rollback to previous state
+          updated_data.question_answer_data = previous_question_answers
+          updated_data.save()
+          messages.error(
+            request,
+            "An error occurred while validating embeddings. Changes have been rolled back."
+          )
+          return redirect("businessdata:updatebusinessdata", pk=pk)
+
+      else:
+        # `question_answer_data` hasn't changed; perform a normal update
+        updated_data.save()
+        messages.success(
+          request,
+          "Data has been updated successfully without embedding changes."
+        )
+        return redirect("businessdata:businessdatamanagement")
+
     else:
       messages.error(
         request,
-        "Form submission incorrect. Please enter correct information respecting the data. eg: JSON format or DICT"
+        "Form submission incorrect. Please enter valid data respecting the format. (e.g., JSON or dict)"
       )
+
   context = {'form': form}
   return render(request, "business/updatebusinessdata.html", context)
 

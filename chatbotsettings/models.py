@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 
 class ChatBotSettings(models.Model):
+  # maybe one to one to user here
   business_user = models.ForeignKey(
     User,
     null=True,
@@ -13,7 +14,7 @@ class ChatBotSettings(models.Model):
     "businessdata.BusinessUserData",
     to_field="uuid",
     null=True,
-    on_delete=models.CASCADE
+    on_delete=models.SET_NULL
   )
   name = models.CharField(max_length=40, unique=True)
   tone = models.CharField(max_length=40, blank=True)

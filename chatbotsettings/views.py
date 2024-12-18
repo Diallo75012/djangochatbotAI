@@ -62,17 +62,6 @@ def addChatBotSettings(request):
           print("Image double name doesn't exist")
           pass
 
-      # Set the business_user_uuid using the user's related BusinessUserData uuid
-      try:
-        business_user_data = BusinessUserData.objects.get(user=request.user)
-        chatbotsettings_data.business_user_uuid = business_user_data
-      except Exception as e:
-        messages.error(
-          request,
-          "Before creating any ChatBot Setting, you need to have uploaded Business Data"
-        )
-        return redirect("businessdata:addbusinessdata")
-
       chatbotsettings_data.save()
       messages.success(
         request,
