@@ -3,6 +3,21 @@ use reqwest::blocking::Client;
 use serde::{Serialize};
 use std::fs::OpenOptions;
 use std::io::Write;
+mod app_utils;
+use app_utils::load_envs::load_env_variable;
+
+
+/*
+// path from inside app_utils not from here
+let env_file_path = "../../.env";
+let env_var_name = "TEST_ENV_VAR";
+
+match load_env_variable(env_file_path, env_var_name) {
+  Ok(value) => println!("Loaded value for '{}': {}", env_var_name, value),
+  Err(error) => eprintln!("Error: {}", error),
+}
+*/
+
 
 #[derive(Serialize, Debug)]
 struct Message {

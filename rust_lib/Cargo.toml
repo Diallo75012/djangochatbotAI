@@ -9,6 +9,7 @@ name = "rust_lib"
 crate-type = ["cdylib"]
 
 [dependencies]
+dotenv = "0.15.0"
 pyo3 = { version = "0.23.1", features = ["extension-module"] }
 # for HTTP requests to Groq or Ollama APIs...
 reqwest = { version = "0.11", features = ["blocking"] }
@@ -16,3 +17,5 @@ reqwest = { version = "0.11", features = ["blocking"] }
 # we might need that to serialize and deserialize
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+tokio = { version = "1.42.0", features = ["full"] }
+tokio-postgres = "0.7.12"

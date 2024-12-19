@@ -1064,6 +1064,151 @@ Also I got the confirmation that embedding data using same colleciton name overr
 # Next:
 - can start working on replacing AI agent helper functions by rust functions
 
+# Nice To Have
+- adding an internal non censored llm (LMStudio or Ollama) that will check if
+ `document_name` and `question_answer_data` are safe or not, to refuse recording to database if it is not
+
+# Replacing some `app_utils` function to `Rust` helpers
+- create a folder that will have all `app_utils` functions needed to be managed by `Rust` and then import those as module to the `lib.rs` `PyO3` transitioner
+```rust
+/* Example */
+// folder having all helper modules imported as `mod`
+mod app_utils;
+// access to files inside the folder to import functions needed
+use app_utils::ai_personality;
+// OR import the funciton directly
+use app_utils::ai_personality::personality_trait_formatting
+```
+
+- install dotenv like in Python and now we need to find the way from the app_utils modules have access to Django root project .env file to not have it twice as Rust expect it to be in the root directory of the rust project folder or in the directory same as the file calling it or a parent still in rust folder.
+From [documentation](https://docs.rs/dotenv/0.15.0/dotenv/fn.from_path.html) of Rust's `dotenv` i have found this way to provide absolute path:
+```rust
+pub fn from_path<P: AsRef<Path>>(path: P) -> Result<()>
+Loads the file at the specified absolute path.
+
+Examples
+
+use dotenv;
+use std::env;
+use std::path::{Path};
+
+let my_path = env::home_dir().and_then(|a| Some(a.join("/.env"))).unwrap();
+dotenv::from_path(my_path.as_path());
+```
+- so in `app_utils` folder we add a `mod.rs` where we make the modules available and import easier for other files in the directory or other directories:
+```rust
+pub mod ai_personality;
+pub mod load_envs;
+
+```
+- import in files in the same dir and use it:
+```rust
+// when importing from within a module, refer to the parent as crate (app_utils) so the path is from (app_utils)
+use crate::app_utils::load_envs::load_env_relative;
+
+pub fn some_function() {
+    if let Err(e) = load_env_relative() {
+        eprintln!("Failed to load .env in ai_personality.rs: {}", e);
+    }
+    // Other logic...
+}
+```
+- import in `lib.rs` parent dir"
+```rust
+mod app_utils;
+// here no need to use the word `crate` as it is a child module that we have imported we can use it as defined in mod.rs child file as module
+
+# use app_utils::load_envs::load_env_relative;
+use app_utils::ai_personality::load_env_variable;
+
+pub fn main() {
+    let env_file_path = "../../.env";
+    let env_var_name = "TEST_ENV_VAR";
+
+    match load_env_variable(env_file_path, env_var_name) {
+        Ok(value) => println!("Loaded value for '{}': {}", env_var_name, value),
+        Err(error) => eprintln!("Error: {}", error),
+    }
+}
+```
+- imports `use <module>::<file>::<function>` or `use crate::<module>::<file>::<function>`
+```markdown
+# When to Use Each
+- Use crate:: when you're in a nested module and want to explicitly reference a path starting from the crate root.
+- Use the bare module name (e.g., app_utils) when you're already at the crate root or directly importing a sibling module.
+
+# Key Rule of Thumb
+- Nested Module (ai_personality.rs): Use crate:: to ensure you're referring to the root-level module.
+- Root Module (lib.rs): Use the module name directly, since everything under lib.rs is already in the crate's namespace.
+
+```
+
+# Decision making
+I feel like i want to implement to much for the first release and time is running and no release, therefore:
+- i have decided to go easy on Rust module and just do some implementation to learn, easy ones. Use agent app utils that are not too complicated and make rust running those so that I can learn some concepts lioke postgresql connection with rust using tokio and env var management, modular rust use of different files and folders etc...
+- easy wizzy pizzy !
+- then I will start implementing logging which is the next big step, decide on log format to be able to be consummed easily for me (custom), ELK, Prometheus and all their friends as well...
+- then after the logging files are determined and centralized, we can start pluggin in the new AI agent team which will work on those logs only and create reports and will notify using email/ordiscord/ or I need to decide this as well.
+- After that we need to create the server Nginx and make sure it works with it.
+- Then we need to use gunicorn for the moment behind nginx for simplicity as we have done this before, but using 'Rust' could be cool, but i still have in mind that django has its ownspeed limit so no need to have a flash speed magnum in front of it as it won't be able to handle it anyways, so just to learn maybe... for the moment gunicorn and its script.
+- then create the containers for the app
+- when all that is done we can open our test kubeadm cluster and use terraform to deploy the application...Ansible with it? an ansible server inside kubvernetes? i don't know will talk with ChatGPT...
+- I don't like to do it but need to do the unit tests using ChatGPT and the github action as well to run tests.
+- HAVE TO MOVE A BIT QUICKER FROM NOW ON AN MAKE THIS APP HAPPEN! DOMAIN NAME AND AWS HOSTED!
+
+# Rust `Tokio` for `Postgreql` connection
+source: [documentation](https://docs.rs/tokio-postgres/0.7.12/tokio_postgres/#example) 
+
+- OR update `project.toml` file with
+```toml
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+dotenv = "0.15"
+tokio-postgres = "0.7"
+```
+- Or use terminal: Add with cargo
+```bash
+cargo add tokio --features full
+cargo add dotenv
+cargo add tokio-postgres
+```
+- Then
+```bash
+maturin develop
+```
+
+- ChatGPT step explanation
+```bash
+# Add a Rust dependency
+cargo add tokio --features full
+```
+```bash
+# Develop the Python module
+maturin develop
+```
+```bash
+# Test the installed module in Python
+python -c "import your_module; print(your_module.some_function())"
+```
+```markdown
+- When to Use maturin develop vs maturin build
+
+   - Use maturin develop: During active development for faster iteration and testing in your Python environment.
+   - Use maturin build: When preparing your project for distribution (e.g., creating .whl files for publishing to PyPI).
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
