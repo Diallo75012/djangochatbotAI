@@ -1,5 +1,5 @@
-use tokio_postgres::{Client, NoTls};
-use std::error::Error;
+use tokio_postgres::NoTls;
+
 
 /// Deletes the specified table (collection) from PostgreSQL.
 pub async fn delete_embedding_collection(

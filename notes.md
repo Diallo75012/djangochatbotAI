@@ -1208,9 +1208,25 @@ python -c "import your_module; print(your_module.some_function())"
 | r50k_base (or gpt2)	| GPT-3 models like davinci|
 
 
+# Rust From GPT To fix 
+- ChatGPT helps but there were some errors and here are the fix
 
+| Aspect Original Code | Fixed Code |
+|----------------------|------------|
+| Encoding Function get_encoding (non-existent) | cl100k_base (correct function) |
+| Dependency (lazy_static) Missing | Added to Cargo.toml |
+| ENCODER_CACHE Definition Error due to missing lazy_static | Correctly initialized with lazy_static |
+| Python Wrapper Type Mismatch String errors returned directly | Mapped String to PyErr for Python |
 
+# how to test functions implemented in rust after compilation `maturin develop`
+- Example:
+```python
+from rust_lib import safe_json_dumps_py
 
+data = {"key": "value", "nested": {"inner_key": 123}}
+print(safe_json_dumps_py(data))  # Outputs formatted JSON
+print(safe_json_dumps_py(12345))  # Outputs "12345"
+```
 
 
 
