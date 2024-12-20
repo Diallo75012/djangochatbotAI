@@ -1,11 +1,21 @@
+mod app_utils;
+
 use pyo3::prelude::*; 
+
 use reqwest::blocking::Client;
+
 use serde::{Serialize};
+
 use std::fs::OpenOptions;
 use std::io::Write;
-mod app_utils;
-use app_utils::load_envs::load_env_variable;
+use std::collections::HashMap;
 
+use app_utils::load_envs::load_env_variable;
+use app_utils::ai_personality::{string_to_dict, personality_trait_formatting};
+use app_utils::delete_embeddings::delete_embedding_collection;
+use app_utils::formatters::{string_to_dict as formatter_string_to_dict, collection_normalize_name};
+use app_utils::json_dumps_manager::safe_json_dumps;
+use app_utils::token_count_helper::token_counter;
 
 /*
 // path from inside app_utils not from here
@@ -124,11 +134,32 @@ fn call_llm_api(api_url: &str, api_key: &str, message_content: &str, model: &str
     }
 }
 
+#[pyfunction]
+fn load_personality(env_var_name: &str, input: &str) -> PyResult<HashMap<String, String>> {
+  match string_to_dict(input) {
+    Ok(dict) => personality_trait_formatting(dict, env_var_name),
+    Err(err) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+      "Error parsing input: {}",
+      err
+    ))),
+  }
+}
+
+#[pyfunction]
+fn remove_collection(connection_string: &str, collection_name: &str) -> PyResult<String> {
+  tokio::runtime::Runtime::new()
+    .unwrap()
+    .block_on(delete_embedding_collection(connection_string, collection_name))
+    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e))
+}
+
 /// A Python module implemented in Rust.
 // this module name has to be same as 
 // project folder name `my_rust_extension`
 #[pymodule]
 fn rust_lib(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(call_llm_api, m)?)?;
-    Ok(())
+  m.add_function(wrap_pyfunction!(call_llm_api, m)?)?;
+  m.add_function(wrap_pyfunction!(load_personality, m)?)?;
+  m.add_function(wrap_pyfunction!(remove_collection, m)?)?;
+  Ok(())
 }
