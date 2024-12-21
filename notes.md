@@ -1383,3 +1383,11 @@ try:
 
 # Next 
 - []  start implementing logging which is the next big step, decide on log format to be able to be consummed easily for me (custom), ELK, Prometheus and all their friends as well...
+
+# Issue github push
+```bash
+warning: refname 'HEAD' is ambiguous.
+warning: refname 'HEAD' is ambiguous.
+warning: refname 'HEAD' is ambiguous.
+```
+deleted: `rm .git/refs/HEAD` being a double file pointing to HEAD
