@@ -235,7 +235,7 @@ def updateBusinessData(request, pk):
 
 
 # delete business data
-@login_required(login_url="users:loginuser")
+@login_required(login_url="users:loginbusinessuser")
 @user_passes_test(is_business_user, login_url='users:loginbusinessuser')
 def deleteBusinessData(request, pk):
   business_data_to_delete = get_object_or_404(BusinessUserData, id=pk, user=request.user)
@@ -252,19 +252,22 @@ def deleteBusinessData(request, pk):
     delete_embed_data_url = reverse("agents:delete-embedding-collection", kwargs={"pk": document_title_id})
     # Construct the full URL using the request's base URI
     full_url = request.build_absolute_uri(delete_embed_data_url)
+    session = requests.Session()
 
     try:
       # call the route using post request for the moment if we need to add data to payload (which is empty in this code version)
-      response = requests.post(full_url, headers={"Content-Type": "application/json"})
+      response = session.post(full_url, headers={"Content-Type": "application/json"}, cookies=request.COOKIES)
+
       # Check the response status
       if response.status_code == 200:
         response_success = response.json()["success"]
         print("Embedding deleted successfully:", response_success)
         # here no redirect we will just at the end of the function send the success message and redirect once
         # but we can tell user to wait for full deletion
+        # we don't redirect here as we still need to delete database data in the next try/except, then we redirect
         messages.success(
           request,
-          f"Embeddings successfully deleted. Please wait for full data deletion confirmation..."
+          f"Embeddings data deleted successfully."
         )
       else:
         # here we will redirect has there have been an error
@@ -288,7 +291,8 @@ def deleteBusinessData(request, pk):
       )
       return redirect("businessdata:businessdatamanagement")
 
-    # delete from database
+    # delete from database now that's embedding are deleted successfully,
+    # this won't be triggered if embedding deletion fails, data is safe
     try:
       business_data_to_delete.delete()
       print("Database data have been successfully deleted.")

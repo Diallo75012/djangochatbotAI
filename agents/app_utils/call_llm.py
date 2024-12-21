@@ -17,7 +17,9 @@ from langchain.prompts import (
   HumanMessagePromptTemplate,
   AIMessagePromptTemplate
 )
-from agents.app_utils.formatters import string_to_dict
+# replaced by rust countrerpart `string_to_dict_py`
+#from agents.app_utils.formatters import string_to_dict
+from rust_lib import string_to_dict_py
 # to run next graphs
 from agents.llms.llms import (
   groq_llm_mixtral_7b,
@@ -99,7 +101,9 @@ def call_llm(query: str, prompt_template_part: str, schema: str, llm: ChatGroq, 
         print(" '```' not in response")
         response_parsed = response.content
     # transform to dict
-    response_content_to_dict = string_to_dict(response_parsed)
+    # replaced by rust counterpart string_to_dict_py
+    # response_content_to_dict = string_to_dict(response_parsed)
+    response_content_to_dict = string_to_dict_py(response_parsed) #using rust coutnerpart string_to_dict_py
     print("Response content dict: ", response_content_to_dict)
     return response_content_to_dict
 

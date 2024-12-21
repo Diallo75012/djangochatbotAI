@@ -35,7 +35,7 @@ pub async fn delete_embedding_collection(
     client
       .execute(delete_collection_query, &[&collection_name])
       .await
-      .map(|_| "Collection deleted successfully".to_string())
+      .map(|_| "success".to_string())
       .map_err(|e| format!("Error executing query: {}", e))
 
 }

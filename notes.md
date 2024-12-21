@@ -1235,7 +1235,7 @@ print(safe_json_dumps_py(12345))  # Outputs "12345"
 
 # List of function being processed by rust and their story
 - [x] `ai_personality` file have been handed to rust and replaced by `load_personality`: the only place where we need this is in `clientchat/views/clientuserchat function`, where we set the environment variable `AI_PERSONALITY_TRAITS` which will be pulled by retriever agent in the `answer_to_user` node.
-- [x] `delete_embeddings` file has also been handed to rust and replaced by `delete_colelction_py` which will connect to the database and get rid of the collection passed in the function. The route `deleteBusinessData` is the one calling the internal API, in `agents` app which has a `deleteEmbeddings` route that deletes the coleciton therefore the embeddings stored in that collection. so this function handed to rust is used only in `agents views` 
+- [x] `delete_embeddings` file has also been handed to rust and replaced by `delete_collection_py` which will connect to the database and get rid of the collection passed in the function. The route `deleteBusinessData` is the one calling the internal API, in `agents` app which has a `deleteEmbeddings` route that deletes the coleciton therefore the embeddings stored in that collection. so this function handed to rust is used only in `agents views` 
 
 ```bash
 chatbotaidb=> select * from langchain_pg_collection ;
@@ -1255,7 +1255,76 @@ chatbotaidb=> select * from langchain_pg_collection ;
  e09e202a-8ea7-4552-adc1-445e2decd6f8 | tokyo-manga-kissa-guide        | null
 (3 rows)
 ```
+- [x] `string_to_dict_py1` works fine it is a helper function that we can use to replace the occurances where it is used:  we use it in the `agents/app_utils/formatters` and in `agents/app_utils/call_llm`. Have swapped but for `agents/app_utils/call_llm` might be using the rust counterpart if needed. this is just a small change to learn rust and improve our understanding of rust interactions with python
+```python
+# string_to_dict_py
+# this will work as we have single quote `''` surrounding double quotes `""` btu won't work the other way around
+dict = '{"country": "Japan", "Wind": "Kamikaze"}' # works
+# dict = "{'country': 'Japan', 'Wind': 'Kamikaze'}" # won't work
 
+# better just use json dumps like here
+dict2 = json.dumps({'country': 'Metaverse-Japan', 'City':'Kamakura'})
+
+try:
+  formatted_to_dict = string_to_dict_py(dict)
+  print("formatted_to_dict: ", formatted_to_dict)
+except Exception as e:
+  print("error formatted dict1 string dict: ", e)
+
+try:
+  formatted_to_dict2 = string_to_dict_py(dict2)
+  print("formatted_to_dict2: ", formatted_to_dict2)
+except Exception as e:
+  print("error formatted dict1 string dict: ", e)
+
+```
+- [x] `collection_normalize_name_py` has worked fine but for this one as it is used in many places instead of going to there i will just replace the helper module and use same function name but put this rust helper inside of it. (I probably should do same for the previous ones to have just a single point to change...) `DONE!`
+- [x]  `token_counter_py` did work fine so i can use it if needed, for the time being it is not implemented nowhere, nice to have!
+```python
+prompt_completion_string = """
+overing the Warmth of Japan's Manga and Internet Cafe Culture
+執筆者: Hideo Takahashi
+
+|
+
+2024年11月11日
+
+|
+
+読む時間 5 min
+
+In the hustle and bustle of Japan's urban landscape, there's a unique sanctuary that stands out for lovers of comics, digital entertainment, and warm hospitality. Welcome to the world of 日本の漫画喫茶・ネットカフェ (Manga Kissa and Net Café culture). These spots aren’t just about escapism; they reflect the country's rich culture intertwined with the love for storytelling and technology.
+
+The Rise of Manga Kissa and Net Cafes in Japan
+Manga Kissa, or manga cafes, began in the late 1970s, evolving from simple places to read comics into comprehensive entertainment hubs. Net cafes joined the scene in the mid-1990s, offering internet access before it was commonplace in homes. Today, these cafes serve as both a cultural staple and a refuge for enthusiasts.
+A Blend of Tradition and Technology
+Manga cafes originally provided visitors with a library of manga to read. Over time, the fusion with Internet cafes turned these locations into multimedia centers. In a Manga Kissa, you can not only read comics but also enjoy internet browsing, gaming, and sometimes even movies.
+The Cultural Significance
+These cafes are more than venues; they hold cultural significance. For many, they are a retreat from the fast-paced life outside. They embody the Japanese values of hospitality and convenience, offering cozy environments where patrons can relax and recharge.
+The Role in Urban Life
+In crowded cities like Tokyo, where space is a luxury, Manga Kissa and Net Cafes provide an affordable alternative to hotels. They offer overnight stays with amenities, making them ideal for travelers on a budget or those who miss the last train home.
+Exploring the Offerings of Manga and Net Cafes
+The diverse offerings of these cafes cater to a wide audience, from readers and gamers to tourists looking for a unique experience. Let's go deeper into what makes these places so special.
+A Haven for Manga Lovers
+With walls lined with manga, these cafes allow patrons to immerse themselves in their favorite series. Some boast collections of thousands of titles, ensuring there’s something for every reader. The calm ambiance enhances the reading experience, making it the perfect escape for manga enthusiasts.
+"""
+try:
+  token_count = token_counter_py(prompt_completion_string)
+  print("Token Count Manga Kissa: ", token_count)
+except Exception as e:
+  print("error occured while trying to count token of manag kissa..: ", e)
+```
+```python
+# returned
+Outputs: 491
+```
+Tested using GPT4o&40-mini [Openai Tokenizer](https://platform.openai.com/tokenizer) and got:
+```bash
+TOkens: 474, Characters: 2297
+```
+Very close i just use the base tokenizer so it is fine!
+
+- [x] Done with our first easy round of Rust helper implementation, let's keep learning!
 
 # Issue with ChatGPT code **`WARNING`**
 The code was executing a command to drop the table entirely!!!!
@@ -1278,8 +1347,39 @@ delete from langchain_pg_collection where name='Shibuya Fashion Trends';
 
 
 # Next
-- need to keep going on the rsut functions testing and replacement of their python counterparts
-- need to to run app and test collection creation and deletion from business user UI interface to validate that it works as we need probably to improve the returned value from rust. No it is fine, i have checked the original function also just returns a string saying "success". **ISSUE**:  Error making the request: Expecting value: line 3 column 1 (char 2)  `This form trying to delete from the webui, we will stop for today and come back tomorrow to it to have fresh mind`
+- [x] need to keep going on the rsut functions testing and replacement of their python counterparts
+- [x] need to to run app and test collection creation and deletion from business user UI interface to validate that it works as we need probably to improve the returned value from rust. No it is fine, i have checked the original function also just returns a string saying "success". **ISSUE**:  Error making the request: Expecting value: line 3 column 1 (char 2)  `This form trying to delete from the webui, we will stop for today and come back tomorrow to it to have fresh mind`
 
 
+# issue with deletion of embedding when integrating rust counterpart
+ **ISSUE**:  Error making the request: Expecting value: line 3 column 1 (char 2)  `This form trying to delete from the webui, we will stop for today and come back tomorrow to it to have fresh mind`
+- **Troubleshooting:**
+  - had some redirects for the internal API call to agents route that deletes the embeddings
+  - had wrong authentication setup in the `@login_required()` decorator which was set to `clientuser` who is not permitted to access to `businessuser` routes
+  - had also not sent the authentication data for the route using cookies
 
+- **Solution:**
+  - have changed the `@login_required()` decorator to authorize only `businessuser` for the deletion route
+  - have integrated the authentication data in the cookies passed to the internal API route. 
+```python
+# PREVIOUSLY
+delete_embed_data_url = reverse("agents:delete-embedding-collection", kwargs={"pk": document_title_id})
+# Construct the full URL using the request's base URI
+full_url = request.build_absolute_uri(delete_embed_data_url)
+try:
+  # call the route using post request for the moment if we need to add data to payload (which is empty in this code version)
+  response = requests.post(full_url, headers={"Content-Type": "application/json"})
+
+# FIX
+delete_embed_data_url = reverse("agents:delete-embedding-collection", kwargs={"pk": document_title_id})
+# Construct the full URL using the request's base URI
+full_url = request.build_absolute_uri(delete_embed_data_url)
+session = requests.Session()
+try:
+  # call the route using post request for the moment if we need to add data to payload (which is empty in this code version)
+  response = session.post(full_url, headers={"Content-Type": "application/json"}, cookies=request.COOKIES)
+```
+
+
+# Next 
+- []  start implementing logging which is the next big step, decide on log format to be able to be consummed easily for me (custom), ELK, Prometheus and all their friends as well...

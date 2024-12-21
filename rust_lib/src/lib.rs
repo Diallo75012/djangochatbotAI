@@ -103,9 +103,9 @@ fn load_personality(input: &str) -> PyResult<HashMap<String, String>> {
 }
 
 #[pyfunction]
-fn delete_collection_py(connection_string: &str, collection_name: &str) -> PyResult<()> {
+fn delete_collection_py(connection_string: &str, collection_name: &str) -> PyResult<String> {
   match delete_collection_main(connection_string, collection_name) {
-    Ok(_) => Ok(()),
+    Ok(response) => Ok(response.to_string()),
     Err(e) => Err(PyValueError::new_err(format!("Failed to delete collection: {}", e))),
   }
 }
@@ -118,6 +118,7 @@ fn load_env_variable_py(env_file_path: &str, env_var_name: &str) -> PyResult<Str
   }
 }
 
+// make sure here input from python is a json.dumps() to be stringyfied dict like
 #[pyfunction]
 fn string_to_dict_py(input: &str) -> PyResult<HashMap<String, String>> {
   match string_to_dict(input) {

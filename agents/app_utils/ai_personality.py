@@ -2,6 +2,12 @@ import os
 import ast
 from dotenv import load_dotenv
 from typing import Dict, List, Tuple, Any, Optional
+# here we replace the function used here by its rust counterpart
+# by importing it and swapping its use in the ai personality traits formatting
+from rust_lib import (
+  string_to_dict_py,
+  load_personality,
+)
 
 
 # load env vars
@@ -51,7 +57,11 @@ def personality_trait_formatting(trait_dict) -> dict:
     }
   """
   ai_personality_env_var = os.getenv("DEFAULT_AI_PERSONALITY_TRAIT")
-  ai_personality_default = string_to_dict(ai_personality_env_var)
+  
+  # we replace it by its runst counterpart `string_to_dict_py`
+  # ai_personality_default = string_to_dict(ai_personality_env_var)
+  ai_personality_default = string_to_dict_py(ai_personality_env_var) #using rust counterpart string_to_dict_py
+  
   # we made sure to have same key names for dafault and custom clintuser/businessuser defined AI personality trait
   for k, v in trait_dict.items():
     # we check if value is empty, so not set by clientuser/businessuser
@@ -63,9 +73,13 @@ def personality_trait_formatting(trait_dict) -> dict:
   return trait_dict
 
 
-
-
-
+def personality_trait_formatting(trait_dict) -> dict:
+  try:
+    personality_traits_formatted = load_personality(trait_dict)
+    return personality_traits_formatted
+  except Exception as e:
+    print("error occured while trying to formatt AI personality using rust helper")
+    return "error occured while trying to formatt AI personality using rust helper"
 
 
 
