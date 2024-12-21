@@ -334,6 +334,11 @@ OR from rust_lib import <function name>
 du -hs rust_lib
 623M	rust_lib
 ```
+# during development clean up rust built to keep just one
+```rust
+cargo clean
+maturin develop
+```
 
 # Rust Code Structure
 - Note 1:
@@ -1228,12 +1233,53 @@ print(safe_json_dumps_py(data))  # Outputs formatted JSON
 print(safe_json_dumps_py(12345))  # Outputs "12345"
 ```
 
+# List of function being processed by rust and their story
+- [x] `ai_personality` file have been handed to rust and replaced by `load_personality`: the only place where we need this is in `clientchat/views/clientuserchat function`, where we set the environment variable `AI_PERSONALITY_TRAITS` which will be pulled by retriever agent in the `answer_to_user` node.
+- [x] `delete_embeddings` file has also been handed to rust and replaced by `delete_colelction_py` which will connect to the database and get rid of the collection passed in the function. The route `deleteBusinessData` is the one calling the internal API, in `agents` app which has a `deleteEmbeddings` route that deletes the coleciton therefore the embeddings stored in that collection. so this function handed to rust is used only in `agents views` 
+
+```bash
+chatbotaidb=> select * from langchain_pg_collection ;
+                 uuid                 |              name              | cmetadata 
+--------------------------------------+--------------------------------+-----------
+ c8aa8090-931c-419a-b750-41eedd1cc98f | purikura-photo-booths-in-japan | null
+ d0c89574-7fa2-4e93-8a11-15fd8814980c | shibuya-fashion-trends         | null
+ e09e202a-8ea7-4552-adc1-445e2decd6f8 | tokyo-manga-kissa-guide        | null
+ 21799745-b3c8-4ed2-a0de-4af9418780c4 | rust-test                      | null
+(4 rows)
+
+chatbotaidb=> select * from langchain_pg_collection ;
+                 uuid                 |              name              | cmetadata 
+--------------------------------------+--------------------------------+-----------
+ c8aa8090-931c-419a-b750-41eedd1cc98f | purikura-photo-booths-in-japan | null
+ d0c89574-7fa2-4e93-8a11-15fd8814980c | shibuya-fashion-trends         | null
+ e09e202a-8ea7-4552-adc1-445e2decd6f8 | tokyo-manga-kissa-guide        | null
+(3 rows)
+```
 
 
+# Issue with ChatGPT code **`WARNING`**
+The code was executing a command to drop the table entirely!!!!
+We need just a little command to delete only one collection....
+**Therefore, be careful and never trust LLMs!!!**
+- delete embedding collection from terminal
+```psql
+delete from langchain_pg_collection where name='Shibuya Fashion Trends';
+```
+- but in the `SQL` query we need to put the name in double quotes `"colection name"` to not get error for `-` character that would be missinterpreted by `psql` therefore,
+  need to escape with backslashes but here we don't need because the `$1` will be making sure that the name is well formatted and `-` character won't be an issue anymore.
+```rust
+  let delete_collection_query = "DELETE FROM langchain_pg_collection WHERE name = $1;";
+    client
+      .execute(delete_collection_query, &[&collection_name])
+      .await
+      .map(|_| "Collection deleted successfully".to_string())
+      .map_err(|e| format!("Error executing query: {}", e))
+```
 
 
-
-
+# Next
+- need to keep going on the rsut functions testing and replacement of their python counterparts
+- need to to run app and test collection creation and deletion from business user UI interface to validate that it works as we need probably to improve the returned value from rust. No it is fine, i have checked the original function also just returns a string saying "success". **ISSUE**:  Error making the request: Expecting value: line 3 column 1 (char 2)  `This form trying to delete from the webui, we will stop for today and come back tomorrow to it to have fresh mind`
 
 
 

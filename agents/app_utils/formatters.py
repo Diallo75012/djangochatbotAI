@@ -23,5 +23,6 @@ def string_to_dict(string: str) -> Dict[str, Any]:
 
 # this will normalize the collection names to have those lowercases and no space in between words but a dash `"-"`
 def collection_normalize_name(collection_name: str):
+  print("collection name before normalization from collection_normalize_name: ", collection_name)
   return collection_name.replace(" ", "-").strip().lower()
 

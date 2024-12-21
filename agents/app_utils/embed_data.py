@@ -12,7 +12,7 @@ from agents.app_utils import formatters
 
 
 load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path=".vars", override=True)
+load_dotenv(dotenv_path=".vars.env", override=True)
 
 embeddings = OllamaEmbeddings(model="mistral:7b") # temperature=float(os.getenv("EMBEDDINGS_TEMPERATURE")))
 

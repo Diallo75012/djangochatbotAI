@@ -4,13 +4,16 @@ import requests
 from uuid import uuid4
 from django.shortcuts import render
 from django.http import HttpResponse
+from rust_lib import (
+  delete_collection_py, # replacing : `app_libs/delete_embeddings`
+)
 from agents.app_utils import (
   custom_chunk_and_embed_to_vectordb,
   is_path_or_text,
   process_query,
   retrieve_answer,
   embed_data,
-  delete_embeddings,
+  # delete_embeddings, # rust counterpart: `delete_embeddings_py`
   formatters,
 )
 # retrieval agent
@@ -192,7 +195,9 @@ def deleteEmbeddingCollection(request, pk):
   if request.method == 'POST':
     try:
       # conenction string is defined at the top of this fine Global scope so we can access to it
-      delete_collection = delete_embeddings.delete_embedding_collection(CONNECTION_STRING, business_document_title_normalized)
+      # delete_collection = delete_embeddings.delete_embedding_collection(CONNECTION_STRING, business_document_title_normalized)
+      # we use rust counterpart that will delete the collection
+      delete_collection = delete_collection_py(CONNECTION_STRING, business_document_title_normalized)
       # delete_collection is a string
       if "success" in delete_collection:
         response = json.dumps({"success": f"Collesciton {business_document_title_normalized} deleted successfully."})

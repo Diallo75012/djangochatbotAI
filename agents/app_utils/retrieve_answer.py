@@ -16,7 +16,7 @@ from agents.app_utils import formatters
 #### UTILITY FUNCTIONS & CONF. VARS
 # load env vars
 load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path=".vars", override=True)
+load_dotenv(dotenv_path=".vars.env", override=True)
 
 # Use Ollama to create embeddings
 # in the OllamaEmbeddings class, temperature parameter is not supported anymore
@@ -43,6 +43,7 @@ CONNECTION_STRING = f"postgresql+{driver}://{user}:{password}@{host}:{port}/{dat
 
 # we use document_title as collection name as it will be used by business user on his side when creating embedding
 # this makes the search more targeted and accurate as it will fetch only from targeted area of embeddings
+
 COLLECTION_NAME = formatters.collection_normalize_name(os.getenv("DOCUMENT_TITLE"))
 
 

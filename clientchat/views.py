@@ -21,8 +21,13 @@ from .models import ChatMessages
 import memcache
 # just for returning test when debugging other route redirects
 from django.http import HttpResponse, JsonResponse
+from rust_lib import (
+  # counterpart of `app_utils.ai_personality`
+  load_personality,
+)
 from agents.app_utils import (
-  ai_personality,
+  # rust counterpart used `load_personality`
+  # ai_personality,
   formatters,
 )
 from agents.graph import retrieval_agent_graph
@@ -107,7 +112,9 @@ def clientUserChat(request):
 
     # here we will just set the environment variable personality trait of the ai with all fields filled
     # using default values if fields are not filled
-    ai_personality_traits =  ai_personality.personality_trait_formatting(ai_traits_dict)
+    # ai_personality_traits =  ai_personality.personality_trait_formatting(ai_traits_dict)
+    ai_personality_traits =  load_personality(ai_traits_dict) # rust counterpart
+    
     # set environment variable that will have those trait stored for AI agent team
     '''
       # see here if we use json.dumps() to env var so that we can json.loads()

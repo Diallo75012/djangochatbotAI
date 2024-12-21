@@ -1,27 +1,29 @@
+//just use this version using serde which makes the string_to_dict function redundant
 use std::collections::HashMap;
-use std::env;
+use crate::app_utils::load_envs::load_env_variable;
+use crate::logs_writer::log_debug_info;
 
-/// Converts a string to a HashMap with lowercase keys.
-pub fn string_to_dict(input: &str) -> Result<HashMap<String, String>, String> {
-    serde_json::from_str::<HashMap<String, String>>(input)
-        .map(|map| map.into_iter().map(|(k, v)| (k.to_lowercase(), v)).collect())
-        .map_err(|e| format!("Error converting string to dictionary: {}", e))
-}
 
 /// Fills missing personality traits with default values.
+/// Loads the default traits from an environment variable file.
 pub fn personality_trait_formatting(
-    trait_dict: HashMap<String, String>,
-    default_env_var: &str,
+    mut trait_dict: HashMap<String, String>,
 ) -> Result<HashMap<String, String>, String> {
-    let default_traits = env::var(default_env_var)
-        .map_err(|_| "Environment variable DEFAULT_AI_PERSONALITY_TRAIT not found".to_string())?;
-    let default_traits_map = string_to_dict(&default_traits)?;
+    // Load the default personality traits from the environment variable
+    let default_traits = load_env_variable("../../.vars.env", "AI_PERSONALITY_TRAITS")?;
+    log_debug_info(&format!("Check env var if loaded - default_traits: {:?}", default_traits));
 
-    let mut updated_traits = trait_dict.clone();
+    // Parse the default traits into a HashMap using serde_json
+    let default_traits_map: HashMap<String, String> = serde_json::from_str(&default_traits)
+        .map_err(|e| format!("Failed to parse AI_PERSONALITY_TRAITS: {}", e))?;
+    log_debug_info(&format!("Default_traits_map: {:?}", default_traits_map));
+    
+    // Fill in missing or empty fields with default values
     for (key, value) in default_traits_map.iter() {
-        if !updated_traits.contains_key(key) || updated_traits[key].is_empty() {
-            updated_traits.insert(key.clone(), value.clone());
+        if !trait_dict.contains_key(key) || trait_dict[key].is_empty() {
+            trait_dict.insert(key.clone(), value.clone());
         }
     }
-    Ok(updated_traits)
+
+    Ok(trait_dict)
 }

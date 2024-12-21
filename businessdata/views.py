@@ -276,7 +276,7 @@ def deleteBusinessData(request, pk):
           request,
           f"Failed to delete embedding. Status code: {response.status_code}, Response: {response_error}"
         )
-        return redirect("businessdata:addbusinessdata")
+        return redirect("businessdata:businessdatamanagement")
 
     except requests.exceptions.RequestException as e:
       '''
@@ -286,7 +286,7 @@ def deleteBusinessData(request, pk):
         request,
         f"Error making the request: {e}"
       )
-      return redirect("businessdata:addbusinessdata")
+      return redirect("businessdata:businessdatamanagement")
 
     # delete from database
     try:
