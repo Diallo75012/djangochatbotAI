@@ -241,7 +241,7 @@ I have pivoted a bit my idea in how the user will be able to select chatbots:
 - [x] need to have response answer just under it with chatbot avatar if any or a default one that will be stored in static files just in case
 - then need to do all the unit tests
 - [x] then need to start pluggin in AI
-- then make those agents to interact with user
+- [x] then make those agents to interact with user
 - then add logging in the codebase
 - then create the other asynchrone workflow with agents analyzing logs
 - [x] then replace caching with memecache isntead of native django cache or have that as fallback
@@ -389,11 +389,11 @@ as the code is compile and used by Pyo# we can't see the `println!'s` instead we
 **OR** maybe the best write to a filem this will be handy for our future llm agent that would analyze logs.
 
 # Next
-- then need to create new app for agents or have it in the `common` app as central point that all other apps can get agents from
-- then implement embedding for business data when recorded by business user (Use Rust and LangGraph)
-- then implement retrieval when user sends a message (Use Rust and LangGraph)
+- [x] then need to create new app for agents or have it in the `common` app as central point that all other apps can get agents from
+- [x] then implement embedding for business data when recorded by business user (Use Rust and LangGraph)
+- [x] then implement retrieval when user sends a message (Use Rust and LangGraph)
 - then need to do all the unit tests (I want to cry! hihihihihiiii, ChatGPT Agent Will work with me to streamline this quicker/more productive)
-- then make those agents to interact with user
+- [x] then make those agents to interact with user
 - then add logging in the codebase
 - then create the other asynchrone workflow with agents analyzing logs
 - then create a report or email stream for Devops/SRE team to have reports on the app logs
@@ -497,113 +497,6 @@ curl -X POST http://127.0.0.1:8000/agents/embed-data/ \
 - then need to test curl command above sending data to be embedded to see if it works
 - then need to implement to business data creation/update flow
 - then need to have data in vector related to docuemnt deleted when business user deletes the data
-
-
-# Logging
-eg.:
-```python
-import os
-# we have the choice to use either of those two to have logs rotation
-from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'standard': {
-            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-        },
-        # JSON better for Prometheus and ELK
-        'json': {  # Better for Prometheus, Loki, or ELK stacks
-            'format': '{"time": "%(asctime)s", "level": "%(levelname)s", "name": "%(name)s", "message": "%(message)s"}'
-        },
-    },
-    'handlers': {
-        'file_debug': {
-            'level': 'DEBUG',
-            # this for logs rotation
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            # log file location
-            'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
-            'when': 'midnight',
-            # Keep logs for 7 days
-            'backupCount': 7,
-            # Choose this formatter JSON better for Prometheus and ELK
-            'formatter': 'json',
-        },
-        'file_info': {
-            'level': 'INFO',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/info.log'),
-            'when': 'midnight',
-            'backupCount': 7,
-            'formatter': 'json',
-        },
-        'file_warning': {
-            'level': 'WARNING',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/warning.log'),
-            'when': 'midnight',
-            'backupCount': 7,
-            'formatter': 'json',
-        },
-        'file_error': {
-            'level': 'ERROR',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/error.log'),
-            'when': 'midnight',
-            'backupCount': 7,
-            'formatter': 'json',
-        },
-        'file_critical': {
-            'level': 'CRITICAL',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/critical.log'),
-            'when': 'midnight',
-            'backupCount': 7,
-            'formatter': 'json',
-        },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'standard',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file_debug', 'file_info', 'file_warning', 'file_error', 'file_critical', 'console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'myapp': {
-            'handlers': ['file_debug', 'file_info', 'file_warning', 'file_error', 'file_critical', 'console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
-}
-
-- eg. of use in code :
-import logging
-# here is where you can set the name of the loggers to match the name of the one in settings.py
-# better to have those same as the application name so we know where it is coming from directly
-logger = logging.getLogger('myapp')
-logger.debug("This is a debug message.")
-
-```
-**Fetching Logs with Prometheus or Other Tools**
-- Prometheus with Loki: Use Loki as a log aggregation tool. It works seamlessly with Prometheus.
-  - Install promtail, a log collector, and point it to your log files.
-  - Configure promtail to scrape the JSON logs from your Django project.
-
-- ElasticSearch (ELK Stack):
-  - Use Filebeat or Logstash to ship logs to ElasticSearch.
-  - Parse the JSON logs for advanced search and filtering.
-
-- AWS CloudWatch or GCP Logging:
-  - Use SDKs or agents to push logs from your Django server to these managed log services.
 
 
 # Issues:
@@ -883,18 +776,6 @@ list_answers = ["response_nothing", "response_063", "response_055"]
 - [x] we can start plugging in the retrieval graph by moving the functions to the agent app from the test folder and start server and try the flow from user request to UI answer reception: start raw answer and then improve it.
 
 
-# think at logging to file instead of printing everywhere
-```python
-import logging
-
-# this for timestamps
-logging.basicConfig(format='%(asctime)s %(message)s')
-# this for the logginf message with the level of logging
-logging.warning('is when this event was logged.') 
-
-# need to do the configs better in settings.py
-We have commented out advance logging settings and need to work on it
-```
 
 
 # Next
@@ -1384,6 +1265,7 @@ try:
 # Next 
 - []  start implementing logging which is the next big step, decide on log format to be able to be consummed easily for me (custom), ELK, Prometheus and all their friends as well...
 
+
 # Issue github push
 ```bash
 warning: refname 'HEAD' is ambiguous.
@@ -1391,3 +1273,347 @@ warning: refname 'HEAD' is ambiguous.
 warning: refname 'HEAD' is ambiguous.
 ```
 deleted: `rm .git/refs/HEAD` being a double file pointing to HEAD
+
+
+
+# LOGGING
+
+- eg.:
+  - # we have the choice to use either of those two to have logs rotation: `RotatingFileHandler`, `TimedRotatingFileHandler`
+
+```python
+import os
+# we use this one in the code example: `TimedRotatingFileHandler`
+from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+        # JSON better for Prometheus and ELK
+        'json': {  # Better for Prometheus, Loki, or ELK stacks
+            'format': '{"time": "%(asctime)s", "level": "%(levelname)s", "name": "%(name)s", "message": "%(message)s"}'
+        },
+    },
+    'handlers': {
+        'file_debug': {
+            'level': 'DEBUG',
+            # this for logs rotation
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            # log file location
+            'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
+            'when': 'midnight',
+            # Keep logs for 7 days
+            'backupCount': 7,
+            # Choose this formatter JSON better for Prometheus and ELK
+            'formatter': 'json',
+        },
+        'file_info': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/info.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'file_warning': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/warning.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'file_error': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/error.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'file_critical': {
+            'level': 'CRITICAL',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/critical.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file_debug', 'file_info', 'file_warning', 'file_error', 'file_critical', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'myapp': {
+            'handlers': ['file_debug', 'file_info', 'file_warning', 'file_error', 'file_critical', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+- eg. of use in code :
+import logging
+# here is where you can set the name of the loggers to match the name of the one in settings.py
+# better to have those same as the application name so we know where it is coming from directly
+logger = logging.getLogger('myapp')
+logger.debug("This is a debug message.")
+
+```
+
+
+- think at logging to file instead of printing everywhere:
+```python
+import logging
+
+# this for timestamps
+logging.basicConfig(format='%(asctime)s %(message)s')
+# this for the logginf message with the level of logging
+logging.warning('is when this event was logged.') 
+
+# need to do the configs better in settings.py
+We have commented out advance logging settings and need to work on it
+```
+- extras:
+**Fetching Logs with Prometheus or Other Tools**
+- Prometheus with Loki: Use Loki as a log aggregation tool. It works seamlessly with Prometheus.
+  - Install promtail, a log collector, and point it to your log files.
+  - Configure promtail to scrape the JSON logs from your Django project.
+
+- ElasticSearch (ELK Stack):
+  - Use Filebeat or Logstash to ship logs to ElasticSearch.
+  - Parse the JSON logs for advanced search and filtering.
+
+- AWS CloudWatch or GCP Logging:
+  - Use SDKs or agents to push logs from your Django server to these managed log services.
+
+- ChatGPT suggestions to improve how I log files:
+  1. in `setting.py`
+```python
+# settings.py
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'json': {
+            'format': (
+                '{"time": "%(asctime)s",'
+                ' "level": "%(levelname)s",'
+                ' "name": "%(name)s",'
+                ' "message": "%(message)s",'
+                ' "user_id": "%(user_id)s"}'
+            )
+        },
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'master_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'master.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'agents_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'agents.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        # similarly for 'businessdata_file', 'rust_file', etc.
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard'
+        },
+    },
+    'loggers': {
+        '': {  # Root logger
+            'handlers': ['master_file', 'console'],
+            'level': 'DEBUG',
+        },
+        'agents': {
+            'handlers': ['agents_file', 'master_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'businessdata': {
+            'handlers': ['businessdata_file', 'master_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        # etc.
+    }
+}
+```
+
+  2. create a custom filter in a file to be able to add custom fields in the logging data. I have requested for `GDPR` anonymized `user` using the `user_id`
+
+```python
+# create a .py file living in an app (i will use the app that i called `common` that i have created on purpose for centralized stuff)
+class UserIDFilter(logging.Filter):
+    def filter(self, record):
+        # If you have something like a thread-local or a context local
+        # that stores the user, you can retrieve it here.
+        # Or you can set it in your view code before logging.
+        user_id = getattr(record, 'user_id', 'anonymous')
+        record.user_id = user_id
+        return True
+```
+    -  in `settings.py` add the filter which will be using the helper custom module function created
+```python
+'filters': {
+    'user_id_filter': {
+        '()': 'path.to.UserIDFilter',
+    },
+},
+...
+'handlers': {
+    'master_file': {
+       'filters': ['user_id_filter'],  # attach the filter
+       ...
+    },
+}
+```
+
+    - in the code: just useit this way for the custom field `user_id` to be populated. Maybe need here to add hashing of the id before storing so it is really anonymized (or an algo that only Devops Security team can verse to identify user (Ban, notify, warn..etc..))
+   
+```python
+logger = logging.getLogger('agents')
+logger.info("Something happened", extra={'user_id': request.user.id})
+```
+  3. Rust logging to be improved for more pro code using `tracing` and `tracing_subscriber`
+    - so here we will create this function in `rust` and then use PyO3 to be able to call it from p`Django`
+      in `common` app's `app.py` that is where you call it, so it is called once only when `Django` starts, this can be done also:
+        - `lazy` the first time we call `rust` funcitons
+        - or in `wsgi.py` or `asgi,py`: the real entrypoints of the `Django` project
+
+```bash
+# install tracing and the subscriber and listener (can be done in one line)
+cargo add tracing
+cargo add tracing-subscriber
+cargo add tracing-appender
+```
+```rust
+// those are the macros that can be used to write logs at different levels, eg.: `info!("Rust function invoked");`
+use tracing::{info, error, warn};
+use tracing_subscriber::{fmt, EnvFilter};
+use std::path::Path;
+
+#[pyfunction]
+pub fn init_rust_logging(log_dir: &str) {  // function to be called to initialize log file location
+    let log_file_path = Path::new(log_dir).join("rust.log");
+    // here we have the log file rust.log and the dir will be givieng as parameter
+    // from the python side so that we can control and centralize all logs in same folder
+    // here we log `daily` before opening a new file
+    let file_appender = tracing_appender::rolling::daily(log_dir, "rust.log");
+
+    let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+
+    tracing_subscriber::fmt()
+        .json()
+        .with_env_filter(EnvFilter::from_default_env())
+        .with_writer(non_blocking)
+        .init();
+}
+...
+#[pyfunction]
+fn your_pyo3_func() -> PyResult<()> {
+    info!("Rust function invoked");
+    // ...
+    Ok(())
+}
+...
+// need to import the log funciton in python to initialize there from any `app.py` apps or `wsgi` or `asgi` or calling it once in the code logic like `lazy init`
+#[pymodule]
+fn my_rust_module(py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(init_rust_logging, m)?)?;
+```
+```python
+# in the python side eample here in agents/app.py
+from django.apps import AppConfig
+import os
+from rust_lib import init_rust_logging  # or wherever your PyO3 module is accessible
+
+class AgentsConfig(AppConfig):
+    name = 'agents'
+
+    def ready(self):
+        # This method is called once when Django loads this app.
+        # here we set where the log folder will be, we might use an `os.getenv('LOG_FOLDER_CENTER')`
+        logs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
+        # Or read from settings: logs_dir = settings.LOGS_DIR
+        try:
+            my_rust_module.init_rust_logging(logs_dir)
+        except Exception as e:
+            print(f"Failed to init rust logging: {e}")
+
+```
+      - Now use `tracing` and call logs from anywhere like that
+```rust
+// so you can just use this import and call any of the macros `info, debug, error` where ever you want in the functions
+use tracing::{info, debug, error};
+
+pub fn do_something() {
+    debug!("Some debug info about do_something()");
+}
+```
+
+# logs output format `JSON` normalized for easy ELK/ Prometheus cosomption
+- Rust:
+```json
+{
+  "timestamp":"2024-12-21T12:34:56.789Z",
+  "level":"INFO",
+  "fields":{"message":"Rust logger initialized successfully!"},
+  "target":"my_crate",
+  ...
+}
+```
+- Python:
+```json
+'{"time":"%(asctime)s","level":"%(levelname)s","logger":"%(name)s","msg":"%(message)s"}'
+```
+
+# **Important about log files**
+- `Django` log file a really rotated meaning deleted for new ones (here 7 days frequency and at midnight as setup)
+- `Rust` log files from `tracing` are rotated so a new file is created but the previous file is not deleted: **Need to setup a `CRON` job for exampel to get rid of files every 7 days at midnightooooo**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
