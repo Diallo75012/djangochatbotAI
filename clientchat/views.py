@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import logging
 # import rust library her efor the moment but we might create a helper file with this inside or put it in common app so that all apps can call it from central point
 import rust_lib
 from django.shortcuts import render, redirect
@@ -29,6 +30,9 @@ from agents.graph import retrieval_agent_graph
 from dotenv import load_dotenv, set_key
 
 
+# setup logger
+clientchat_app_logger = logging.getLogger('clientchat')
+
 # load env vars
 load_dotenv(dotenv_path='.env', override=False)
 load_dotenv(dotenv_path=".vars.env", override=True)
@@ -55,8 +59,11 @@ def clientUserChat(request):
     mc.set(cache_key, list(chat_messages), time=3600)
 
   if request.method == 'POST':
+
+    clientchat_app_logger.info(f"REQUEST SEND BY AJAX: {request.body}")
     print("REQUEST SEND BY AJAX: ", request.body)
     data = json.loads(request.body)
+    clientchat_app_logger.info(f"Data send from javascript: {data}")
     print("Data send from javascript: ", data)
 
     # extract chatbot information
@@ -70,11 +77,17 @@ def clientUserChat(request):
 
     # get document id received from Javascript and use it to fetch document title (save as env var)
     document_title_id = data.get('document_title_id')
+    
+    clientchat_app_logger.info(f"Document Title Id: {document_title_id}, Type {int(document_title_id)}:  {type(int(document_title_id))}")
     print("Document Title Id: ", document_title_id, "Type int(document_title_id): ", type(int(document_title_id)))
+    
     # get document title to set it as en var for helper functions
     business_document = get_object_or_404(BusinessUserData, pk=int(document_title_id))
     document_title_name = business_document.document_title
+
+    clientchat_app_logger.info(f"document_title_name: {document_title_name}")
     print("document_title_name: ", document_title_name)
+
     # set env var for document title for Ai agent team to know what doc to retrieve from
     formatted_doc_title_name = formatters.collection_normalize_name(document_title_name)
     set_key(".vars.env", "DOCUMENT_TITLE", str(formatted_doc_title_name))
@@ -82,7 +95,10 @@ def clientUserChat(request):
 
     # Check if required chatbot fields are missing
     if not chatbot_name or not chatbot_description:
+  
+      clientchat_app_logger.info("chatbot_name or chatbot_description missing.")
       print("chatbot_name or chatbot_description missing.")
+  
       messages.error(request, "AI personality 'Name' and 'Description' are mandatory.")
       return json({'error': 'Chatbot name and description are required.'})
 
@@ -112,7 +128,10 @@ def clientUserChat(request):
     except Exception as e:
       # log also here for Devops/Security 
       error_message = f"An exception error occured while trying to format ai personality traits: {e}"
+
+      clientchat_app_logger.info(error_message)
       print(error_message)
+
       return HttpResponse(json.dumps({"error": error_message}), content_type="applicatiion/json", status=400)
     
     # set environment variable that will have those trait stored for AI agent team
@@ -173,7 +192,10 @@ def clientUserChat(request):
       elif retriever_response.status_code == 302:
         # Handle unexpected redirects
         error_message = f"Error embedding route, Redirect detected to: {retriever_response.headers.get('Location')}"
+       
+        clientchat_app_logger.info(error_message)
         print(error_message)
+       
         messages.error(
           request,
           f"We experience some issue with the embedding route, the whole team is working it and we apologize. Please try to save your data later."
@@ -183,7 +205,10 @@ def clientUserChat(request):
       else:
         # log also here for Devops/Security 
         error_message = f"An error occured while trying to get retrieved data from clientchat view: {retriever_response.status_code}"
+
+        clientchat_app_logger.info(error_message)
         print(error_message)
+
         return HttpResponse(json.dumps({"error": error_message}), content_type="applicatiion/json", status=int(retriever_response.status_code))
 
       # ERROR IN RETRIEVAL AGENT RETURN
@@ -191,12 +216,17 @@ def clientUserChat(request):
       for k,v in agent_retrieved_data_response_json.items():
         if "error" in k:
           error = agent_retrieved_data_response_json[k]
+
+          clientchat_app_logger.info(error)
           print("Agent retrieval returned error: ", error)
           '''
           # log the error specifying that it has been catch here in clientchat app views to Devops/Security team
           '''
           error_message = f"An error occured while running Retriever Agent Team: {error}"
+
+          clientchat_app_logger.info(error_message)
           print(error_message)
+
           messages.error("The AI Team had some issues, please try later. We are doing our best to fix it.")
           return HttpResponse(json.dumps({"error": error_message}), content_type="applicatiion/json", status=500)        
 
@@ -204,7 +234,10 @@ def clientUserChat(request):
       # from here we can handle the response if partial response or if retrieved response above thresold
       # we keep it simple and just return answer partial or not but could do for k,v in .... and handle cases
       bot_response_content = agent_retrieved_data_response_json["answer"]
+
+      clientchat_app_logger.info(f"Bot Response Content: {bot_response_content}")
       print("Bot Response Content: ", bot_response_content)
+
       bot_chat_msg = ChatMessages.objects.create(
         user=user,
         sender_type='bot',
@@ -230,11 +263,15 @@ def clientUserChat(request):
     except requests.exceptions.RequestException as e:
       # log also here for Devops/Security 
       error_message = f"An error occured while trying to request data retrieval for question: {e}"
+
+      clientchat_app_logger.info(error_message)
       print(error_message)
       return HttpResponse(json.dumps({"error": error_message}), content_type="applicatiion/json", status=500)
     except Exception as e:
       # log also here for Devops/Security 
       error_message = f"An exception error occured while trying to request retrieval url: {e}"
+
+      clientchat_app_logger.info(error_message)
       print(error_message)
       return HttpResponse(json.dumps({"error": error_message}), content_type="applicatiion/json", status=400)
 
@@ -251,16 +288,24 @@ def clientUserChat(request):
     chatbot_name = BusinessUserData.objects.filter(document_title=business_data_first_document_title).values_list('chat_bot__name')[0][0]
     if chatbot_name:
       default_chatbot = ChatBotSettings.objects.get(name=chatbot_name)
+
+      clientchat_app_logger.info(f"default chatbot: {default_chatbot}")
       print("default chatbot: ", default_chatbot)
     else:
       """
        we need here to provide default bot to not get error when the chatbot selected doesn't have any or see if it is in the javascript...
       """
       ai_personality_default = os.getenv("DEFAULT_AI_PERSONALITY_TRAIT")
+
+      clientchat_app_logger.info(f"ai_personality_default : {ai_personality_default}")
       print("ai_personality_default : ", ai_personality_default)
       default_chatbot = json.loads(ai_personality_default)
+
+      clientchat_app_logger.info(f"default chatbot fromen vars: {default_chatbot}, {type(default_chatbot)}")
       print("default chatbot fromen vars: ", default_chatbot, type(default_chatbot))
   except IndexError as e:
+
+    clientchat_app_logger.info(f"Error while trying to get the chatbot name, probably no chatbot records: {e}")
     print(f"Error while trying to get the chatbot name, probably no chatbot records: {e}")
     default_chatbot = ""
 

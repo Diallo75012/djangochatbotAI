@@ -52,7 +52,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-] += ['common.middleware_logs_custom.CurrentUserMiddleware'] # common app file `middleware_logs_custom.py` to have `user_id` automatically populated in logs
+    'common.middleware_logs_custom.CurrentUserMiddleware', # common app file `middleware_logs_custom.py` to have `user_id` automatically populated in logs
+]
+#] += ['common.middleware_logs_custom.CurrentUserMiddleware'] # common app file `middleware_logs_custom.py` to have `user_id` automatically populated in logs
 
 ROOT_URLCONF = 'chatbotAI.urls'
 
@@ -180,8 +182,8 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'filters': {
-      'user_id': {
-        '()': 'common.logs_filters.UserIDFilter,
+      'user_id_filter': {
+        '()': 'common.logs_filters.UserIDFilter',
       },
     },
     'formatters': {
@@ -206,6 +208,7 @@ LOGGING = {
             'when': 'midnight',
             'backupCount': 7,
             'formatter': 'json',
+            'filters': ['user_id_filter'],
         },
          # similarly for 'businessdata_file'... etc...
         'agents_file': {
@@ -215,6 +218,7 @@ LOGGING = {
             'when': 'midnight',
             'backupCount': 7,
             'formatter': 'json',
+            'filters': ['user_id_filter'],
         },
         'businessdata_file': {
             'level': 'DEBUG',
@@ -223,6 +227,7 @@ LOGGING = {
             'when': 'midnight',
             'backupCount': 7,
             'formatter': 'json',
+            'filters': ['user_id_filter'],
         },
         'chatbotsettings_file': {
             'level': 'DEBUG',
@@ -231,6 +236,7 @@ LOGGING = {
             'when': 'midnight',
             'backupCount': 7,
             'formatter': 'json',
+            'filters': ['user_id_filter'],
         },
         'clientchat_file': {
             'level': 'DEBUG',
@@ -239,6 +245,7 @@ LOGGING = {
             'when': 'midnight',
             'backupCount': 7,
             'formatter': 'json',
+            'filters': ['user_id_filter'],
         },
         'common_file': {
             'level': 'DEBUG',
@@ -247,6 +254,7 @@ LOGGING = {
             'when': 'midnight',
             'backupCount': 7,
             'formatter': 'json',
+            'filters': ['user_id_filter'],
         },
         'users_file': {
             'level': 'DEBUG',
@@ -255,6 +263,7 @@ LOGGING = {
             'when': 'midnight',
             'backupCount': 7,
             'formatter': 'json',
+            'filters': ['user_id_filter'],
         },
         'console': {
             'level': 'DEBUG',

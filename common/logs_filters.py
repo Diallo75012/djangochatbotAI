@@ -1,5 +1,5 @@
 import logging
-from common.middleware import get_current_user
+from common.middleware_logs_custom import get_current_user
 
 
 class UserIDFilter(logging.Filter):

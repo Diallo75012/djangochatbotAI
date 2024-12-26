@@ -1,3 +1,6 @@
+import os
+import json
+import logging
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
@@ -16,6 +19,9 @@ from .models import ClientUser
 import memcache
 from django.http import HttpResponse
 
+
+# setup logger
+users_app_logger = logging.getLogger('users')
 
 # Connecting to Memcached
 mc = memcache.Client(['127.0.0.1:11211'], debug=1)
@@ -46,6 +52,8 @@ def registerBusinessUser(request):
     # Check if the username already exists before form validation
     username = request.POST.get('username')
     if User.objects.filter(username=username).exists():
+    
+      users_app_logger.info(f"A user with the username '{username}' already exists.")
       messages.error(request, f"A user with the username '{username}' already exists.")
       form.add_error("username", f"A user with the username '{username}' already exists.")
       context = {'form': form}
@@ -65,11 +73,15 @@ def registerBusinessUser(request):
 
       if user:
         login(request, user)
+
+        users_app_logger.info(f"Account has been created for {username}")
         messages.success(request, f"Account has been created for {username}")
         return redirect('users:loginbusinessuser')
       else:
+        users_app_logger.info("Authentication failed after registration.")
         messages.error(request, "Authentication failed after registration.")
     else:
+      users_app_logger.info("Invalid form submission. Please correct the errors.")
       messages.error(request, "Invalid form submission. Please correct the errors.")
   else:
     # Present an empty registration form by default
@@ -93,9 +105,12 @@ def updateBusinessUser(request):
         form = UpdateBusinessUserForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
+
+            users_app_logger.info('Your profile has been updated successfully.')
             messages.success(request, 'Your profile has been updated successfully.')
             return redirect('businessdata:businessdatamanagement')
         else:
+            users_app_logger.info('Please correct the error below.')
             messages.error(request, 'Please correct the error below.')
 
     context = {'form': form}
@@ -117,8 +132,10 @@ def loginBusinessUser(request):
         login(request, user)
         return redirect('businessdata:businessdatamanagement')
       else:
+        users_app_logger.info('User is not a business user. Create a business account, then come back to login here.')
         messages.error(request, 'User is not a business user. Create a business account, then come back to login here.')
     else:
+      users_app_logger.info('Username OR Password is incorrect')
       messages.info(request, 'Username OR Password is incorrect')
 
   context = {}
@@ -127,6 +144,7 @@ def loginBusinessUser(request):
 # logout user
 def logoutBusinessUser(request):
   logout(request)
+  users_app_logger.info('Business User logged out.')
   return redirect('users:loginbusinessuser')
 
 
@@ -143,6 +161,8 @@ def registerClientUser(request):
     # Check if the username already exists before form validation
     username = request.POST.get('username')
     if User.objects.filter(username=username).exists():
+    
+      users_app_logger.info(f"A user with the username '{username}' already exists.")
       messages.error(request, f"A user with the username '{username}' already exists.")
       form.add_error("username", f"A user with the username '{username}' already exists.")
       context = {'form': form}
@@ -163,11 +183,15 @@ def registerClientUser(request):
 
       if user:
         login(request, user)
+
+        users_app_logger.info(f"Account has been created for {username}")
         messages.success(request, f"Account has been created for {username}")
         return redirect('users:loginclientuser')
       else:
+        users_app_logger.info("Authentication failed after registration.")
         messages.error(request, "Authentication failed after registration.")
     else:
+      users_app_logger.info("Invalid form submission. Please correct the errors.")
       messages.error(request, "Invalid form submission. Please correct the errors.")
   else:
     # Present an empty registration form by default
@@ -192,9 +216,12 @@ def updateClientUser(request):
     form = UpdateClientUserForm(request.POST, request.FILES, instance=user)
     if form.is_valid():
       form.save()
+
+      users_app_logger.info('Your profile has been updated successfully.')
       messages.success(request, 'Your profile has been updated successfully.')
       return redirect('clientchat:clientuserchat')
     else:
+      users_app_logger.info('Please correct the error below.')
       messages.error(request, 'Please correct the error below.')
 
   context = {'form': form}
@@ -215,10 +242,13 @@ def loginClientUser(request):
     if user is not None:
       if is_client_user(user):
         login(request, user)
+        users_app_logger.info('Business User logged in.')
         return redirect('clientchat:clientuserchat')
       else:
+        users_app_logger.info('User is not a client user. Create a client account, then come back to login here.')
         messages.error(request, 'User is not a client user. Create a client account, then come back to login here.')
     else:
+      users_app_logger.info('Username OR Password is incorrect')
       messages.info(request, 'Username OR Password is incorrect')
 
   context = {}
@@ -233,5 +263,5 @@ def logoutClientUser(request):
   # clear the cached messges on logout
   mc.delete(cache_key)
   logout(request)
-
+  users_app_logger.info('Business User Logged Out.')
   return redirect('users:loginclientuser')

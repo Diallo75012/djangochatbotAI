@@ -7,7 +7,7 @@ def token_counter(text_or_string_prompt):
     num_of_tokens = token_counter_py(text_or_string_prompt) # rust counterpart function called
     print("Num of tokens: ", num_of_tokens)
     return num_of_tokens
-  execpt Exception as e:
+  except Exception as e:
     print("An error occured while trying to count tokens from rust helper: ", e)
     return f"An error occured while trying to count tokens from rust helper: {e} "
 

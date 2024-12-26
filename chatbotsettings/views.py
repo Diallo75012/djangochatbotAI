@@ -1,3 +1,6 @@
+import os
+import json
+import logging
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
@@ -11,6 +14,9 @@ from .forms import (
 )
 from businessdata.models import BusinessUserData
 
+
+# setup logger
+chatbotsettings_app_logger = logging.getLogger('chatbotsettings')
 
 def is_client_user(user):
   return user.groups.filter(name='client').exists()
@@ -52,23 +58,35 @@ def addChatBotSettings(request):
             business_user=request.user,
             avatar__contains=avatar.name
           )
+
+          chatbotsettings_app_logger.info("This image has already been used. Please upload a different one.")
+
           messages.error(
             request,
             "This image has already been used. Please upload a different one."
           )
           return redirect("chatbotsettings:addchatbotsettings")
         except ChatBotSettings.DoesNotExist:
+
           # No duplicate avatar exists, continue to save
+          chatbotsettings_app_logger.info("Image double name doesn't exist")
           print("Image double name doesn't exist")
+
           pass
 
       chatbotsettings_data.save()
+
+      chatbotsettings_app_logger.info("ChatBot settings added successfully!")
+
       messages.success(
         request,
         "ChatBot settings added successfully!"
       )
       return redirect("chatbotsettings:addchatbotsettings")
     else:
+
+      chatbotsettings_app_logger.info("Form submission incorrect. Please enter correct information.")
+
       messages.error(
         request,
         "Form submission incorrect. Please enter correct information."
@@ -95,6 +113,9 @@ def updateChatBotSettings(request, pk):
             business_user=request.user,
             avatar__contains=avatar.name
           )
+
+          chatbotsettings_app_logger.info("This image has already been used. Please upload a different one.")
+
           messages.error(
             request,
             "This image has already been used. Please upload a different one."
@@ -102,15 +123,19 @@ def updateChatBotSettings(request, pk):
           return redirect("chatbotsettings:addchatbotsettings")
         except ChatBotSettings.DoesNotExist:
           # No duplicate avatar exists, continue to save
+          chatbotsettings_app_logger.info("updateChatbotSettings function: No duplicate avatar exist, continue to save form")
           pass
 
       form.save()
+
+      chatbotsettings_app_logger.info("ChatBot has been updated successfully.")
       messages.success(
         request,
         "ChatBot has been updated successfully."
       )
       return redirect("chatbotsettings:chatbotsettingsmanagement")
     else:
+      chatbotsettings_app_logger.info("Form submission incorrect. Please enter correct information.")
       messages.error(
         request,
         "Form submission incorrect. Please enter correct information."
@@ -126,6 +151,8 @@ def deleteChatBotSettings(request, pk):
   chatbot_settings_to_delete = get_object_or_404(ChatBotSettings, id=pk, business_user=request.user)
   if request.method == "POST":
     chatbot_settings_to_delete.delete()
+
+    chatbotsettings_app_logger.info("ChatBot settings has been successfully deleted.")
     messages.success(
       request,
       "ChatBot settings has been successfully deleted."
@@ -136,32 +163,36 @@ def deleteChatBotSettings(request, pk):
 @login_required(login_url="users:loginclientuser")
 @user_passes_test(is_client_user, login_url='users:loginclientuser')
 def getChatbotDetails(request, business_data_id):
-    try:
-        # Fetch the BusinessUserData entry
-        business_data = BusinessUserData.objects.get(pk=int(business_data_id))
-        print("Business Data: ", business_data)
+  try:
+    # Fetch the BusinessUserData entry
+    business_data = BusinessUserData.objects.get(pk=int(business_data_id))
 
-        # Check if a chat_bot is linked to the business_data
-        if business_data.chat_bot:
-            # Fetch the ChatBotSettings linked via the ForeignKey
-            data = {
-                "name": business_data.chat_bot.name,
-                "age": business_data.chat_bot.age,
-                "origin": business_data.chat_bot.origin,
-                "dream": business_data.chat_bot.dream,
-                "tone": business_data.chat_bot.tone,
-                "description": business_data.chat_bot.description,
-                "expertise": business_data.chat_bot.expertise,
-                "avatar_url": business_data.chat_bot.avatar.url if business_data.chat_bot.avatar else "",
-                "business_owner": business_data.user.username,
-                "number": business_data.uuid,
-            }
-            print("CHATBOT: ", data)
-            return JsonResponse(data)
-        else:
-            return JsonResponse({"error": "No chatbot linked to the selected business data."}, status=404)
+    chatbotsettings_app_logger.info(f"Business Data: {business_data}")
+    print("Business Data: ", business_data)
 
-    except BusinessUserData.DoesNotExist:
-        return JsonResponse({"error": "Business data not found."}, status=404)
+    # Check if a chat_bot is linked to the business_data
+    if business_data.chat_bot:
+      # Fetch the ChatBotSettings linked via the ForeignKey
+      data = {
+        "name": business_data.chat_bot.name,
+        "age": business_data.chat_bot.age,
+        "origin": business_data.chat_bot.origin,
+        "dream": business_data.chat_bot.dream,
+        "tone": business_data.chat_bot.tone,
+        "description": business_data.chat_bot.description,
+        "expertise": business_data.chat_bot.expertise,
+        "avatar_url": business_data.chat_bot.avatar.url if business_data.chat_bot.avatar else "",
+        "business_owner": business_data.user.username,
+        "number": business_data.uuid,
+      }
+      chatbotsettings_app_logger.info(f"CHATBOT: {data}")
+      print("CHATBOT: ", data)
+      return JsonResponse(data)
+    else:
+      chatbotsettings_app_logger.info("error: No chatbot linked to the selected business data.")
+      return JsonResponse({"error": "No chatbot linked to the selected business data."}, status=404)
 
+  except BusinessUserData.DoesNotExist:
+    chatbotsettings_app_logger.info("error: Business data not found.")
+    return JsonResponse({"error": "Business data not found."}, status=404)
 

@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import logging
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
@@ -13,6 +14,8 @@ from .forms import (
   BusinessUserDataUpdateForm
 )
 
+# setup logger
+businessdata_app_logger = logging.getLogger('businessdata')
 
 # setup function that checks if user is business
 # and use in decorator for group filtering views
@@ -43,13 +46,15 @@ def addBusinessData(request):
       # here we save to database
       business_data = form.save(commit=False)
       business_data.user = request.user
+      
+      businessdata_app_logger.info(f"Business user: {request.user}")
       print("Business user: ", request.user)
+      
       business_data.save()
       messages.success(
         request,
         "Business data added successfully! Wait a for embedding validation."
       )
-      
       ##### API CALL TO EMBED DOCUMENTS #####
       """
         ##### CAN BE DECOUPLED IN THE FUTURE FOR CRON JOBS AND NOTIFICATION TO BUSINESS USER WHEN READY TO BE USED BY CLIENT USER #####
@@ -74,7 +79,10 @@ def addBusinessData(request):
         # Check the response status
         if response.status_code == 200:
           response_success = response.json()["success"]
+
+          businessdata_app_logger.info(f"Embedding created successfully: {response_success}")
           print("Embedding created successfully:", response_success)
+
           messages.success(
             request,
             "Business data added successfully! Embeddings Done! Data ready for client user questions."
@@ -85,7 +93,10 @@ def addBusinessData(request):
         elif response.status_code == 302:
           # Handle unexpected redirects
           error_message = f"Error embedding route, Redirect detected to: {response.headers.get('Location')}"
+
+          businessdata_app_logger.info(error_message)
           print(error_message)
+
           messages.error(
             request,
             f"We experience some issue with the embedding route, the whole team is working it and we apologize. Please try to save your data later."
@@ -104,6 +115,7 @@ def addBusinessData(request):
             request,
             f"Failed to create embedding. Status code: {response.status_code}, Response: {response_error}"
           )
+          businessdata_app_logger.info(f"Failed to create embedding. Status code: {response.status_code}, Response: {response_error}")
           business_data_to_update = get_object_or_404(BusinessUserData, pk=document_title_id, user=request.user)
           business_data_to_delete.delete()
           return redirect("businessdata:addbusinessdata")
@@ -113,15 +125,18 @@ def addBusinessData(request):
         '''
          Log erro to Devops/Security team
         '''
+        message_error = f"Error making the request: {e}"
+        businessdata_app_logger.info(message_error)
         messages.error(
           request,
-          f"Error making the request: {e}"
+          message_error
         )
         business_data_to_update = get_object_or_404(BusinessUserData, pk=document_title_id, user=request.user)
         business_data_to_delete.delete()
         return redirect("businessdata:addbusinessdata")
 
     else:
+      businessdata_app_logger.info("Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format).")
       messages.error(
         request,
         "Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format)."
@@ -170,7 +185,10 @@ def updateBusinessData(request, pk):
           if response.status_code == 200:
             # Embedding successful
             response_success = response.json()["success"]
+
+            businessdata_app_logger.info(f"Embedding updated successfully: {response_success}")            
             print("Embedding updated successfully:", response_success)
+
             messages.success(
               request,
               "Data has been updated successfully, and embeddings are valid!"
@@ -180,10 +198,14 @@ def updateBusinessData(request, pk):
           elif response.status_code == 302:
             # Unexpected redirect
             error_message = f"Error embedding route, Redirect detected to: {response.headers.get('Location')}"
+            
+            businessdata_app_logger.info(error_message)
             print(error_message)
+
             # Rollback to previous state
             updated_data.question_answer_data = previous_question_answers
             updated_data.save()
+            businessdata_app_logger.info("Embedding validation failed. Changes have been rolled back.")
             messages.error(
                request,
             "Embedding validation failed. Changes have been rolled back."
@@ -193,7 +215,10 @@ def updateBusinessData(request, pk):
           else:
             # Handle embedding failure
             response_error = json.loads(response.text).get("error", "Unknown error occurred.")
+
+            businessdata_app_logger.info(f"Embedding failed: {response_error}")
             print("Embedding failed:", response_error)
+
             # Rollback to previous state
             updated_data.question_answer_data = previous_question_answers
             updated_data.save()
@@ -205,6 +230,7 @@ def updateBusinessData(request, pk):
 
         except requests.exceptions.RequestException as e:
           # Request failure
+          businessdata_app_logger.info(f"Error during embedding request: {e}")
           print(f"Error during embedding request: {e}")
           # Rollback to previous state
           updated_data.question_answer_data = previous_question_answers
@@ -218,6 +244,7 @@ def updateBusinessData(request, pk):
       else:
         # `question_answer_data` hasn't changed; perform a normal update
         updated_data.save()
+        businessdata_app_logger.info("Data has been updated successfully without embedding changes.")
         messages.success(
           request,
           "Data has been updated successfully without embedding changes."
@@ -225,6 +252,7 @@ def updateBusinessData(request, pk):
         return redirect("businessdata:businessdatamanagement")
 
     else:
+      businessdata_app_logger.info("Form submission incorrect. Please enter valid data respecting the format. (e.g., JSON or dict)")
       messages.error(
         request,
         "Form submission incorrect. Please enter valid data respecting the format. (e.g., JSON or dict)"
@@ -239,7 +267,10 @@ def updateBusinessData(request, pk):
 @user_passes_test(is_business_user, login_url='users:loginbusinessuser')
 def deleteBusinessData(request, pk):
   business_data_to_delete = get_object_or_404(BusinessUserData, id=pk, user=request.user)
+
+  businessdata_app_logger.info(f"business_data_to_delete: {business_data_to_delete}")
   print("business_data_to_delete: ", business_data_to_delete)
+
   document_title = business_data_to_delete.document_title
   document_title_id = pk
   '''
@@ -261,7 +292,10 @@ def deleteBusinessData(request, pk):
       # Check the response status
       if response.status_code == 200:
         response_success = response.json()["success"]
+
+        businessdata_app_logger.info(f"Embedding deleted successfully: {response_success}")
         print("Embedding deleted successfully:", response_success)
+
         # here no redirect we will just at the end of the function send the success message and redirect once
         # but we can tell user to wait for full deletion
         # we don't redirect here as we still need to delete database data in the next try/except, then we redirect
@@ -275,6 +309,9 @@ def deleteBusinessData(request, pk):
          Log error to Devops/Security team
         '''
         response_error = json.loads(response)["error"]
+
+        businessdata_app_logger.info(f"Failed to delete embedding. Status code: {response.status_code}, Response: {response_error}")
+
         messages.error(
           request,
           f"Failed to delete embedding. Status code: {response.status_code}, Response: {response_error}"
@@ -285,6 +322,8 @@ def deleteBusinessData(request, pk):
       '''
        Log erro to Devops/Security team
       '''
+      businessdata_app_logger.info(f"Error making the request: {e}")
+      
       messages.error(
         request,
         f"Error making the request: {e}"
@@ -295,11 +334,14 @@ def deleteBusinessData(request, pk):
     # this won't be triggered if embedding deletion fails, data is safe
     try:
       business_data_to_delete.delete()
+      businessdata_app_logger.info("Database data have been successfully deleted.")
       print("Database data have been successfully deleted.")
     except Exception as e:
+      businessdata_app_logger.info(f"An error occured while trying to delete data from database: {e}")
       print(f"An error occured while trying to delete data from database: {e}")
 
   # here we return the confirmation message of data deletion
+  businessdata_app_logger.info("Full business data deletion confirmation status: 'successfully deleted'.")
   messages.success(
     request,
     "Full business data deletion confirmation status: 'successfully deleted'."
