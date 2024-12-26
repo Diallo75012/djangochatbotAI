@@ -1494,7 +1494,7 @@ class UserIDFilter(logging.Filter):
 }
 ```
 
-    - in the code: just useit this way for the custom field `user_id` to be populated. Maybe need here to add hashing of the id before storing so it is really anonymized (or an algo that only Devops Security team can verse to identify user (Ban, notify, warn..etc..))
+    - in the code: just use it this way for the custom field `user_id` to be populated. Maybe need here to add hashing of the id before storing so it is really anonymized (or an algo that only Devops Security team can verse to identify user (Ban, notify, warn..etc..))
    
 ```python
 logger = logging.getLogger('agents')
@@ -1598,7 +1598,70 @@ pub fn do_something() {
 - `Rust` log files from `tracing` are rotated so a new file is created but the previous file is not deleted: **Need to setup a `CRON` job for exampel to get rid of files every 7 days at midnightooooo**
 
 
+- Finally log anything like that
 
+```
+# in any app put a file with this (I will use common app and call the file logs_filters.py)
+import logging
+from common.middleware import get_current_user
+
+class UserIDFilter(logging.Filter):
+  def filter(self, record):
+    user = get_current_user()
+    record.user_id = getattr(user, 'id', 'anonymous') if user and user.is_authenticated else 'anonymous'
+    return True
+
+```
+
+```python
+# in any app create a middleware_logs_custom.py file (but we will use the common app for that)
+import threading
+from django.utils.deprecation import MiddlewareMixin
+from django.http import HttpRequest
+
+
+_user = threading.local()
+
+class CurrentUserMiddleware:
+  def __init__(self, get_response):
+    self.get_response = get_response
+
+  def __call__(self, request):
+    # Set the current user
+    _user.value = getattr(request, 'user', None)
+    response = self.get_response(request)
+    # Clear the current user after the response
+    _user.value = None
+    return response
+
+def get_current_user():
+  return getattr(_user, 'value', None)
+```
+
+```python
+# in settings.py, add to the existing middleware your custom middleware
+MIDDLEWARE += ['common.middleware_logs_custom.CurrentUserMiddleware']
+```
+
+```python
+# in settings.py add the filter to the logging settings
+'filters': {
+  'user_id': {
+    '()': 'common.logs_filters.UserIDFilter,
+  },
+},
+```
+
+If the logger has the formatter in `settings.py` set to `json` it will populate automatically the `user_id` fields of the formatter
+```python
+import logging
+
+agents_app_logger = logging.getLogger('agents')
+...
+# and in the code
+agents_app_logger.info("YO! Log me mate!")
+
+```
 
 
 

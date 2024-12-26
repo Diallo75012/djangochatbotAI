@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+] += ['common.middleware_logs_custom.CurrentUserMiddleware'] # common app file `middleware_logs_custom.py` to have `user_id` automatically populated in logs
 
 ROOT_URLCONF = 'chatbotAI.urls'
 
@@ -160,102 +160,143 @@ REST_FRAMEWORK = {
 
 }
 
-'''
-# loggings: https://docs.djangoproject.com/en/4.1/topics/logging/#topic-logging-parts-formatters
 
+
+# loggings: https://docs.djangoproject.com/en/4.1/topics/logging/#topic-logging-parts-formatters
+'''
+
+# logs formats 
+'json'
+'standard'
+# Logs rotated every 7 days at midnight
+'when': 'midnight',
+'backupCount': 7,
+# all logs centralized in django root project folder:
+`logs/<app_name>.logs`
+# all loggers writing to specific app log file and to master file:
+ ['<app_name>_file', 'master_file', 'console']
+'''
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+      'user_id': {
+        '()': 'common.logs_filters.UserIDFilter,
+      },
+    },
+    'formatters': {
+        'json': {
+            'format': (
+                '{"time": "%(asctime)s",'
+                ' "level": "%(levelname)s",'
+                ' "name": "%(name)s",'
+                ' "message": "%(message)s",'
+                ' "user_id": "%(user_id)s"}'
+            )
+        },
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
     'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': '/var/log/logs_chatbotai.log',
+        'master_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'master.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+         # similarly for 'businessdata_file'... etc...
+        'agents_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'agents.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'businessdata_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'businessdata.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'chatbotsettings_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'chatbotsettings.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'clientchat_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'clientchat.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'common_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'common.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'users_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'users.log'),
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'json',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard'
         },
     },
     'loggers': {
-        'django': {
-            'handlers': ['file'],
+        '': {  # Root logger
+            'handlers': ['master_file', 'console'],
             'level': 'DEBUG',
-            'propagate': True,
         },
-    },
+        'agents': {
+            'handlers': ['agents_file', 'master_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'businessdata': {
+            'handlers': ['businessdata_file', 'master_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'chatbotsettings': {
+            'handlers': ['chatbotsettings_file', 'master_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'clientchat': {
+            'handlers': ['clientchat_file', 'master_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'common': {
+            'handlers': ['common_file', 'master_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'users': {
+            'handlers': ['users_file', 'master_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+
+    }
 }
-
-# or a more complete logger example
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-
-    # formatters
-    "formatters": {
-
-        # verbose formatter
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
-            "style": "{",
-        },
-        # simple formatter
-        "simple": {
-            "format": "{levelname} {message}",
-            "style": "{",
-        },
-    },
-
-    # filters
-    "filters": {
-
-        # special filter
-        "special": {
-            "()": "project.logging.SpecialFilter",
-            "foo": "bar",
-        },
-        "require_debug_true": {
-            "()": "django.utils.log.RequireDebugTrue",
-        },
-    },
-
-    # handlers
-    "handlers": {
-
-        # console handler
-        "console": {
-            "level": "INFO",
-            "filters": ["require_debug_true"],
-            "class": "logging.StreamHandler",
-            "formatter": "simple",
-        },
-
-        # mail_admins handler
-        "mail_admins": {
-            "level": "ERROR",
-            "class": "django.utils.log.AdminEmailHandler",
-            "filters": ["special"],
-        },
-    },
-
-    # loggers
-    "loggers": {
-
-        # django logger
-        "django": {
-            "handlers": ["console"],
-            "propagate": True,
-        },
-
-        # django request logger
-        "django.request": {
-            "handlers": ["mail_admins"],
-            "level": "ERROR",
-            "propagate": False,
-        },
-
-        # custom 'myproject' logger
-        "myproject.custom": {
-            "handlers": ["console", "mail_admins"],
-            "level": "INFO",
-            "filters": ["special"],
-        },
-    },
-}
-'''

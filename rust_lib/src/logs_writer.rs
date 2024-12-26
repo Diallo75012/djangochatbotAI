@@ -1,6 +1,11 @@
 use std::fs::OpenOptions;
 use std::io::Write;
 
+/*
+  Rust logs are all writen to the root django project directory
+  but will not rotate so need to create a cron job to rotate this file: 'logs/rust_logs.log'
+  This script creates the file if it doesn't exist but we are going to create it anyways.
+*/
 
 /// Utility function to log debug information into a log file for troubleshooting.
 pub fn log_debug_info(info: &str) {

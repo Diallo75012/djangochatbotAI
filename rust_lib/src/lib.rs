@@ -129,7 +129,8 @@ fn string_to_dict_py(input: &str) -> PyResult<HashMap<String, String>> {
 
 #[pyfunction]
 fn collection_normalize_name_py(collection_name: &str) -> PyResult<String> {
-  Ok(collection_normalize_name(collection_name))
+  Ok(collection_normalize_name(collection_name)),
+  Err(error_message) => Err(PyValueError::new_err(error_message)),
 }
 
 #[pyfunction]

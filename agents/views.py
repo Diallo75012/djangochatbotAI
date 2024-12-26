@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import logging
 from uuid import uuid4
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -24,6 +25,10 @@ from langchain_ollama import OllamaEmbeddings
 from agents.graph import retrieval_agent_graph
 from businessdata.models import BusinessUserData
 from dotenv import load_dotenv, set_key
+
+
+# logger
+agents_app_logger = logging.getLogger('agents')
 
 # load env vars
 load_dotenv(dotenv_path='.env', override=False)
@@ -74,13 +79,21 @@ def retrieveData(request):
   try:
     # retrieval response while like: `{"messages": [{"role": "ai", "content": json.dumps({"response": response_055})}]}`
     retrieval_response = retrieval_agent_team(user_query)
-    print("Retrieval Response RAW from agents to django view: ", json.loads(retrieval_response), type(json.loads(retrieval_response)))
+
+    agents_app_logger.info(f"Retrieval Response RAW from agents to django view:  {json.loads(retrieval_response)}, {type(json.loads(retrieval_response))}")
+    # print("Retrieval Response RAW from agents to django view: ", json.loads(retrieval_response), type(json.loads(retrieval_response)))
+
     # here we target the content of the dict returned and json.load it (deserialize): json.dumps({"response": response_055})}
     retrieval_response_json = json.loads(retrieval_response)
-    print("Retrieval JSON in retrieveData views: ", retrieval_response_json)
+
+    agents_app_logger.info(f"Retrieval JSON in retrieveData views: {retrieval_response_json}")
+    # print("Retrieval JSON in retrieveData views: ", retrieval_response_json)
+
     retrieval_message_content_json = json.loads(retrieval_response_json['answer_to_user']['messages'][-1]['content'])
-    # we should here get the dictionary like (could be an `error` as well): {"response": response_055} 
-    print("retrieval_message_content_json: ", retrieval_message_content_json, type(retrieval_message_content_json), "retrieval_message_content_json Keys(): ", retrieval_message_content_json.keys())
+    # we should here get the dictionary like (could be an `error` as well): {"response": response_055}
+
+    agents_app_logger.info(f"retrieval_message_content_json: {retrieval_message_content_json}, {type(retrieval_message_content_json)}, retrieval_message_content_json Keys(): {retrieval_message_content_json.keys()}")
+    # print("retrieval_message_content_json: ", retrieval_message_content_json, type(retrieval_message_content_json), "retrieval_message_content_json Keys(): ", retrieval_message_content_json.keys())
 
     '''
       make sure to send either 'error': <response error> OR 'answer': <response answer> in dict and json.dumps() that is what is the `clientchat` is waiting for
@@ -101,14 +114,16 @@ def retrieveData(request):
         return HttpResponse(json.dumps(response_transmit), content_type='application/json', status=400)
 
   except requests.exceptions.RequestException as e:
-    # log also here for Devops/Security 
+    # log also here for Devops/Security
     error_message = {"error": f"An error occured while trying to retrieveData: {e}"}
-    print(error_message)
+    agents_app_logger.info(error_message)
+    # print(error_message)
     return HttpResponse(json.dumps(error_message), content_type="applicatiion/json", status=500)
   except Exception as e:
-    # log also here for Devops/Security 
+    # log also here for Devops/Security
     error_message = {"error": f"An exception error occured while trying to retrievedata: {e}"}
-    print(error_message)
+    agents_app_logger.info(error_message)
+    # print(error_message)
     return HttpResponse(json.dumps(error_message), content_type="applicatiion/json", status=400)
 
 
@@ -125,18 +140,22 @@ def embedData(request, pk):
   business_document_title = business_document.document_title
   business_document_uuid = business_document.uuid
   business_document_question_answer = business_document.question_answer_data
-  print("business question answers: ", business_document_question_answer, type(business_document_question_answer))
-  
+
+  agents_app_logger.info(f"business question answers: {business_document_question_answer}, {type(business_document_question_answer)}")
+  # print("business question answers: ", business_document_question_answer, type(business_document_question_answer))
+
   count = 0
   list_of_docs = []
 
   business_document_title_formatted = formatters.collection_normalize_name(business_document_title)
   set_key(".vars.env", "BUSINESS_COLLECTION_NAME", str(business_document_title_formatted))
-  print("formatted business document title: ", business_document_title)
+  agents_app_logger.info(f"business question answers: {business_document_question_answer}, {type(business_document_question_answer)}")
+  # print("business question answers: ", business_document_question_answer, type(business_document_question_answer))
 
   # loop through the list
   for question, answer in business_document_question_answer.items():
-    print("quesiton_answer: ", question, answer)
+    agents_app_logger(f"quesiton_answer: {question, answer}")
+    # print("quesiton_answer: ", question, answer)
     # format the document to be embedded using langchain `Document` on the fly and add to list of docs
     count += 1
     doc_unique_id = str(business_document_uuid)
@@ -149,27 +168,32 @@ def embedData(request, pk):
         "question": question,
         "answer": answer,
         # doc ids need to be unique otherwise will override other doc with same id even if in different collection
-        # as all is stored in one table: langchain_pg_embeddings. PGVector 
+        # as all is stored in one table: langchain_pg_embeddings. PGVector
          "id": f"{doc_unique_id}-{count}",
       }
     )
+    agents_app_logger(f"Embedding document {count}... please wait...")
     print(f"Doc {count}: {doc}")
     list_of_docs.append(doc)
 
   # try to embed each set of question answers
   try:
     # here the collection will use document_title as name. put `doc` in a list `[]`. document title is the business collection name
+    agents_app_logger.info(f"Embedding document {count}... please wait...")
     print(f"Embedding document {count}... please wait...")
     embed_data_result = embed_data.vector_db_create(list_of_docs, business_document_title_formatted , CONNECTION_STRING, embeddings)
 
     if "success" in embed_data_result:
-      print("embed data result: ", embed_data_result)
+      agents_app_logger.info(f"embed data result: {embed_data_result}")
+      # print("embed data result: ", embed_data_result)
       response = json.dumps({"success": f"(x{count}) Data successfully embeded, ready for client user retrieval."})
+      agents_app_logger.info(response)
       return HttpResponse(response, content_type="application/json", status=200)
 
   except Exception as e:
-    print(f"An exception occured while trying to embed data: {e}")  
+    print(f"An exception occured while trying to embed data: {e}")
     response = json.dumps({"error": f"An error occured while trying to create embeddings: {e}"})
+    agents_app_logger.info(response)
     return HttpResponse(response, content_type="application/json", status=400)
 
   # this for request get messages return `error`
@@ -177,6 +201,7 @@ def embedData(request, pk):
   '''
    Log this for Devops/ Security team
   '''
+  agents_app_logger.info(response)
   return HttpResponse(response, content_type="application/json", status=405)
 
 
@@ -194,7 +219,9 @@ def deleteEmbeddingCollection(request, pk):
       # conenction string is defined at the top of this fine Global scope so we can access to it
       # we use rust counterpart that will delete the collection
       delete_collection = delete_embeddings.delete_embedding_collection(CONNECTION_STRING, business_document_title_normalized)
-      print("DELETE COLLECTION RUST returned value: ", delete_collection, type(delete_collection))
+      agents_app_logger.info(f"DELETE COLLECTION RUST returned value: {delete_collection}, {type(delete_collection)}")
+      # print("DELETE COLLECTION RUST returned value: ", delete_collection, type(delete_collection))
+
       # delete_collection is a string
       if "success" in delete_collection:
         response = json.dumps({"success": f"Collesciton {business_document_title_normalized} deleted successfully."})
@@ -202,6 +229,7 @@ def deleteEmbeddingCollection(request, pk):
       else:
         # we return delete_collection variable as it has the error message str
         response = json.dumps({"error": f"An error received while trying to delete collection {business_document_title_normalized}: {delete_collection}"})
+        agents_app_logger.info(response)
         return HttpResponse(response, content_type="application/json", status=400)
     except Exception as e:
       '''
@@ -209,6 +237,7 @@ def deleteEmbeddingCollection(request, pk):
       '''
       print("error trying delete embeddings: ", e)
       response = json.dumps({"error": f"An error occured while trying to delete embedding collection {business_document_title_normalized}: {e}"})
+      agents_app_logger.info(response)
       return HttpResponse(response, content_type="application/json", status=400)
 
 
