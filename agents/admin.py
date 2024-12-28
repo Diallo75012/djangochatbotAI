@@ -1,3 +1,5 @@
 from django.contrib import admin
+from agents.models import LogAnalyzer
 
-# Register your models here.
+
+admin.site.register(LogAnalyzer)

@@ -817,7 +817,7 @@ list_answers = ["response_nothing", "response_063", "response_055"]
 "What is streetwear in Shibuya?": "Streetwear includes oversized hoodies, sneakers, and urban designs influenced by skate and hip-hop culture.",
 "What is the latest Shibuya fashion trend?": "Currently, oversized outerwear and monochromatic layering are trending in Shibuya.",
 "What is 'Harajuku' vs 'Shibuya' style?": "Harajuku is playful and experimental, while Shibuya is urban and polished.",
-"Where to shop for Shibuya styles?": "109 Shibuya, Parco, and boutique shops in the area are hotspots for trendy fashion.",
+Where to shop for Shibuya styles?": "109 Shibuya, Parco, and boutique shops in the area are hotspots for trendy fashion.",
 "Is Shibuya fashion affordable?": "It depends; streetwear can be affordable, but designer brands can be expensive.",
 "Who influences Shibuya fashion?": "Young influencers, models, and pop culture icons drive Shibuya fashion trends.",
 "How do locals describe Shibuya style?": "Locals describe it as edgy, expressive, and reflective of youth culture.",
@@ -1665,18 +1665,93 @@ agents_app_logger.info("YO! Log me mate!")
 
 
 
+# Logs Analyzer Agent
+- Have decided to have this workflow for those agents (diagram)[https://excalidraw.com/#json=_0ArgZFueZlFBjbaY8JTo,2uLdGqeTDsLRgZgrdlqiRw]: 
+  1. - Copy log file
+  2. - chunk and store to `SQLite`
+  3. - Classify Logs : check chunks for error, alert, critical flags
+  4. - Provide Advice: Get from error, critical, alert flagged schemas
+  5. - Notify Devops/Security (`email`, `discord`, `Slack`.....)
+  6. - Delete all logs from the agents temporary files folder and delete from database (`SQLite` special for log agents only)
 
+- Have choose to just use `SQLite` for agents to work with log parsing and classification as it is fast and good for small cron job temporary database
+  we can even detroy it completly and recreate a new one. but wil just free the database and have it emptied out
+- Need to add the `SQLite` database in Django's `setting.py` (documenting myself on subject reading Django  docs)
+  1. - selecting which database to record get from: `<model_class_name>.objects.using("<other_db_name>")`
+  2. - saving to other db than the default one: `<model_class_object>.save(using="<other-db_name>")`
+  3. - will need to create a model for the SQLite database to store data chunks and schemas
+  4. - will need in `settings.py` to add a router for this `SQLite` database agent log analyzer only so it is separated from user's `PostgresQL` database default
+  5. - command to migrate the to the database `SQLite3`: `python3 manage.py migrate --database=logs_analyzer`
+       - This will see the models.py 
+         > admin.py registered model
+           > go to setting.py see the database router
+             > which points to the router.py file
+               > which has the class that tells to save model to the SQLite3 database
+                 > database that is listed in the databases of settings.py
 
+- command to install `SQLite3` but should be installed with Django but we never know
+```bash
+# ubuntu
+sudo apt update
+sudo apt install sqlite3
+# python module compatibility
+sudo apt install libsqlite3-dev
+```
+- `routing.py` like file
+```python
+class LogsAnalyzerRouter:
+  logs_analyzer_db = "logs_analyzer"
+  default_db = "default"
 
+  def db_for_read(self, model, **hints):
+    if model._meta.app_label == 'agents':
+      return self.logs_analyzer_db
+    return None
 
+  def db_for_write(self, model, **hints):
+    if model._meta.app_label == 'agents':
+      return self.logs_analyzer_db
+    return None
 
+  def allow_migrate(self, db, app_label, model_name=None, **hints):
+    if db == 'logs_analyzer':  # Only target the SQLite database
+      # Allow migrations only for the agents app
+      return app_label == 'agents'
+    # For the default database, allow migrations for other apps
+    return db == 'default'
+```
 
+- in `models.py` we need to setup a app_label meta class in the model
+```python
+class .....:
+  fields...
+  ...
 
+  class Meta:
+    app_label = 'agents'
+```
 
+- in `setting.py` have the second database listed on your `routing.py` file like located in `DATABASE_ROUTER`
+```python
+# PostgresQL db custom
+DATABASES = {
+  'default': {
+    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'NAME': os.getenv("DBNAME"),
+    'USER': os.getenv("DBUSER"),
+    'PASSWORD': os.getenv("DBPASSWORD"),
+    'HOST': os.getenv("DBHOST"),
+    'PORT': os.getenv("DBPORT"),
+  },
+  'logs_analyzer': {
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': BASE_DIR / 'db.sqlite3',
+  }
+}
 
+# this for the log analyzer agent to use only the SQLite database
+DATABASE_ROUTERS = ["agents.routing_sqlite_db.LogsAnalyzerRouter"]
+```
 
-
-
-
-
+**HAVE PIVOTTED AND DECIDED TO JUSTUSE THE POSTGRESQL DATABASE AS THE ROUTING TO THE SECOND DATABASE IS NOT WORKING AND i AM NOT GONNA STAY ON IT SEVERAL DAYS**
 

@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'chatbotAI.wsgi.application'
 # SQLite3 database default
 """
 DATABASES = {
-    'default': {
+    'defacult': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
@@ -90,14 +90,14 @@ DATABASES = {
 """
 # PostgresQL db custom
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv("DBNAME"),
-        'USER': os.getenv("DBUSER"),
-        'PASSWORD': os.getenv("DBPASSWORD"),
-        'HOST': os.getenv("DBHOST"),
-        'PORT': os.getenv("DBPORT"),
-    }
+  'default': {
+    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'NAME': os.getenv("DBNAME"),
+    'USER': os.getenv("DBUSER"),
+    'PASSWORD': os.getenv("DBPASSWORD"),
+    'HOST': os.getenv("DBHOST"),
+    'PORT': os.getenv("DBPORT"),
+  },
 }
 
 # Password validation
