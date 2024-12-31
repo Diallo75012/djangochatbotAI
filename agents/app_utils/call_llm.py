@@ -24,9 +24,8 @@ from rust_lib import string_to_dict_py
 from agents.llms.llms import (
   groq_llm_mixtral_7b,
   groq_llm_llama3_8b,
-  groq_llm_llama3_8b_tool_use,
   groq_llm_llama3_70b,
-  groq_llm_llama3_70b_tool_use,
+  groq_llm_llama3_70b_versatile,
   groq_llm_gemma_7b,
 )
 # for env. vars

@@ -15,9 +15,8 @@ from agents.llms.llms import (
   groq_llm_mixtral_7b,
   groq_llm_mixtral_larger,
   groq_llm_llama3_8b,
-  groq_llm_llama3_8b_tool_use,
   groq_llm_llama3_70b,
-  groq_llm_llama3_70b_tool_use,
+  groq_llm_llama3_70b_versatile,
   groq_llm_llama3_vision_large,
   groq_llm_gemma_7b,
 )
@@ -48,7 +47,7 @@ def search(query: str, state: MessagesState = MessagesState()):
 # INTERNET TOOL NODES
 tool_search_node = ToolNode([search])
 # LLMs WITH BINDED TOOLS
-llm_with_internet_search_tool = groq_llm_llama3_70b_tool_use.bind_tools([search])
+llm_with_internet_search_tool = groq_llm_llama3_70b_versatile.bind_tools([search])
 
 
 """
@@ -116,5 +115,5 @@ tool_retrieve_answer_node = ToolNode([retrieve_answer_action])
 # trying with larger context llm as i get groq error for to large request when using llama 70b tool use
 # groq_llm_llama3_vision_large.bind_tools([retrieve_answer_action])
 # groq_llm_mixtral_larger.bind_tools([retrieve_answer_action])
-# groq_llm_llama3_70b_tool_use.bind_tools([retrieve_answer_action])
+# groq_llm_llama3_70b_versatile.bind_tools([retrieve_answer_action])
 llm_with_retrieve_answer_tool_choice = groq_llm_llama3_vision_large.bind_tools([retrieve_answer_action])

@@ -1,5 +1,6 @@
 import os
 import json
+from django.conf.settings import BASE_DIR
 # for typing func parameters and outputs and states
 from typing import Dict, List, Tuple, Any, Optional, Union
 # structured output
@@ -24,9 +25,8 @@ from agents.app_utils.retrieve_answer import retrieve_answer_action
 from agents.llms.llms import (
   groq_llm_mixtral_7b,
   groq_llm_llama3_8b,
-  groq_llm_llama3_8b_tool_use,
   groq_llm_llama3_70b,
-  groq_llm_llama3_70b_tool_use,
+  groq_llm_llama3_70b_versatile,
   groq_llm_gemma_7b,
 )
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
@@ -76,11 +76,46 @@ def copy_log_files(state: StateMessages):
     Function that will copy file from the root directory to a folder special for log analysis
     The log analysis folder will hold temporary files that will be deleted at the end of the graph
   '''
+  
+  # get all the logs files
+  log_file_list = [log_file for log_file in os.path.join(BASE_DIR, 'logs')]
+  # check if the dir exist or make it anyways (dir where logs will be copied for dedicsted analysis job)
+  try:
+    os.makedirs(os.path.join(BASE_DIR, 'agents/graph/logs_to_analize'), exist_ok=True)
+  except Exception as e:
+    return f"An error occured while trying check if agent log dir exist and if not create it: {e}"
+
+  # loop through the file and copy each of those to the log analyzer folder
+  try:
+    for elem in log_file_list:
+      with open(os.path.join(BASE_DIR, 'logs', elem), 'r', encoding="utf-8") as original_log_file, with open(os.path.join(BASE_DIR, 'agents/graph/logs_to_analize', elem), 'w', encoding="utf-8") as log_file_copy_for_analysis:
+        log_file_content = original_log_file.read()
+        log_file_copy_for_analysis.write(log_file_content)
+    # success message sent with the log file names list so that we can open those in the next chunking/storing node
+    return  {"messages": [{"role": "ai", "content": json.dumps({"success": log_file_list})}]}    
+  except Exception as e:
+    return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to copy log file {e}"})}]} 
+
+# CONDITIONAL EDGE
+def copy_log_files_success_or_error(state: MessagesState):
+  messages = state['messages']
+  # should be 'success' or 'error'
+  last_message = messages[-1].content
+
+  if 'success' in last_message:
+    return "chunk_and_store_logs"
+  return "error_handler"
+
 
 def chunk_and_store_logs(state: StateMessages):
-  continue
+  messages = state['messages']
+  # contains a list of the log file names
+  last_message = messages[-1].content
+  logs_file_names = json.loads(last_message)["success"]
+  # one chunk is one log line, therefore we get each line and will on the fly store to database using util function
 
 def classify_and_store_schematize_flagged_logs(state: StateMessages):
+  # this one might be combined with the node storing logs as we can classify just bay splitting the log line which is already formatted and detect critial/error/alert
   continue
 
 def advice_agent_report_creator(state: StateMessages):
@@ -109,7 +144,7 @@ def error_handler(state: MessagesState):
   messages = state['messages']
 
   # Log the graph errors in a file
-  with open("logs/logs_agent_graph.log", "a", encoding="utf-8") as conditional:
+  with open("logs/logs_analyzer_agent_graph.log", "a", encoding="utf-8") as conditional:
       json_error_message = messages[-1].content
       conditional.write(f"\n\n{json_error_message}\n\n")
   print(f"Error Handler: ", messages[-1].content)
@@ -137,16 +172,17 @@ workflow.add_node("advice_agent_report_creator", advice_agent_report_creator)
 worklfow.add_node("notifier_agent", notifier_agent)
 workflow.add_node("temporary_log_files_cleaner", temporary_log_files_cleaner)
 
+# start
+workflow.set_entry_point("copy_log_files")
+
 # edges
-workflow.set_entry_point("analyse_user_query_safety")
-'''
 workflow.add_conditional_edges(
-  "",
-  ...
+  "copy_log_files",
+  copy_log_files_success_or_error
 )
-'''
+
 # probably will be truned all in conditional edges
-workflow.add_edge("copy_log_files", "chunk_and_store_logs")
+
 workflow.add_edge("chunk_and_store_logs", "classify_and_store_schematize_flagged_logs")
 workflow.add_edge("classify_and_store_schematize_flagged_logs", "advice_agent_report_creator")
 workflow.add_edge("advice_agent_report_creator", "notifier_agent")

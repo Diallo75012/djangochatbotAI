@@ -39,9 +39,8 @@ from agents.app_utils.retrieve_answer import retrieve_answer_action
 from agents.llms.llms import (
   groq_llm_mixtral_7b,
   groq_llm_llama3_8b,
-  groq_llm_llama3_8b_tool_use,
   groq_llm_llama3_70b,
-  groq_llm_llama3_70b_tool_use,
+  groq_llm_llama3_70b_versatile,
   groq_llm_gemma_7b,
 )
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage

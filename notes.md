@@ -1753,5 +1753,42 @@ DATABASES = {
 DATABASE_ROUTERS = ["agents.routing_sqlite_db.LogsAnalyzerRouter"]
 ```
 
-**HAVE PIVOTTED AND DECIDED TO JUSTUSE THE POSTGRESQL DATABASE AS THE ROUTING TO THE SECOND DATABASE IS NOT WORKING AND i AM NOT GONNA STAY ON IT SEVERAL DAYS**
+**HAVE PIVOTTED AND DECIDED TO JUST USE THE POSTGRESQL DATABASE AS THE ROUTING TO THE SECOND DATABASE IS NOT WORKING AND i AM NOT GONNA STAY ON IT SEVERAL DAYS**
+
+**How to record data using psycopg3 connection to a django model defined table from the database ?**
+- Django maps each model to a database table. The table name is: <app_label>_<model_name> (e.g., agents_loganalyzer for the LogAnalyzer model in the agents app).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
