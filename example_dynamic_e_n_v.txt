@@ -1,0 +1,19 @@
+# no default set in function
+SCORE055="0.55"
+SCORE063="0.63"
+# default set to 3 in function
+TOP_N=3
+# log flags for logs analyzer AI agent
+FLAGS='["WARNING", "ERROR", "CRITICAL"]'
+# this env var is needed for default value filling and will help create AI_PERSONALITY_TRAITS (with `S`)
+DEFAULT_AI_PERSONALITY_TRAIT='{"name": "Work Helper", "description": "Always polite helper for users.", "age": "42", "origin": "Japan", "dream": "Dreaming of going one day to Paris.", "tone": "happy joyful", "expertise": "Specialist of customer service.", "avatar":{"url": "/images/chatbot_dummy.png"}, "business_user": {"username": "None"}, "business_user_uuid": "None"}'
+#USER_INITIAL_QUERY="what is the biggest capital city in Asia?"
+THREAD_ID="109"
+#DOCUMENT_TITLE="tokyo"
+#BUSINESS_COLLECTION_NAME='"tokyo"'
+#REPHRASED_USER_QUERY="what is the biggest capital city in Asia?"
+USER_INITIAL_QUERY='What is Purikura Skin Effectooooooo'
+DOCUMENT_TITLE='purikura-photo-booths-in-japan'
+AI_PERSONALITY_TRAITS='{"chatbot_name": "Puriririiiiiiii", "chatbot_description": "Like to take photos and know everyhting about purikuras", "chatbot_age": "22", "chatbot_origin": "Shibuya", "chatbot_dream": "dreaming of taking pictures of dreams", "chatbot_tone": "joyfull", "chatbot_expertise": "purikura information"}'
+REPHRASED_USER_QUERY='What is Purikura Skin Effect?'
+BUSINESS_COLLECTION_NAME='rust-testing'

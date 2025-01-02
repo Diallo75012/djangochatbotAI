@@ -1669,8 +1669,8 @@ agents_app_logger.info("YO! Log me mate!")
 - Have decided to have this workflow for those agents (diagram)[https://excalidraw.com/#json=_0ArgZFueZlFBjbaY8JTo,2uLdGqeTDsLRgZgrdlqiRw]: 
   1. - Copy log file
   2. - chunk and store to `SQLite`
-  3. - Classify Logs : check chunks for error, alert, critical flags
-  4. - Provide Advice: Get from error, critical, alert flagged schemas
+  3. - Classify Logs : check chunks for error, warning, critical flags
+  4. - Provide Advice: Get from error, critical, warning flagged schemas
   5. - Notify Devops/Security (`email`, `discord`, `Slack`.....)
   6. - Delete all logs from the agents temporary files folder and delete from database (`SQLite` special for log agents only)
 
@@ -1759,10 +1759,26 @@ DATABASE_ROUTERS = ["agents.routing_sqlite_db.LogsAnalyzerRouter"]
 - Django maps each model to a database table. The table name is: <app_label>_<model_name> (e.g., agents_loganalyzer for the LogAnalyzer model in the agents app).
 
 
+### Log lines are like:
+`{"time": "2024-12-26 21:40:05,565", "level": "INFO", "name": "users", "message": "Username OR Password is incorrect", "user_id": "anonymous"}`
+`{"time": "2024-12-28 23:35:23,345", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}`
+'format': (
+  '{"time": "%(asctime)s",'
+  ' "level": "%(levelname)s",'
+  ' "name": "%(name)s",'
+  ' "message": "%(message)s",'
+  ' "user_id": "%(user_id)s"}'
+)
 
+so maybe use json.dumps(line)["level"], to get filter on log levels.
 
-
-
+### Python log levels:
+[source](https://www.logicmonitor.com/blog/python-logging-levels-explained) 
+- Debug = 10: This level gives detailed information, useful only when a problem is being diagnosed.
+- Info = 20: This is used to confirm that everything is working as it should.
+- Warning = 30: This level indicates that something unexpected has happened or some problem is about to happen in the near future.
+- Error = 40: As it implies, an error has occurred. The software was unable to perform some function.
+- Critical = 50: A serious error has occurred. The program itself may shut down or not be able to continue running properly.
 
 
 

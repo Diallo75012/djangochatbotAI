@@ -1,0 +1,72 @@
+# LM Studio
+#LM_OPENAI_API_KEY="no_need_api_key_for_lmstudio"
+#LM_OPENAI_MODEL_NAME="TheBloke/OpenHermes-2.5-Mistral-7B-GGUF/openhermes-2.5-mistral-7b.Q3_K_M.gguf"
+# LM_VISION_MODEL_NAME="billborkowski/llava-NousResearch_Nous-Hermes-2-Vision-GGUF/NousResearch_Nous-Hermes-2-Vision-GGUF_Q4_0.gguf"
+#LM_VISION_MODEL_NAME="abetlen/BakLLaVA-1-GGUF/bakllava-1.Q6_K.gguf"
+#LM_OPENAI_API_BASE="http://localhost:1235/v1"
+
+#Groq
+GROQ_API_KEY=""
+MODEL_MIXTRAL_7B="mixtral-8x7b-32768"
+MODEL_LLAMA3_8B="llama3-8b-8192"
+MODEL_LLAMA3_70B="llama3-70b-8192"
+#fine tuned models by groq for tool use
+MODEL_LLAMA3_8B_TOOL_USE="llama3-groq-8b-8192-tool-use-preview" # deprecated use versatile one
+MODEL_LLAMA3_70B_TOOL_USE="llama3-groq-70b-8192-tool-use-preview" # deprecated use versatile one
+# use this one now instead of `...TOOL_USE` ones as those are deprecated
+MODEL_LLAMA3_3_70B_VERSATILE="llama-3.3-70b-versatile"
+MODEL_LLAMA3_VISION_LARGE="llama-3.2-11b-vision-preview"
+MODEL_GEMMA_7B="gemma-7b-it"
+MODEL_MIXTRAL_LARGER="mixtral-8x7b-32768"
+# OPENAI_API_BASE_GROQ="https://api.groq.com/openai/v1"
+GROQ_MAX_TOKEN=8192
+GROQ_TEMPERATURE=0.1
+GROQ_TEMPERATURE_CREATIVE=0.8
+
+# EMBEDDINGS TEMPERATURE (deprecated in new OllamaEmbeddings class)
+#EMBEDDINGS_TEMPERATURE=0.1
+
+# Openai API
+OPENAI_API_KEY=""
+OPENAI_MODEL_NAME="gpt-4o-mini"
+OPENAI_API_BASE="https://api.openai.com/v1/chat/completions"
+OPENAI_ORGANIZATION_ID=""
+OPENAI_PROJECT_ID=""
+# LANGFUSE: Monitoring LLM calls
+LANG_SECRET_KEY=""
+LANG_PUBLIC_KEY=""
+LANG_HOST="http://localhost:3000"
+LANGFUSE_SECRET_KEY=""
+LANGFUSE_PUBLIC_KEY=""
+LANGFUSE_HOST="http://localhost:3000"
+
+# SONARQUBE(LOCAL DOCKER RUNNING INSTANCE) USER TOKEN
+SONAR_USER_TOKEN=
+# SONARQUBE GITHUBACTION TOKEN GENERATED FROM LOCAL SONARQUBE (USER TOKEN TYPE FOR PERMISSION TO DO REQUIRED TASKS)
+SONAR_GITHUBACTION_USER_TOKEN=
+TWEETER_APP_RESOURCE_OWNER_KEY=''
+TWEETER_APP_RESOURCE_OWNER_SECRET=''
+
+# DJANGO
+DJANGO_SECRET=""
+
+# POSTGRESQL
+# local postgresql db for app different from the one in docker for langfuse
+# PGVECTOR IS USING NOW psycopg3 so we change the driver for `psycopg` (but install both in project: `pip install psycopg2 psycopg`)
+#DRIVER=psycopg2
+DRIVER=psycopg
+DBHOST=0.0.0.0
+DBPORT=5432
+DBNAME=
+DBUSER=
+DBPASSWORD=
+# this will be dynamically set in .var.env
+# COLLECTION_NAME=langgraph_collection_test
+
+# REDIS
+REDIS_HOST="localhost"
+REDIS_PORT="6379"
+TTL=3600
+
+# langgraph vars
+TABLE_NAME="test_table"

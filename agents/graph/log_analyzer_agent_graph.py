@@ -11,10 +11,12 @@ from agents.prompts.prompts import (
 )
 # utils
 from agents.app_utils.json_dumps_manager import safe_json_dumps
+from agents.app_utils.embed_data import CONNECTION_STRING
 from agents.app_utils import (
   call_llm,
   prompt_creation,
   beautiful_graph_output,
+  chunk_store_alalyze_logs,
 )
 # Tools
 from agents.tools.tools import (
@@ -106,16 +108,33 @@ def copy_log_files_success_or_error(state: MessagesState):
     return "chunk_and_store_logs"
   return "error_handler"
 
-
+# NODE
 def chunk_and_store_logs(state: StateMessages):
   messages = state['messages']
   # contains a list of the log file names
   last_message = messages[-1].content
   logs_file_names = json.loads(last_message)["success"]
-  # one chunk is one log line, therefore we get each line and will on the fly store to database using util function
+  flags = os.getenv("FLAGS")
+  # one chunk is one log line, therefore we get each line and will on the fly parse and store to database
+  # only logs that we need to analyze (critical/error/warning)
+  try:
+    chunk_store_analyze_logs.chunk_store_logs(flags, logs_file_names, CONNECTION_STRING)
+    return  {"messages": [{"role": "ai", "content": json.dumps({"success": "Logs chunks successfully selected and stored"})}]}
+  except Exception as e:
+    return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to chunk and store logs: {e}"})}]}
+
+# CONDITIONAL EDGE
+def chunk_and_store_logs_success_or_error(state: MessagesState):
+  messages = state['messages']
+  # should be 'success' or 'error'
+  last_message = messages[-1].content
+
+  if 'success' in last_message:
+    return "classify_and_store_schematize_flagged_logs"
+  return "error_handler"
 
 def classify_and_store_schematize_flagged_logs(state: StateMessages):
-  # this one might be combined with the node storing logs as we can classify just bay splitting the log line which is already formatted and detect critial/error/alert
+  # this one might be combined with the node storing logs as we can classify just bay splitting the log line which is already formatted and detect critial/error/warning
   continue
 
 def advice_agent_report_creator(state: StateMessages):
@@ -156,8 +175,8 @@ def error_handler(state: MessagesState):
 LOG ANALYZER
 - Copy log file
 - chunk and store to SQLite
-- Classify Logs : check chunks for error, alert, critical flags
-- Provide Advice: Get from error, critical, alert flagged schemas
+- Classify Logs : check chunks for error, warning, critical flags
+- Provide Advice: Get from error, critical, warning flagged schemas
 - Notify Devops/Security (email, discord, slack.....)
 '''
 
@@ -180,10 +199,12 @@ workflow.add_conditional_edges(
   "copy_log_files",
   copy_log_files_success_or_error
 )
+workflow.add_conditional_edges(
+  "chunk_and_store_logs",
+  chunk_and_store_logs_success_or_error
+)
 
 # probably will be truned all in conditional edges
-
-workflow.add_edge("chunk_and_store_logs", "classify_and_store_schematize_flagged_logs")
 workflow.add_edge("classify_and_store_schematize_flagged_logs", "advice_agent_report_creator")
 workflow.add_edge("advice_agent_report_creator", "notifier_agent")
 workflow.add_edge("notifier_agent", "temporary_log_files_cleaner")

@@ -272,7 +272,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        '': {  # Root logger
+        '': {  # Root logger is `''`
             'handlers': ['master_file', 'console'],
             'level': 'DEBUG',
         },
