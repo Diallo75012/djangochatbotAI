@@ -3,10 +3,10 @@ import json
 import psycopg
 from typing import List, Dict, Any
 from dotenv import load_dotenv
-from agents.app_utils import formatters
 
 
 load_dotenv(dotenv_path='.env', override=False)
+load_dotenv(dotenv_path='vars.env', override=True)
 
 # db connection vars
 driver=os.getenv("DRIVER") # not psycopg2 as now it required psycopg3 (we install both: pip install psycopg2 psycopg)

@@ -36,7 +36,8 @@ from dotenv import load_dotenv, set_key
 load_dotenv(dotenv_path='.env', override=False)
 load_dotenv(dotenv_path=".vars", override=True)
 
-# creation of prompts
+'''
+# creation of prompts function exported to its own `app_utils.prompt_creation.py` file
 def prompt_creation(target_prompt_human_system_or_ai: Dict[str, Any], **kwargs: Any) -> str: #-> PromptTemplate:
     """
       formatitng a prompt using two parts: the base of the prompt with the expected input variables
@@ -56,6 +57,7 @@ def prompt_creation(target_prompt_human_system_or_ai: Dict[str, Any], **kwargs: 
     #    template=formatted_template,
     #    input_variables=[]
     #)
+'''
 
 def call_llm(query: str, prompt_template_part: str, schema: str, llm: ChatGroq, partial_variables={}) -> Dict:
 

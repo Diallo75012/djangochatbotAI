@@ -17,6 +17,7 @@ from agents.app_utils import (
   prompt_creation,
   beautiful_graph_output,
   chunk_store_alalyze_logs,
+  logs_advice_report_creation,
 )
 # Tools
 from agents.tools.tools import (
@@ -130,15 +131,38 @@ def chunk_and_store_logs_success_or_error(state: MessagesState):
   last_message = messages[-1].content
 
   if 'success' in last_message:
-    return "classify_and_store_schematize_flagged_logs"
+    return "advice_agent_report_creator"
   return "error_handler"
 
-def classify_and_store_schematize_flagged_logs(state: StateMessages):
-  # this one might be combined with the node storing logs as we can classify just bay splitting the log line which is already formatted and detect critial/error/warning
-  continue
-
+# NODE
 def advice_agent_report_creator(state: StateMessages):
-  continue
+  messages = state['messages']
+  # contains success message
+  last_message = messages[-1].content
+  if "success" in json.dumps(last_message):
+    # get the chunk from database and call llm to get advice on it
+    # make a report on the fly for the error in a special `agents_logs_report` folder
+    flags = json.laods(os.getenv("FLAGS")) # list of log levels
+    # We get advice and report made, the for loop on the `FLAGS` will be done there
+    try:
+      # should return a dict with `success` or `error`
+      advice_log_report_response = get_advice_on_logs(flags)
+      if "error" in advice_log_report_response:
+        return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to get advice log report: {advice_log_report_response['error']}"})}]}
+      return  {"messages": [{"role": "ai", "content": json.dumps({"success": "Successfully created log reports: {advice_log_report_response['success']}"})}]}
+    except Exception as e:
+      return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to produce advice report on logs: {e}"})}]}
+
+# CONDITIONAL EDGE    
+def advice_agent_report_creator_success_or_error(state: StateMessages):
+  messages = state['messages']
+  # should be 'success' or 'error'
+  last_message = messages[-1].content
+
+  if 'success' in last_message:
+    return "notifier_agent"
+  return "error_handler"
+
 
 def notifier_agent(state: StateMessages):
   continue
@@ -186,7 +210,6 @@ workflow = StateGraph(MessagesState)
 # nodes
 workflow.add_node("copy_log_files", copy_log_files)
 workflow.add_node("chunk_and_store_logs", chunk_and_store_logs )
-workflow.add_node("classify_and_store_schematize_flagged_logs", classify_and_store_schematize_flagged_logs)
 workflow.add_node("advice_agent_report_creator", advice_agent_report_creator)
 worklfow.add_node("notifier_agent", notifier_agent)
 workflow.add_node("temporary_log_files_cleaner", temporary_log_files_cleaner)
@@ -203,10 +226,12 @@ workflow.add_conditional_edges(
   "chunk_and_store_logs",
   chunk_and_store_logs_success_or_error
 )
+workflow.add_conditional_edges(
+  "advice_agent_report_creator",
+  advice_agent_report_creator_success_or_error
+)
 
 # probably will be truned all in conditional edges
-workflow.add_edge("classify_and_store_schematize_flagged_logs", "advice_agent_report_creator")
-workflow.add_edge("advice_agent_report_creator", "notifier_agent")
 workflow.add_edge("notifier_agent", "temporary_log_files_cleaner")
 
 # end
