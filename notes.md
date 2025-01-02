@@ -1781,11 +1781,152 @@ so maybe use json.dumps(line)["level"], to get filter on log levels.
 - Critical = 50: A serious error has occurred. The program itself may shut down or not be able to continue running properly.
 
 
+# notification of Devops/Security team via Discord (as Node)
+```python
+# install the webhook tro form this kind of url and have access to discord channel: `https://discord.com/api/webhooks/{webhook_id}/{webhook_token})`
+pip install discord-webhook
+# in dsicord: go to `settings > Integration > Create Webhook` to create the webhook
+# create a `discord_notification_app_logs` function and beware file size max for discord uplaod 8MB maybe less
+
+import os
+from discord_webhook import DiscordWebhook
+
+def send_large_log_to_discord(log_file_path):
+    """
+    Sends a large log file to a Discord channel using a webhook. If the file exceeds 8 MB, it splits the file into
+    smaller chunks and sends each chunk separately.
+
+    :param log_file_path: Path to the log file to be sent.
+    """
+    # Replace with your actual Discord Webhook URL
+    webhook_url = "https://discord.com/api/webhooks/{webhook_id}/{webhook_token}"
+
+    # Define the maximum file size in bytes (8 MB)
+    MAX_FILE_SIZE = 8 * 1024 * 1024  # 8 MB in bytes
+
+    # Check if the file exists
+    if not os.path.exists(log_file_path):
+        print(f"Error: The file '{log_file_path}' does not exist.")
+        return
+
+    # Get the file size
+    file_size = os.path.getsize(log_file_path)
+
+    if file_size <= MAX_FILE_SIZE:
+        # Send the file as-is if it's under the limit
+        send_file_to_discord(webhook_url, log_file_path)
+    else:
+        # Split and send the file in chunks
+        print(f"The file '{log_file_path}' exceeds 8 MB (size: {file_size / (1024 * 1024):.2f} MB). Splitting into chunks.")
+        
+        # Open the file in binary mode
+        with open(log_file_path, "rb") as file:
+            chunk_number = 1
+            while True:
+                # Read a chunk of MAX_FILE_SIZE bytes
+                chunk = file.read(MAX_FILE_SIZE)
+                if not chunk:
+                    break
+                
+                # Create a temporary chunk file
+                chunk_filename = f"{log_file_path}_part{chunk_number}.log"
+                with open(chunk_filename, "wb") as chunk_file:
+                    chunk_file.write(chunk)
+                
+                # Send the chunk to Discord
+                print(f"Sending chunk {chunk_number}...")
+                send_file_to_discord(webhook_url, chunk_filename)
+
+                # Delete the temporary chunk file after sending
+                os.remove(chunk_filename)
+                chunk_number += 1
+
+        print("All chunks have been sent successfully.")
+
+def send_file_to_discord(webhook_url, file_path):
+    """
+    Helper function to send a single file to Discord.
+
+    :param webhook_url: The Discord webhook URL.
+    :param file_path: Path to the file to be sent.
+    """
+    webhook = DiscordWebhook(url=webhook_url, content=f"📄 **Log Report Chunk**: {os.path.basename(file_path)}")
+    try:
+        with open(file_path, "rb") as file:
+            webhook.add_file(file=file.read(), filename=os.path.basename(file_path))
+
+        response = webhook.execute()
+
+        if response.status_code == 200:
+            print(f"Chunk {os.path.basename(file_path)} sent successfully.")
+        else:
+            print(f"Failed to send chunk {os.path.basename(file_path)}. HTTP Status Code: {response.status_code}")
+            print(response.content)
+    except Exception as e:
+        print(f"An unexpected error occurred while sending {file_path}: {e}")
 
 
 
 
+# can set up then a crontab but see the example in the next point better as it is using a script `.sh`
+crontab -e
+#Add an entry (replace paths as necessary):
+0 6 * * * /path/to/python /path/to/send_discord_log.py /path/to/log_report.log
+```
 
+# cronjob to start periodically the Log Agent Team
+```python
+import os
+from langgraph import LangGraph  # Replace with your actual LangGraph import
+
+def main():
+  try:
+    # Initialize LangGraph agent
+    agent = LangGraph(config_file="path/to/langgraph_config.json")
+
+    # Run the agent
+    result = agent.run()
+
+    print(f"LangGraph agent completed with result: {result}")
+  except Exception as e:
+    print(f"Error running LangGraph agent: {str(e)}")
+
+if __name__ == "__main__":
+    main()
+```
+```bash
+# make it executable to not get any errors
+sudo chmod +x /path/to/start_langgraph_agent.py
+```
+```bash
+# this will setup the cronjob using a script file so that we can reuse
+nano setup_cronjob.sh:
+#!/bin/bash
+
+# Variables
+PYTHON_PATH="/path/to/python"  # Path to the Python executable
+SCRIPT_PATH="/path/to/start_langgraph_agent.py"  # Path to the Python script
+LOG_FILE="/path/to/agent_logs.log"  # Path to the log file
+CRON_TIME="0 3 * * *"  # Schedule: 3:00 AM daily
+
+# Check if cronjob already exists
+(crontab -l 2>/dev/null | grep -q "$SCRIPT_PATH")
+if [ $? -eq 0 ]; then
+  echo "Cronjob already exists for the script."
+else
+  # Add the cronjob
+  (crontab -l 2>/dev/null; echo "$CRON_TIME $PYTHON_PATH $SCRIPT_PATH >> $LOG_FILE 2>&1") | crontab -
+  echo "Cronjob added successfully."
+fi
+
+```
+```bash
+# make the file executable
+sudo chmod +x setup_cronjob.sh
+# run job
+./setup_cronjob.sh
+
+```
 
 
 
