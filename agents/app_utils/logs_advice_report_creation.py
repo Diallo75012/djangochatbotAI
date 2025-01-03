@@ -48,7 +48,7 @@ def get_database_flagged_logs(log_level: str, connection: str = CONNECTION_STRIN
         with conn.cursor() as cur:
           # store the values
           cur.execute(
-            "SELECT * FROM agents_loganalyzer WHERE log_level=(log_level) VALUES (%s)",
+            "SELECT * FROM agents_loganalyzer WHERE log_level = %s",
             (log_level)
           )
         results = cursor.fetchall()

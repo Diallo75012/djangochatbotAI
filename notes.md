@@ -1929,9 +1929,25 @@ sudo chmod +x setup_cronjob.sh
 
 ```
 
+# curl command to test Discord webhook
+curl -X POST -H "Content-Type: application/json" \
+-d '{"content": "Hello, Discord! This is a test message from curl."}' \
+"https://discord.com/api/webhooks/{id}/{token}"
 
 
-
+# Next
+- [] need to test nodes independently
+- [] have already added dummy data is logs files and will use that to verify that the data expected to have on `discord` is the same
+- [x] Have already tested the discord webhook using curl command and it works so if agent is not hallucinating while using the tool it should work
+- [] run the full graph successfully
+- [] have to test the cronjob after having ran successfully the full graph to see if it launches the job and works fine (no permission errors for example)
+- [] add logging to common app utility functions
+- [] run the django server with gunicorn until it works fine and then use the application and see if all works fine at minimum
+- [] setup nginx after gunicorn works
+- [] do unit tests even if we don't want to do those, lets cover some percentage of the application using GPT or Gemini or Bolt.new/ottodev ....
+- [] check that the github action works fine
+- [] create container of app and also a docker-compose and see if it wokrs in local docker so that we can kubernetize it...
+- [] then use this app for any devops workflow that we want to do (push enhancement of app and have the ci/cd work by itself and do all necessary notifications (Dicord: the webhook stuff is simple and works fine so we will be using that)
 
 
 

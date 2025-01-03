@@ -11,7 +11,12 @@ from agents.prompts.prompts import (
 )
 # utils
 from agents.app_utils.json_dumps_manager import safe_json_dumps
-from agents.app_utils.embed_data import CONNECTION_STRING
+from agents.app_utils.log_advice_report_creation import CONNECTION_STRING
+from agents.app_utils.delete_log_analyzer_data import (
+  delete_flagged_log_from_db_table,
+  delete_all_files_in_dir(directory_path,
+)
+from agents.app_utils.log_copier import copy_logs
 from agents.app_utils import (
   call_llm,
   prompt_creation,
@@ -84,25 +89,24 @@ def copy_log_files(state: StateMessages):
     Function that will copy file from the root directory to a folder special for log analysis
     The log analysis folder will hold temporary files that will be deleted at the end of the graph
   '''
-  
-  # get all the logs files
-  log_file_list = [log_file for log_file in os.listdir(os.path.join(BASE_DIR, 'logs'))]
-  # check if the dir exist or make it anyways (dir where logs will be copied for dedicsted analysis job)
-  try:
-    os.makedirs(os.path.join(BASE_DIR, 'agents/graph/logs_to_analize'), exist_ok=True)
-  except Exception as e:
-    return f"An error occured while trying check if agent log dir exist and if not create it: {e}"
+  count_no_log_file_in_folder_tracker = 0
+  django_and_rust_logs_fodler_names = [os.getenv("DJANGO_LOGS_FOLDER_NAMER"), os.getenv("RUST_LOGS_FOLDER_NAME")]
+  for log_folder_name in  django_and_rust_logs_fodler_names:
+    try:
+      copy_logs_job_result = copy_logs(log_folder_name)
+      if "success" in copy_logs_job_result:
+        # success message sent with the log file names list so that we can open those in the next chunking/storing node
+        return  {"messages": [{"role": "ai", "content": json.dumps({"success": log_file_list})}]}
+      elif "nothing" in copy_logs_job_result:
+        count_no_log_file_in_folder_tracker += 1
+      elif "error" in copy_logs_job_result:
+        return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to copy log file: {['error']}"})}]} 
+    except Exception as e:
+      return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to copy log file {e}"})}]} 
 
-  # loop through the file and copy each of those to the log analyzer folder
-  try:
-    for elem in log_file_list:
-      with open(os.path.join(BASE_DIR, 'logs', elem), 'r', encoding="utf-8") as original_log_file, with open(os.path.join(BASE_DIR, 'agents/graph/logs_to_analize', elem), 'w', encoding="utf-8") as log_file_copy_for_analysis:
-        log_file_content = original_log_file.read()
-        log_file_copy_for_analysis.write(log_file_content)
-    # success message sent with the log file names list so that we can open those in the next chunking/storing node
-    return  {"messages": [{"role": "ai", "content": json.dumps({"success": log_file_list})}]}    
-  except Exception as e:
-    return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to copy log file {e}"})}]} 
+  # here we check as we can have also issue with log folder empty
+  if len(count_no_log_file_in_folder_tracker) == len(django_and_rust_logs_fodler_names):
+    return {"messages": [{"role": "ai", "content": json.dumps({"empty": f"error as log folders are all empty, agent couldn't proceed to any analysis job."})}]} 
 
 # CONDITIONAL EDGE
 def copy_log_files_success_or_error(state: MessagesState):
@@ -110,7 +114,10 @@ def copy_log_files_success_or_error(state: MessagesState):
   # should be 'success' or 'error'
   last_message = messages[-1].content
 
-  if 'success' in last_message:
+  if "empty" in last_message:
+    # we don't need to run the graph nodes if the log folders are empty, we stop graph.
+    return END
+  elif 'success' in last_message:
     return "chunk_and_store_logs"
   return "error_handler"
 
@@ -154,7 +161,7 @@ def advice_agent_report_creator(state: StateMessages):
       advice_log_report_response = get_advice_on_logs(flags)
       if "error" in advice_log_report_response:
         return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to get advice log report: {advice_log_report_response['error']}"})}]}
-      return  {"messages": [{"role": "ai", "content": json.dumps({"success": "Successfully created log reports: {advice_log_report_response['success']}"})}]}
+      return  {"messages": [{"role": "ai", "content": json.dumps({"success": f"Successfully created log reports: {advice_log_report_response['success']}"})}]}
     except Exception as e:
       return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to produce advice report on logs: {e}"})}]}
 
@@ -187,33 +194,48 @@ def discord_notification_flow_success_or_error(state: StateMessages):
     return "temporary_log_files_cleaner"
   return "error_handler"
 
+# NODE
 def temporary_log_files_cleaner(state: StateMessages):
-  continue
 
+  # here we will delete the databases entries and empty the agent `LogAnalyzer` model
+  try:
+    delete_flagged_logs_from_table_result = delete_flagged_log_from_db_table(connection: str = CONNECTION_STRING)
+    if "error" in delete_flagged_logs_from_table_result:
+      return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to delete logs from database: {delete_flagged_logs_from_table_result['error']}"})}]}
+  except Exception as e:
+    return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to delete logs from database: {e}"})}]}
 
+  # herewe will delete all copied log files from the agent workspace folder
+  try:
+    delete_initialy_copied_log_result = delete_all_files_in_dir()
+    if "error" in delete_initialy_copied_log_result:
+      return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to delete logs from agent log copy folder: {delete_initialy_copied_log_result['error']}"})}]}
+  except Exception as e:
+    return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to delete logs from database: {e}"})}]}
 
-# CONDITIONAL EDGE
-def question_rephrased_or_error(state: MessagesState):
-  messages = state['messages']
-  # should be 'success' or 'error'
-  last_message = messages[-1].content
-
-  if 'success' in last_message:
-    return "retrieve_answer_action"
-  return "error_handler"
+  return  {"messages": [{"role": "ai", "content": json.dumps({"success": f"{delete_flagged_logs_from_table_result['success']}\ndeleted all temporary files for agent initially copied logs: {delete_initialy_copied_log_result ['success']}."})}]}
 
 # error handling
 def error_handler(state: MessagesState):
   messages = state['messages']
 
   # Log the graph errors in a file
-  with open("logs/logs_analyzer_agent_graph.log", "a", encoding="utf-8") as conditional:
+  with open(os.path.join(BASE_DIR, 'log_agent_reports', 'logs_analyzer_agent_graph.log'), "a", encoding="utf-8") as conditional:
       json_error_message = messages[-1].content
       conditional.write(f"\n\n{json_error_message}\n\n")
   print(f"Error Handler: ", messages[-1].content)
 
   return {"messages": [{"role": "ai", "content": json.dumps({"error_handler": messages[-1].content})}]}
 
+# CONDITIONAL EDGE    
+def temporary_log_files_cleaner_success_or_error(state: StateMessages):
+  messages = state['messages']
+  # should be 'success' or 'error'
+  last_message = json.loads(messages[-1].content)
+
+  if 'success' in last_message:
+    return END
+  return "error_handler"
 
 '''
 LOG ANALYZER
@@ -255,12 +277,16 @@ workflow.add_conditional_edges(
   "log_analyzer_notififier_tool_node",
   discord_notification_flow_success_or_error
 )
+workflow.add_conditional_edges(
+  "temporary_log_files_cleaner",
+  # if success the this will end here otherwise it will go to error_handler which will end the graph
+  temporary_log_files_cleaner_success_or_error
+)
 # end
 workflow.add_edge("error_handler", END)
-workflow.add_edge("temporary_log_files_cleaner", END)
 # compile
 checkpointer = MemorySaver()
-user_query_processing_stage = workflow.compile(checkpointer=checkpointer)
+log_analyzer_agent_processing_stage = workflow.compile(checkpointer=checkpointer)
 
 ###############################
 ## GRAPH CODE LOGIC ABOVE IT ##
@@ -270,7 +296,7 @@ def logs_agent_team(logs_folder_path):
   final_output = None
 
   count = 0
-  for step in user_query_processing_stage.stream(
+  for step in log_analyzer_agent_processing_stage.stream(
     {"messages": [SystemMessage(content=logs_folder_path)]},
     config={"configurable": {"thread_id": int(os.getenv("THREAD_ID"))}}):
     count += 1
@@ -288,8 +314,8 @@ def logs_agent_team(logs_folder_path):
         final_output = json.dumps({"error": f"Invalid final output format: {e}"})
 
   # subgraph drawing
-  graph_image = user_query_processing_stage.get_graph().draw_png()
-  with open("logs_agent_team.png", "wb") as f:
+  graph_image = log_analyzer_agent_processing_stage.get_graph().draw_png()
+  with open(os.path.join(BASE_DIR, 'log_agent_reports', 'logs_agent_team.png'), "wb") as f:
     f.write(graph_image)
 
   # Ensure final_output is JSON formatted for downstream consumption
