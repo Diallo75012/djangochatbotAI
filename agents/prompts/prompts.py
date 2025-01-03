@@ -163,3 +163,18 @@ advice_agent_report_creator_prompt = {
     "input_variables": {}
   },
 }
+
+tool_notifier_agent_prompt = {
+  "system": {
+    "template": "", 
+    "input_variables": {}
+  },
+  "human": {
+    "template": "Use this folder name parameter: {folder_name_parameter}. And choose the appropriate tool to send Discord notification.", 
+    "input_variables": {"folder_name_parameter": ""}
+  },
+  "ai": {
+    "template": "", 
+    "input_variables": {}
+  },
+}

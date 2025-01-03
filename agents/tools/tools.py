@@ -21,12 +21,16 @@ from agents.llms.llms import (
   groq_llm_gemma_7b,
 )
 from agents.app_utils import retrieve_answer
+from commom.discord_notifications import send_agent_log_report_to_discord
 from dotenv import load_dotenv
 
 
 # load env vars
 load_dotenv(dotenv_path='.env', override=False)
 load_dotenv(dotenv_path=".vars", override=True)
+
+# log folder from agents
+LOG_AGENT_REPORTS_FOLDER = os.path.join(BASE_DIR, 'log_agent_reports')
 
 
 # TOOLS
@@ -105,7 +109,24 @@ def retrieve_answer_action(query: str, state: MessagesState = MessagesState()):
   # If no relevant result found, return a default response, and perform maybe after that an internet search and cache the query and the response
   return {"messages": [{"role": "ai", "content": json.dumps({"nothing": "nothing_in_cache_nor_vectordb"})}]}
 
+# will use notify devops/security team in discord
+@tool
+def notify_devops_security(agent_report_folder_path: str = LOG_AGENT_REPORTS_FOLDER, state: MessagesState = MessagesStae()):
+  """
+  Sends Discord notification to Devops/Security team
 
+  Parameter:
+  agent_report_folder_path: str = folder name parameter
+
+  returns:
+  The notification result 
+  """
+  try:
+    notification_result = send_agent_log_report_to_discord(agent_report_folder_path)
+    return {"messages": [{"role": "ai", "content": json.dumps({"success": notification_result})}]}
+  except Exception as e:
+    return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to notify Devops/Security team: {e}"})}]}
+  
 ####################################
 ### THIS TO BE USED AND EXPORTED ###
 ####################################
@@ -117,3 +138,7 @@ tool_retrieve_answer_node = ToolNode([retrieve_answer_action])
 # groq_llm_mixtral_larger.bind_tools([retrieve_answer_action])
 # groq_llm_llama3_70b_versatile.bind_tools([retrieve_answer_action])
 llm_with_retrieve_answer_tool_choice = groq_llm_llama3_vision_large.bind_tools([retrieve_answer_action])
+
+# log analyzer notifier tool
+log_analyzer_notififier_tool_node = groq_llm_llama3_70b_versatile.bind_tools([notify_devops_security])
+llm_with_log_analyzer_notififier_tool_choice = groq_llm_llama3_vision_large.bind_tools([notify_devops_security])

@@ -21,6 +21,8 @@ from agents.app_utils import (
 )
 # Tools
 from agents.tools.tools import (
+  log_analyzer_notififier_tool,
+  llm_with_log_analyzer_notififier_tool_choice,
 )
 # Retrieve Vector
 from agents.app_utils.retrieve_answer import retrieve_answer_action
@@ -45,6 +47,9 @@ from dotenv import load_dotenv, set_key
 # load env vars
 load_dotenv(dotenv_path='.env', override=False)
 load_dotenv(dotenv_path=".vars.env", override=True)
+
+# log folder from agents
+LOG_AGENT_REPORTS_FOLDER = os.path.join(BASE_DIR, 'log_agent_reports')
 
 # Helper functions
 def message_to_dict(message):
@@ -81,7 +86,7 @@ def copy_log_files(state: StateMessages):
   '''
   
   # get all the logs files
-  log_file_list = [log_file for log_file in os.path.join(BASE_DIR, 'logs')]
+  log_file_list = [log_file for log_file in os.listdir(os.path.join(BASE_DIR, 'logs'))]
   # check if the dir exist or make it anyways (dir where logs will be copied for dedicsted analysis job)
   try:
     os.makedirs(os.path.join(BASE_DIR, 'agents/graph/logs_to_analize'), exist_ok=True)
@@ -160,12 +165,27 @@ def advice_agent_report_creator_success_or_error(state: StateMessages):
   last_message = messages[-1].content
 
   if 'success' in last_message:
-    return "notifier_agent"
+    return "tool_notifier_agent"
   return "error_handler"
 
+def tool_notifier_agent(state: StateMessages):
+    messages = state['messages']
+    last_message = messages[-1].content
+    # print("messages from call_model func: ", messages)
+    query = prompt_creation(tool_notifier_agent_prompt["human"], folder_name_parameter=LOG_AGENT_REPORTS_FOLDER)
+    response = llm_with_log_analyzer_notififier_tool_choice.invoke(json.dumps(query))
 
-def notifier_agent(state: StateMessages):
-  continue
+    return {"messages": [response]}
+
+# CONDITIONAL EDGE    
+def discord_notification_flow_success_or_error(state: StateMessages):
+  messages = state['messages']
+  # should be 'success' or 'error'
+  last_message = json.loads(messages[-1].content)
+
+  if 'success' in last_message:
+    return "temporary_log_files_cleaner"
+  return "error_handler"
 
 def temporary_log_files_cleaner(state: StateMessages):
   continue
@@ -211,12 +231,12 @@ workflow = StateGraph(MessagesState)
 workflow.add_node("copy_log_files", copy_log_files)
 workflow.add_node("chunk_and_store_logs", chunk_and_store_logs )
 workflow.add_node("advice_agent_report_creator", advice_agent_report_creator)
-worklfow.add_node("notifier_agent", notifier_agent)
+worklfow.add_node("log_analyzer_notififier_tool_node", log_analyzer_notififier_tool_node)
+worklfow.add_node("tool_notifier_agent", tool_notifier_agent)
 workflow.add_node("temporary_log_files_cleaner", temporary_log_files_cleaner)
 
 # start
 workflow.set_entry_point("copy_log_files")
-
 # edges
 workflow.add_conditional_edges(
   "copy_log_files",
@@ -230,14 +250,14 @@ workflow.add_conditional_edges(
   "advice_agent_report_creator",
   advice_agent_report_creator_success_or_error
 )
-
-# probably will be truned all in conditional edges
-workflow.add_edge("notifier_agent", "temporary_log_files_cleaner")
-
+workflow.add_edge("tool_notifier_agent", "log_analyzer_notififier_tool_node")
+workflow.add_conditional_edges(
+  "log_analyzer_notififier_tool_node",
+  discord_notification_flow_success_or_error
+)
 # end
 workflow.add_edge("error_handler", END)
 workflow.add_edge("temporary_log_files_cleaner", END)
-
 # compile
 checkpointer = MemorySaver()
 user_query_processing_stage = workflow.compile(checkpointer=checkpointer)

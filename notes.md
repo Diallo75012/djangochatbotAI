@@ -1263,7 +1263,7 @@ try:
 
 
 # Next 
-- []  start implementing logging which is the next big step, decide on log format to be able to be consummed easily for me (custom), ELK, Prometheus and all their friends as well...
+- [x]  start implementing logging which is the next big step, decide on log format to be able to be consummed easily for me (custom), ELK, Prometheus and all their friends as well...
 
 
 # Issue github push
@@ -1273,7 +1273,7 @@ warning: refname 'HEAD' is ambiguous.
 warning: refname 'HEAD' is ambiguous.
 ```
 deleted: `rm .git/refs/HEAD` being a double file pointing to HEAD
-
+at the end just deleted `.git`, did a `git clone` and copier the `.git` to the project folder.
 
 
 # LOGGING
@@ -1904,22 +1904,23 @@ nano setup_cronjob.sh:
 #!/bin/bash
 
 # Variables
+PROJECT_ROOT="$(dirname "$(realpath "$0")")"  # Automatically find the root directory of the Django project
 PYTHON_PATH="/path/to/python"  # Path to the Python executable
-SCRIPT_PATH="/path/to/start_langgraph_agent.py"  # Path to the Python script
-LOG_FILE="/path/to/agent_logs.log"  # Path to the log file
+SCRIPT_PATH="$PROJECT_ROOT/common/log_agents_jobs.py"  # Path to the Python script inside the common app
 CRON_TIME="0 3 * * *"  # Schedule: 3:00 AM daily
 
-# Check if cronjob already exists
-(crontab -l 2>/dev/null | grep -q "$SCRIPT_PATH")
-if [ $? -eq 0 ]; then
+# Check if cronjob already exists for the script
+if crontab -l 2>/dev/null | grep -q "$SCRIPT_PATH"; then
   echo "Cronjob already exists for the script."
 else
   # Add the cronjob
-  (crontab -l 2>/dev/null; echo "$CRON_TIME $PYTHON_PATH $SCRIPT_PATH >> $LOG_FILE 2>&1") | crontab -
+  (crontab -l 2>/dev/null; echo "$CRON_TIME $PYTHON_PATH $SCRIPT_PATH") | crontab -
   echo "Cronjob added successfully."
 fi
 
+
 ```
+**CRONJOB NEED TO BE SET UP ONLY ONCE WEB SETTING UP THE SERVER**
 ```bash
 # make the file executable
 sudo chmod +x setup_cronjob.sh
