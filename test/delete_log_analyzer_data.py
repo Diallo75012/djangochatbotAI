@@ -3,12 +3,11 @@ import json
 import psycopg
 from typing import List, Dict, Any
 from dotenv import load_dotenv
-from agents.app_utils.logs_advice_report_creation import CONNECTION_STRING
+from logs_advice_report_creation import CONNECTION_STRING
 
 
-load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path='vars.env', override=True)
-
+load_dotenv(dotenv_path='../.env', override=False)
+load_dotenv(dotenv_path="../.vars.env", override=True)
 
 def delete_flagged_log_from_db_table(connection: str = CONNECTION_STRING) -> Dict[str, str]:
   '''

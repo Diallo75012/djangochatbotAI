@@ -15,19 +15,25 @@ from llms import (
   groq_llm_mixtral_7b,
   groq_llm_mixtral_larger,
   groq_llm_llama3_8b,
-  groq_llm_llama3_8b_tool_use,
   groq_llm_llama3_70b,
-  groq_llm_llama3_70b_tool_use,
+  groq_llm_llama3_70b_versatile,
   groq_llm_llama3_vision_large,
   groq_llm_gemma_7b,
 )
 import retrieve_answer
+from discord_notifications import send_agent_log_report_to_discord
 from dotenv import load_dotenv
-
+# from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent
 
 # load env vars
 load_dotenv(dotenv_path='../.env', override=False)
 load_dotenv(dotenv_path="../.vars.env", override=True)
+
+
+# log folder from agents
+LOG_AGENT_REPORTS_FOLDER = os.path.join(BASE_DIR, 'log_agent_reports')
 
 
 # TOOLS
@@ -48,7 +54,7 @@ def search(query: str, state: MessagesState = MessagesState()):
 # INTERNET TOOL NODES
 tool_search_node = ToolNode([search])
 # LLMs WITH BINDED TOOLS
-llm_with_internet_search_tool = groq_llm_llama3_70b_tool_use.bind_tools([search])
+llm_with_internet_search_tool = groq_llm_llama3_70b_versatile.bind_tools([search])
 
 """
 TOOL TO PERFORM RETRIEVAL OF DATA
@@ -105,6 +111,23 @@ def retrieve_answer_action(query: str, state: MessagesState = MessagesState()):
   # If no relevant result found, return a default response, and perform maybe after that an internet search and cache the query and the response
   return {"messages": [{"role": "ai", "content": json.dumps({"nothing": "nothing_in_cache_nor_vectordb"})}]}
 
+# will use notify devops/security team in discord
+@tool
+def notify_devops_security(agent_report_folder_path: str = LOG_AGENT_REPORTS_FOLDER, state: MessagesState = MessagesState()):
+  """
+  Sends Discord notification to Devops/Security team
+
+  Parameter:
+  agent_report_folder_path: str = folder name parameter
+
+  returns:
+  The notification result 
+  """
+  try:
+    notification_result = send_agent_log_report_to_discord(agent_report_folder_path)
+    return {"messages": [{"role": "ai", "content": json.dumps({"success": notification_result})}]}
+  except Exception as e:
+    return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to notify Devops/Security team: {e}"})}]}
 
 ####################################
 ### THIS TO BE USED AND EXPORTED ###
@@ -112,9 +135,8 @@ def retrieve_answer_action(query: str, state: MessagesState = MessagesState()):
 # retrieve_answer tool node
 tool_retrieve_answer_node = ToolNode([retrieve_answer_action])
 # LLMs WITH BINDED TOOLS
-# trying with larger context llm as i get groq error for to large request when using llama 70b tool use
-# groq_llm_llama3_vision_large.bind_tools([retrieve_answer_action])
-# groq_llm_mixtral_larger.bind_tools([retrieve_answer_action])
-# groq_llm_llama3_70b_tool_use.bind_tools([retrieve_answer_action])
 llm_with_retrieve_answer_tool_choice = groq_llm_llama3_vision_large.bind_tools([retrieve_answer_action])
 
+# log analyzer notifier tool
+log_analyzer_notififier_tool_node = groq_llm_llama3_70b_versatile.bind_tools([notify_devops_security])
+llm_with_log_analyzer_notififier_tool_choice = groq_llm_llama3_vision_large.bind_tools([notify_devops_security])

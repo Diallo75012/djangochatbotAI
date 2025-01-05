@@ -2,12 +2,13 @@ import os
 import json
 import psycopg
 from typing import List, Dict, Any
-from django.conf import settings
 from dotenv import load_dotenv
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path='vars.env', override=True)
+load_dotenv(dotenv_path='../.env', override=False)
+load_dotenv(dotenv_path='../vars.env', override=True)
 
 # db connection vars
 driver=os.getenv("DRIVER") # not psycopg2 as now it required psycopg3 (we install both: pip install psycopg2 psycopg)
@@ -41,15 +42,30 @@ def detect_flagged_logs(flags: list, list_of_log_files: list) -> dict:
 
       # now read through lines of the log_file and detect the flag. when detected store it in db
       for flag in flags:
+        # line here is a `json_dumps` so we need to `json.load` it
         for line in log_file:
-
+          print("Line json.loads(): ", json.loads(line)["level"], "flag: ", flag)
           # we check if the level is one of the flag ones and add it to return dictionary
           if json.loads(line)["level"] == flag:
 
             # add to the flag list of the dict flagged_logs_dict
             flagged_logs_dict[flag] += [line]
+            print("flagged_dict plus lines: ", flagged_logs_dict)
 
-  # is a Dict[str, List[json.dumps(log lines)]]
+  # is a Dict[str, List[dict of log lines)]]
+  '''
+  {'WARNING': [
+    {'time': '2024-12-26 21:39:50,143', 'level': 'WARNING', 'name': 'django.request', 'message': 'Not Found: /', 'user_id': 'anonymous'},
+    {'time': '2024-12-26 21:39:51,153', 'level': 'WARNING', 'name': 'django.request', 'message': 'Not Found: /favicon.ico', 'user_id': 'anonymous'},
+    {'time': '2024-12-28 23:19:25,553', 'level': 'WARNING', 'name': 'httpx', 'message': 'warn clientchat', 'user_id': 'anonymous'},
+    {'time': '2024-12-28 23:16:25,553', 'level': 'WARNING', 'name': 'httpx', 'message': 'warn agent', 'user_id': 'anonymous'},
+    {'time': '2024-12-28 23:17:25,553', 'level': 'WARNING', 'name': 'httpx', 'message': 'warn businessdata', 'user_id': 'anonymous'},
+    {'time': '2024-12-28 23:29:25,553', 'level': 'WARNING', 'name': 'httpx', 'message': 'warn common', 'user_id': 'anonymous'}
+    ],
+    'ERROR': [],
+    'CRITICAL': []
+  }
+  '''
   return flagged_logs_dict
 
 def store_logs(log_level: str, line:str, connection: str = CONNECTION_STRING) -> Dict:
@@ -57,7 +73,8 @@ def store_logs(log_level: str, line:str, connection: str = CONNECTION_STRING) ->
     Stores logs in database with their log level
   '''
   # STORE
-  try: 
+  print(f"log_level: {log_level} >>> {line}")
+  try:
     # we open a database connection to do all operations
     with psycopg.connect(CONNECTION_STRING) as conn:
       try:
@@ -65,8 +82,8 @@ def store_logs(log_level: str, line:str, connection: str = CONNECTION_STRING) ->
         with conn.cursor() as cur:
           # store the values
           cur.execute(
-            "INSERT INTO agents_loganalyzer (chunk, log_level, advice) VALUES (%s, %s, %s)",
-            (line, log_level, "")
+            "INSERT INTO agents_loganalyzer (chunk, log_level) VALUES (%s, %s)",
+            (line, log_level)
           )
       
         '''
@@ -93,12 +110,15 @@ def chunk_store_logs(flags: list, list_of_log_files: list, connection: str = CON
     reads through logs files and detects flagged logs that need to be stored in database for AI analysis and store those
   '''
   # here flagged_logs_dict is a Dict[str, List[json.dumps(log lines)]]
-  flagged_logs_dict = detect_flagged_logs(flags, list_of_log_files)
-
+  try:
+    flagged_logs_dict = detect_flagged_logs(flags, list_of_log_files)
+  except Exception as e:
+    return {"error": "An error occured while to detect flagged logs: {e}"}
   # we store logs loopping through the dict
   for flag, log_lines_list_dumps in flagged_logs_dict.items():
+    # log_line is `json.dump` so a str ready to be stored
     for log_line in log_lines_list_dumps:
- 
+      print("log_line: ", log_line, type(log_line))
       # Now we can store in db
       try:
         store_logs(flag, log_line, CONNECTION_STRING)
@@ -106,4 +126,3 @@ def chunk_store_logs(flags: list, list_of_log_files: list, connection: str = CON
         return {"error": "An error occured while storing logs: {e}"}
  
   return {"success": "All logs data has been stored successfully."}
-

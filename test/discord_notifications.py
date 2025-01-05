@@ -1,18 +1,19 @@
 import os
 from dotenv import load_dotenv
 from discord_webhook import DiscordWebhook
-from django.conf import settings
+# from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # load env vars
-load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path=".vars.env", override=True)
-
+load_dotenv(dotenv_path='../.env', override=False)
+load_dotenv(dotenv_path="../.vars.env", override=True)
 
 DISCORD_WEBHOOK_ID = os.getenv("DISCORD_WEBHOOK_ID")
 DISCORD_WEBHOOK_TOKEN = os.getenv("DISCORD_WEBHOOK_TOKEN")
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
-LOG_AGENT_REPORTS_FOLDER = os.path.join(settings.BASE_DIR, 'log_agent_reports')
+LOG_AGENT_REPORTS_FOLDER = os.path.join(BASE_DIR, 'log_agent_reports')
 
 # max file size is 8MB dfor discord
 def send_file_to_discord(file_path):
@@ -56,8 +57,8 @@ def send_agent_log_report_to_discord(log_report_folder_path: str = LOG_AGENT_REP
   MAX_FILE_SIZE = 6 * 1024 * 1024
 
   # loop through all files report present in the log agent report folder `log_to_analyze`
-  for log_file in os.listdir(os.listdir(os.path.join(settings.BASE_DIR, 'agents/graph/log_to_analyze'))):
-    log_file_path = os.path.join(settings.BASE_DIR, 'agents/graph/log_to_analyze', log_file)
+  for log_file in os.listdir(os.listdir(os.path.join(BASE_DIR, 'agents/graph/log_to_analyze'))):
+    log_file_path = os.path.join(BASE_DIR, 'agents/graph/log_to_analyze', log_file)
     # if needed in later iterations; the level is critical/error/warning written at the beginning of each files in the report folder
     # log_file_level = log_file_path.split("/")[-1].split("_")[0]
 

@@ -5,25 +5,24 @@ import time
 from datetime import datetime
 from typing import List, Dict, Any
 from dotenv import load_dotenv
-from app_utils import (
-  call_llm,
-  prompt_creation,
-)
-from structured_output.structured_output import advice_agent_report_creator_schema
+import call_llm, prompt_creation
+from structured_output import advice_agent_report_creator_schema
 from prompts import advice_agent_report_creator_prompt
 # LLMs
-from agents.llms.llms import (
+from llms import (
   groq_llm_mixtral_7b,
   groq_llm_llama3_8b,
   groq_llm_llama3_70b,
   groq_llm_llama3_70b_versatile,
   groq_llm_gemma_7b,
 )
-from django.conf import settings
+# from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path='vars.env', override=True)
+load_dotenv(dotenv_path='../.env', override=False)
+load_dotenv(dotenv_path="../.vars.env", override=True)
 
 # db connection vars
 driver=os.getenv("DRIVER") # not psycopg2 as now it required psycopg3 (we install both: pip install psycopg2 psycopg)
@@ -98,6 +97,7 @@ def get_advice_on_logs(log_levels: list) -> Dict[str, str]: # it is a Dict[str, 
     # or just do for loop and make call for each log line taking care of retry and rate limits
     try:
       report = call_llm.call_llm(query, advice_agent_report_creator_prompt_prompt["system"]["template"], advice_agent_report_creator_prompt_schema, groq_llm_llama3_70b)
+      print("report: ", report)
     except Exception as e:
       return {"error": f"An error occured while trying to analyze user input content: {e}"}
 
@@ -108,23 +108,22 @@ def get_advice_on_logs(log_levels: list) -> Dict[str, str]: # it is a Dict[str, 
 
     # `a` Append to log file
     if fetched_flag == "CRITICAL":
-      with open(os.path.join(settings.BASE_DIR, "log_agent_reports", f"{os.getenv('LOGS_REPORT_CRITICAL_FILE_NAME')}_{formatted_date}"), 'a', encoding="utf-8") as report_file:
+      with open(os.path.join(BASE_DIR, "log_agent_reports", f"{os.getenv('LOGS_REPORT_CRITICAL_FILE_NAME')}_{formatted_date}"), 'a', encoding="utf-8") as report_file:
         report_file.write({"log_time": log_line["time"], "log_advice": report["response"]})
         # we sleep a bit to not get rate limited
       time.sleep(0.5)
     elif fetched_flag == "ERROR":
-      with open(os.path.join(settings.BASE_DIR, "log_agent_reports", f"{os.getenv('LOGS_REPORT_ERROR_FILE_NAME')}_{formatted_date}"), 'a', encoding="utf-8") as report_file:
+      with open(os.path.join(BASE_DIR, "log_agent_reports", f"{os.getenv('LOGS_REPORT_ERROR_FILE_NAME')}_{formatted_date}"), 'a', encoding="utf-8") as report_file:
         report_file.write({"log_time": log_line["time"], "log_advice": report["response"]})
       time.sleep(0.5)
     elif fetched_flag == "WARNING":
-      with open(os.path.join(settings.BASE_DIR, "log_agent_reports", f"{os.getenv('LOGS_REPORT_WARNING_FILE_NAME')}_{formatted_date}"), 'a', encoding="utf-8") as report_file:
+      with open(os.path.join(BASE_DIR, "log_agent_reports", f"{os.getenv('LOGS_REPORT_WARNING_FILE_NAME')}_{formatted_date}"), 'a', encoding="utf-8") as report_file:
         report_file.write({"log_time": log_line["time"], "log_advice": report["response"]})
       time.sleep(0.5)
     else:
       return {"error": f"No fetched flag detected. Therefore, no log file written for this entry: {log_line}"}
 
-  return {"success": f"all flagged logs have been analyzed by agent. Please find reports at: {os.path.join(settings.BASE_DIR, 'agents/graph/agents_logs_reports')}"}
-
+  return {"success": f"all flagged logs have been analyzed by agent. Please find reports at: {os.path.join(BASE_DIR, 'agents/graph/agents_logs_reports')}"}
 
 
 

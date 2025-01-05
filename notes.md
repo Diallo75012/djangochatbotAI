@@ -1950,7 +1950,13 @@ curl -X POST -H "Content-Type: application/json" \
 - [] then use this app for any devops workflow that we want to do (push enhancement of app and have the ci/cd work by itself and do all necessary notifications (Dicord: the webhook stuff is simple and works fine so we will be using that)
 
 
-
+### troubleshooting
+- now trying to run the graph and pass nodes one by one by debugging and checking logic.
+  - noticed that not all files are read and CRITICAL and ERROR are not detected: check logic , something is wrong
+  - we get success message but in postgresql nothing is stored, database is empty: test function independently with dummy data
+  
+Better test each function independently, then run graph node...
+  
 
 
 

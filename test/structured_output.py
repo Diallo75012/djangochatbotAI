@@ -42,3 +42,9 @@ answer_to_user_schema = {
 
 
 
+##############
+# LOGS AGENT #
+##############
+advice_agent_report_creator_schema = {
+  "response": "In mardown format provide advice in where those issues could come from and how to fix those issues plus some extra advice. be Precise and consice."
+}

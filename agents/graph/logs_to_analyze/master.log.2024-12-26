@@ -1,0 +1,51 @@
+{"time": "2024-12-26 21:38:43,174", "level": "INFO", "name": "django.utils.autoreload", "message": "Watching for file changes with StatReloader", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:51,293", "level": "INFO", "name": "django.utils.autoreload", "message": "Watching for file changes with StatReloader", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,166", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,168", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,254", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,256", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,337", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,339", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,423", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,424", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,505", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,507", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,592", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,594", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,675", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,676", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,756", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,758", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,837", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,838", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,917", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,918", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,997", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:55,999", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:56,076", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:56,077", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:56,155", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:56,156", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:56,243", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:56,244", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:56,321", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:56,322", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:56,403", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:56,404", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:57,989", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:57,991", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:58,115", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:58,116", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:58,198", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:58,200", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:59,255", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:59,256", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:59,338", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:59,340", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:59,443", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:59,444", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:59,526", "level": "DEBUG", "name": "httpx", "message": "load_ssl_context verify=True cert=None trust_env=True http2=False", "user_id": "anonymous"}
+{"time": "2024-12-26 21:38:59,527", "level": "DEBUG", "name": "httpx", "message": "load_verify_locations cafile='/home/creditizens/djangochatAI/djangochatbotAI_venv/lib/python3.12/site-packages/certifi/cacert.pem'", "user_id": "anonymous"}
+{"time": "2024-12-26 21:39:50,143", "level": "WARNING", "name": "django.request", "message": "Not Found: /", "user_id": "anonymous"}
+{"time": "2024-12-26 21:39:51,153", "level": "WARNING", "name": "django.request", "message": "Not Found: /favicon.ico", "user_id": "anonymous"}
+{"time": "2024-12-26 21:40:05,565", "level": "INFO", "name": "users", "message": "Username OR Password is incorrect", "user_id": "anonymous"}

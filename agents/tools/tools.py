@@ -21,7 +21,8 @@ from agents.llms.llms import (
   groq_llm_gemma_7b,
 )
 from agents.app_utils import retrieve_answer
-from commom.discord_notifications import send_agent_log_report_to_discord
+from common.discord_notifications import send_agent_log_report_to_discord
+from django.conf import settings
 from dotenv import load_dotenv
 
 
@@ -30,7 +31,7 @@ load_dotenv(dotenv_path='.env', override=False)
 load_dotenv(dotenv_path=".vars", override=True)
 
 # log folder from agents
-LOG_AGENT_REPORTS_FOLDER = os.path.join(BASE_DIR, 'log_agent_reports')
+LOG_AGENT_REPORTS_FOLDER = os.path.join(settings.BASE_DIR, 'log_agent_reports')
 
 
 # TOOLS
@@ -111,7 +112,7 @@ def retrieve_answer_action(query: str, state: MessagesState = MessagesState()):
 
 # will use notify devops/security team in discord
 @tool
-def notify_devops_security(agent_report_folder_path: str = LOG_AGENT_REPORTS_FOLDER, state: MessagesState = MessagesStae()):
+def notify_devops_security(agent_report_folder_path: str = LOG_AGENT_REPORTS_FOLDER, state: MessagesState = MessagesState()):
   """
   Sends Discord notification to Devops/Security team
 
@@ -134,9 +135,6 @@ def notify_devops_security(agent_report_folder_path: str = LOG_AGENT_REPORTS_FOL
 tool_retrieve_answer_node = ToolNode([retrieve_answer_action])
 # LLMs WITH BINDED TOOLS
 # trying with larger context llm as i get groq error for to large request when using llama 70b tool use
-# groq_llm_llama3_vision_large.bind_tools([retrieve_answer_action])
-# groq_llm_mixtral_larger.bind_tools([retrieve_answer_action])
-# groq_llm_llama3_70b_versatile.bind_tools([retrieve_answer_action])
 llm_with_retrieve_answer_tool_choice = groq_llm_llama3_vision_large.bind_tools([retrieve_answer_action])
 
 # log analyzer notifier tool

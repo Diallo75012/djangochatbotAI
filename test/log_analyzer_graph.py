@@ -1,31 +1,24 @@
 import os
 import json
-from django.conf import settings
 # for typing func parameters and outputs and states
 from typing import Dict, List, Tuple, Any, Optional, Union
 # utils
-from agents.app_utils.json_dumps_manager import safe_json_dumps
-from agents.app_utils.logs_advice_report_creation import CONNECTION_STRING, get_advice_on_logs
-from agents.app_utils.delete_log_analyzer_data import (
+from json_dumps_manager import safe_json_dumps
+from logs_advice_report_creation import CONNECTION_STRING, get_advice_on_logs
+from delete_log_analyzer_data import (
   delete_flagged_log_from_db_table,
   delete_all_files_in_dir,
 )
-from agents.app_utils.log_copier import copy_logs
-from agents.app_utils import (
-  call_llm,
-  prompt_creation,
-  beautiful_graph_output,
-  chunk_store_analyze_logs,
-)
-# Prompts
-from agents.prompts.prompts import tool_notifier_agent_prompt
+from log_copier import copy_logs
+import call_llm, prompt_creation, beautiful_graph_output, chunk_store_analyze_logs
+from prompts import tool_notifier_agent_prompt
 # Tools
-from agents.tools.tools import (
+from tools import (
   log_analyzer_notififier_tool_node,
   llm_with_log_analyzer_notififier_tool_choice,
 )
 # LLMs
-from agents.llms.llms import (
+from llms import (
   groq_llm_mixtral_7b,
   groq_llm_llama3_8b,
   groq_llm_llama3_70b,
@@ -40,14 +33,21 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph, MessagesState
 # env vars
 from dotenv import load_dotenv, set_key
+# from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # load env vars
-load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path=".vars.env", override=True)
+# load_dotenv(dotenv_path='.env', override=False)
+# load_dotenv(dotenv_path=".vars.env", override=True)
+# load env vars
+load_dotenv(dotenv_path='../.env', override=False)
+load_dotenv(dotenv_path="../.vars.env", override=True)
+
 
 # log folder from agents
-LOG_AGENT_REPORTS_FOLDER = os.path.join(settings.BASE_DIR, 'log_agent_reports')
+LOG_AGENT_REPORTS_FOLDER = os.path.join(BASE_DIR, 'log_agent_reports')
 
 # Helper functions
 def message_to_dict(message):
@@ -83,6 +83,9 @@ def copy_log_files(state: MessagesState):
     The log analysis folder will hold temporary files that will be deleted at the end of the graph
   '''
   count_no_log_file_in_folder_tracker = 0
+  #django_logs_folder = os.getenv("DJANGO_LOGS_FOLDER_NAME")
+  #rust_logs_folder = os.getenv("RUST_LOGS_FOLDER_NAME")
+  # check that logs folder exist and that those env vars are set
   django_and_rust_logs_fodler_names = [os.getenv("DJANGO_LOGS_FOLDER_NAME"), os.getenv("RUST_LOGS_FOLDER_NAME")]
   for log_folder_name in  django_and_rust_logs_fodler_names:
     try:
@@ -96,6 +99,9 @@ def copy_log_files(state: MessagesState):
       elif "error" in copy_logs_job_result:
         return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to copy log file: {['error']}"})}]} 
     except Exception as e:
+      if "error" in copy_logs_job_result:
+        propagate_error = copy_logs_job_result["error"]
+        return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to copy log file {e}. origine error propagated: {propagate_error}"})}]} 
       return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to copy log file {e}"})}]} 
 
   # here we check as we can have also issue with log folder empty
@@ -129,7 +135,7 @@ def chunk_and_store_logs(state: MessagesState):
     chunk_store_analyze_logs.chunk_store_logs(flags, logs_file_names, CONNECTION_STRING)
     return  {"messages": [{"role": "ai", "content": json.dumps({"success": "Logs chunks successfully selected and stored"})}]}
   except Exception as e:
-    return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to chunk and store logs: {e}"})}]}
+    return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to chunk and store logs: {e}"})}]}
 
 # CONDITIONAL EDGE
 def chunk_and_store_logs_success_or_error(state: MessagesState):
@@ -149,7 +155,7 @@ def advice_agent_report_creator(state: MessagesState):
   if "success" in json.dumps(last_message):
     # get the chunk from database and call llm to get advice on it
     # make a report on the fly for the error in a special `agents_logs_report` folder
-    flags = json.laods(os.getenv("FLAGS")) # list of log levels
+    flags = json.loads(os.getenv("FLAGS")) # list of log levels
     # We get advice and report made, the for loop on the `FLAGS` will be done there
     try:
       # should return a dict with `success` or `error`
@@ -158,7 +164,7 @@ def advice_agent_report_creator(state: MessagesState):
         return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to get advice log report: {advice_log_report_response['error']}"})}]}
       return  {"messages": [{"role": "ai", "content": json.dumps({"success": f"Successfully created log reports: {advice_log_report_response['success']}"})}]}
     except Exception as e:
-      return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to produce advice report on logs: {e}"})}]}
+      return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to produce advice report on logs: {e}"})}]}
 
 # CONDITIONAL EDGE    
 def advice_agent_report_creator_success_or_error(state: MessagesState):
@@ -174,7 +180,7 @@ def tool_notifier_agent(state: MessagesState):
     messages = state['messages']
     last_message = messages[-1].content
     # print("messages from call_model func: ", messages)
-    query = prompt_creation(tool_notifier_agent_prompt["human"], folder_name_parameter=LOG_AGENT_REPORTS_FOLDER)
+    query = prompt_creation.prompt_creation(tool_notifier_agent_prompt["human"], folder_name_parameter=LOG_AGENT_REPORTS_FOLDER)
     response = llm_with_log_analyzer_notififier_tool_choice.invoke(json.dumps(query))
 
     return {"messages": [response]}
@@ -215,7 +221,7 @@ def error_handler(state: MessagesState):
   messages = state['messages']
 
   # Log the graph errors in a file
-  with open(os.path.join(settings.BASE_DIR, 'log_agent_reports', 'logs_analyzer_agent_graph.log'), "a", encoding="utf-8") as conditional:
+  with open(os.path.join(BASE_DIR, 'log_agent_reports', 'logs_analyzer_agent_graph.log'), "a", encoding="utf-8") as conditional:
       json_error_message = messages[-1].content
       conditional.write(f"\n\n{json_error_message}\n\n")
   print(f"Error Handler: ", messages[-1].content)
@@ -223,7 +229,7 @@ def error_handler(state: MessagesState):
   return {"messages": [{"role": "ai", "content": json.dumps({"error_handler": messages[-1].content})}]}
 
 # CONDITIONAL EDGE    
-def temporary_log_files_cleaner_success_or_error(state: MessagesSate):
+def temporary_log_files_cleaner_success_or_error(state: MessagesState):
   messages = state['messages']
   # should be 'success' or 'error'
   last_message = json.loads(messages[-1].content)
@@ -311,7 +317,7 @@ def logs_agent_team(logs_folder_path):
 
   # subgraph drawing
   graph_image = log_analyzer_agent_processing_stage.get_graph().draw_png()
-  with open(os.path.join(settings.BASE_DIR, 'log_agent_reports', 'logs_agent_team.png'), "wb") as f:
+  with open(os.path.join(BASE_DIR, 'log_agent_reports', 'logs_agent_team.png'), "wb") as f:
     f.write(graph_image)
 
   # Ensure final_output is JSON formatted for downstream consumption
@@ -332,9 +338,8 @@ def logs_agent_team(logs_folder_path):
   return final_output
 
 
-"""
 if __name__ == '__main__':
   import json
   load_dotenv()
-  logs_agent_team(user_query)
-"""
+  logs_agent_team(os.path.join(BASE_DIR, "logs"))
+

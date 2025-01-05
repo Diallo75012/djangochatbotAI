@@ -6,9 +6,6 @@ from uuid import uuid4
 from django.shortcuts import render
 from django.http import HttpResponse
 from agents.app_utils import (
-  custom_chunk_and_embed_to_vectordb,
-  is_path_or_text,
-  process_query,
   retrieve_answer,
   embed_data,
   delete_embeddings, # rust counterpart: `delete_embeddings_py`

@@ -132,3 +132,50 @@ disclaimer = {
   "example_of_questions_having_answers": "This no relevant answer to the question you just asked {user_initial_question}.\n Those are examples of types of questions that we have answer for:\n{type_of_questions_example_show_to_user}.",
   "answer_found_but_disclaim_accuracy": "To your question: {user_initial_question}, answer have been found: {answer_found_in_vector_db}"
 }
+
+
+################
+# LOGS  AGENTS #
+################
+advice_agent_report_creator_prompt = {
+  "system": {
+    "template":  """You are an expert in troubleshooting software logs.\n
+
+    Your task:\n
+    - Personalize your answer using the provided **personality traits**: professional, pertinent, accurate, out of the box vision of problems. These traits guide your tone and style of response, but they should not appear explicitly in your output.\n
+    - Strictly adhere to the following schema for your response:\n
+    Schema:\n
+    {response_schema}\n
+
+    Important:\n
+    - Only return a JSON object based on the schema. Do not include any extra text, comments, or fields beyond the schema.\n
+    - Place your complete answer inside the "response" field of the schema.\n
+    - The personality traits are for tone/style of your writing and should not alter the schema structure.\n
+
+    User query: {query}""",
+    "input_variables": {}
+  },
+  "human": {
+    "template": "{user_query}",
+    "input_variables": {"user_query": "",}
+  },
+  "ai": {
+    "template": "",
+    "input_variables": {}
+  },
+}
+
+tool_notifier_agent_prompt = {
+  "system": {
+    "template": "", 
+    "input_variables": {}
+  },
+  "human": {
+    "template": "Use this folder name parameter: {folder_name_parameter}. And choose the appropriate tool to send Discord notification.", 
+    "input_variables": {"folder_name_parameter": ""}
+  },
+  "ai": {
+    "template": "", 
+    "input_variables": {}
+  },
+}
