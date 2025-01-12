@@ -45,6 +45,12 @@ answer_to_user_schema = {
 ##############
 # LOGS AGENT #
 ##############
-advice_agent_report_creator_schema = {
-  "response": "In mardown format provide advice in where those issues could come from and how to fix those issues plus some extra advice. be Precise and consice."
-}
+#advice_agent_report_creator_schema = {
+#  "response": "In string format provide advice in where those issues could come from and how to fix those issues plus some extra advice. be Precise and consice. make sure that it has no character that would make it not json serializable. so write a block paragraph string without line returns and formatting, put all in one line."
+#}
+#advice_agent_report_creator_schema = {
+#    "response": "A single-line string providing concise advice on potential causes and fixes for the issue. The response must be JSON-serializable, without special characters, line breaks, or additional formatting."
+#}
+advice_agent_report_creator_schema = "A single-line string providing concise advice on potential causes and fixes for the issue. The response must be JSON-serializable, without special characters, line breaks, or additional formatting."
+
+

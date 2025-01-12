@@ -23,7 +23,7 @@ def send_file_to_discord(file_path):
   :param webhook_url: The Discord webhook URL.
   :param file_path: Path to the file to be sent.
   """
-  webhook = DiscordWebhook(url=DISCORD_WEBHOOK_URL, content=f"📄 **Log Report Chunk**: {os.path.basename(file_path)}")
+  webhook = DiscordWebhook(url=f"{DISCORD_WEBHOOK_URL}/{DISCORD_WEBHOOK_ID}/{DISCORD_WEBHOOK_TOKEN}", content=f"📄 **Log Report Chunk**: {os.path.basename(file_path)}")
   try:
     with open(file_path, "rb") as file:
       # max file size is 8MB
@@ -44,66 +44,86 @@ def send_file_to_discord(file_path):
 
 def send_agent_log_report_to_discord(log_report_folder_path: str = LOG_AGENT_REPORTS_FOLDER):
   """
-  Sends a large log file to a Discord channel using a webhook. If the file exceeds 8 MB, it splits the file into
-  smaller chunks and sends each chunk separately.
+    Sends log files to a Discord channel using a webhook. Handles files exceeding Discord's file size limit
+    by splitting them into smaller chunks.
 
-  :param log_file_path: Path to the log file to be sent.
+    :param log_report_folder_path: Path to the folder containing log files to send.
   """
-  # Discord Webhook URL ressembles to this
-  #"https://discord.com/api/webhooks/{DISCORD_WEBHOOK_ID}/{DISCORD_WEBHOOK_TOKEN}"
+  MAX_FILE_SIZE = 6 * 1024 * 1024  # 6 MB
+  log_analyzer_advice_to_send_to_discord_folder = os.getenv("LOG_ANALYZER_ADVICE_TO_SEND_DISCORD_FOLDER")
+  
+  if not log_analyzer_advice_to_send_to_discord_folder:
+    return {"status": "error", "message": "Environment variable COPY_LOGS_DESTINATION_FOLDER is not set."}
 
-  # Define the maximum file size in bytes (8 MB) but will use smaller chunk
-  #MAX_FILE_SIZE = 8 * 1024 * 1024
-  MAX_FILE_SIZE = 6 * 1024 * 1024
+  error_messages = []  # Track errors for reporting
 
-  # loop through all files report present in the log agent report folder `log_to_analyze`
-  for log_file in os.listdir(os.listdir(os.path.join(BASE_DIR, 'agents/graph/log_to_analyze'))):
-    log_file_path = os.path.join(BASE_DIR, 'agents/graph/log_to_analyze', log_file)
-    # if needed in later iterations; the level is critical/error/warning written at the beginning of each files in the report folder
-    # log_file_level = log_file_path.split("/")[-1].split("_")[0]
+  print("log_analyzer_advice_to_send_to_discord_folder: ", log_analyzer_advice_to_send_to_discord_folder)
+  print("os.listdir(os.path.join(BASE_DIR, log_analyzer_advice_to_send_to_discord_folder)): ", 
+        os.listdir(os.path.join(BASE_DIR, log_analyzer_advice_to_send_to_discord_folder)))
+
+  for log_file in os.listdir(os.path.join(BASE_DIR, log_analyzer_advice_to_send_to_discord_folder)):
+    print("log_file: ", log_file)
+    log_file_path = os.path.join(BASE_DIR, log_analyzer_advice_to_send_to_discord_folder, log_file)
+    print("log_file_path: ", log_file_path)
 
     # Check if the file exists
     if not os.path.exists(log_file_path):
-      print(f"Error: The file '{log_file_path}' does not exist.")
-      return f"error: The file '{log_file_path}' does not exist."
+      error_message = f"Error: The file '{log_file_path}' does not exist."
+      print(error_message)
+      error_messages.append(error_message)
+      continue
 
-    # Get the file size
     file_size = os.path.getsize(log_file_path)
 
+    # If the file is small enough, send directly
     if file_size <= MAX_FILE_SIZE:
-      # Send the file as-is if it's under the limit
       try:
-        send_file_to_discord(log_file_path)
+        send_result = send_file_to_discord(log_file_path)
+        if send_result != "success":
+          error_messages.append(f"Failed to send {log_file_path}: {send_result}")
       except Exception as e:
-        return f"error occured while trying to get file transmission result: {e}"
+        error_message = f"Error while sending {log_file_path}: {e}"
+        print(error_message)
+        error_messages.append(error_message)
     else:
-      # Split and send the file in chunks
-      print(f"The file '{log_file_path}' exceeds 8 MB (size: {file_size / (1024 * 1024):.2f} MB). Splitting into chunks.")
+      # If the file exceeds the size limit, split and send in chunks
+      print(f"The file '{log_file_path}' exceeds 6 MB (size: {file_size / (1024 * 1024):.2f} MB). Splitting into chunks.")
+      try:
+        with open(log_file_path, "rb") as file:
+          chunk_number = 1
+          while True:
+            chunk = file.read(MAX_FILE_SIZE)
+            if not chunk:
+              break
 
-      # Open the file in binary mode
-      with open(log_file_path, "rb") as file:
-        chunk_number = 1
-        while True:
-          # Read a chunk of MAX_FILE_SIZE bytes
-          chunk = file.read(MAX_FILE_SIZE)
-          if not chunk:
-            break
+            chunk_filename = f"{log_file_path}_part{chunk_number}.log"
+            with open(chunk_filename, "wb") as chunk_file:
+              chunk_file.write(chunk)
 
-          # Create a temporary chunk file
-          chunk_filename = f"{log_file_path}_part{chunk_number}.log"
-          with open(chunk_filename, "wb") as chunk_file:
-            chunk_file.write(chunk)
-
-            # Send the chunk to Discord
-            print(f"Sending chunk {chunk_number}...")
             try:
-              send_file_result = send_file_to_discord(chunk_filename)
-
-              # Delete the temporary chunk file after sending
-              os.remove(chunk_filename)
-              chunk_number += 1
+              send_result = send_file_to_discord(chunk_filename)
+              if send_result != "success":
+                error_messages.append(f"Failed to send chunk {chunk_filename}: {send_result}")
             except Exception as e:
-              return f"error occured while trying to get file transmission result: {e}"
+              error_message = f"Error while sending chunk {chunk_filename}: {e}"
+              print(error_message)
+              error_messages.append(error_message)
+            finally:
+              os.remove(chunk_filename)  # Cleanup temporary chunk files
+              chunk_number += 1
+      except Exception as e:
+        error_message = f"Error while processing chunks for {log_file_path}: {e}"
+        print(error_message)
+        error_messages.append(error_message)
 
+  # Final status determination
+  if error_messages:
+    print("Errors occurred during the process:")
+    for error in error_messages:
+      print(error)
+    return {"error": error_messages}
+    
   print("All chunks have been sent successfully.")
-  return "success all logs have been transmitted to Devops/Security team"
+  return {"success": "All logs have been transmitted to DevOps/Security team."}
+
+

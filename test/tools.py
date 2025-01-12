@@ -111,32 +111,39 @@ def retrieve_answer_action(query: str, state: MessagesState = MessagesState()):
   # If no relevant result found, return a default response, and perform maybe after that an internet search and cache the query and the response
   return {"messages": [{"role": "ai", "content": json.dumps({"nothing": "nothing_in_cache_nor_vectordb"})}]}
 
+
 # will use notify devops/security team in discord
 @tool
-def notify_devops_security(agent_report_folder_path: str = LOG_AGENT_REPORTS_FOLDER, state: MessagesState = MessagesState()):
-  """
-  Sends Discord notification to Devops/Security team
+def notify_devops_security(state: MessagesState = MessagesState()):
+    """
+    Sends Discord notification to DevOps/Security team.
 
-  Parameter:
-  agent_report_folder_path: str = folder name parameter
+    Parameters:
+    None
 
-  returns:
-  The notification result 
-  """
-  try:
-    notification_result = send_agent_log_report_to_discord(agent_report_folder_path)
-    return {"messages": [{"role": "ai", "content": json.dumps({"success": notification_result})}]}
-  except Exception as e:
-    return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to notify Devops/Security team: {e}"})}]}
+    Returns:
+    A dictionary with success or error messages.
+    """
+    agent_report_folder_path = os.path.join(BASE_DIR, 'log_agent_reports')
+    try:
+        notification_result = send_agent_log_report_to_discord(agent_report_folder_path)
+        if "success" in notification_result:
+            return {"messages": [{"role": "ai", "content": json.dumps({"success": notification_result})}]}
+        return {"messages": [{"role": "ai", "content": json.dumps({"error": notification_result})}]}
+    except Exception as e:
+        return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occurred while trying to notify on discord: {e}"})}]}
+
 
 ####################################
 ### THIS TO BE USED AND EXPORTED ###
 ####################################
-# retrieve_answer tool node
-tool_retrieve_answer_node = ToolNode([retrieve_answer_action])
 # LLMs WITH BINDED TOOLS
 llm_with_retrieve_answer_tool_choice = groq_llm_llama3_vision_large.bind_tools([retrieve_answer_action])
+# retrieve_answer tool node
+tool_retrieve_answer_node = ToolNode([retrieve_answer_action])
+
 
 # log analyzer notifier tool
-log_analyzer_notififier_tool_node = groq_llm_llama3_70b_versatile.bind_tools([notify_devops_security])
-llm_with_log_analyzer_notififier_tool_choice = groq_llm_llama3_vision_large.bind_tools([notify_devops_security])
+llm_with_log_analyzer_notififier_tool_choice = groq_llm_llama3_70b_versatile.bind_tools([notify_devops_security])
+log_analyzer_notififier_tool_node = ToolNode([notify_devops_security])
+
