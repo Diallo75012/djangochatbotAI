@@ -1936,10 +1936,10 @@ curl -X POST -H "Content-Type: application/json" \
 
 
 # Next
-- [] need to test nodes independently
-- [] have already added dummy data is logs files and will use that to verify that the data expected to have on `discord` is the same
+- [x] need to test nodes independently
+- [x] have already added dummy data is logs files and will use that to verify that the data expected to have on `discord` is the same
 - [x] Have already tested the discord webhook using curl command and it works so if agent is not hallucinating while using the tool it should work
-- [] run the full graph successfully
+- [x] run the full graph successfully
 - [] have to test the cronjob after having ran successfully the full graph to see if it launches the job and works fine (no permission errors for example)
 - [] add logging to common app utility functions
 - [] run the django server with gunicorn until it works fine and then use the application and see if all works fine at minimum
@@ -1954,10 +1954,12 @@ curl -X POST -H "Content-Type: application/json" \
 - now trying to run the graph and pass nodes one by one by debugging and checking logic.
   - noticed that not all files are read and CRITICAL and ERROR are not detected: check logic , something is wrong
   - we get success message but in postgresql nothing is stored, database is empty: test function independently with dummy data
-  
-Better test each function independently, then run graph node...
-  
 
+Better test each function independently, then run graph node...
+
+### Graph Log Analyzer Agent Works!
+Now that the graph works fine and environment variables are set, just need to move it away form the django workflow as this is a cronjob that is going to run on the server running the django app.
+Therefore, we will put the graph in a folder at the root directory of the project. where the cronjob will be able to action it from. all folders path are set properly already but still need to change the one that copies the log files. to be next to the graph log analyzer. so, set this up and then start coding the bash script
 
 
 
