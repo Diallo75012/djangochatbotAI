@@ -1,0 +1,192 @@
+2a3
+> from django.conf import settings
+6,8c7,9
+< from json_dumps_manager import safe_json_dumps
+< from logs_advice_report_creation import CONNECTION_STRING, get_advice_on_logs
+< from delete_log_analyzer_data import (
+---
+> from agents.app_utils.json_dumps_manager import safe_json_dumps
+> from agents.app_utils.logs_advice_report_creation import CONNECTION_STRING, get_advice_on_logs
+> from agents.app_utils.delete_log_analyzer_data import (
+12,14c13,21
+< from log_copier import copy_logs
+< import call_llm, prompt_creation, beautiful_graph_output, chunk_store_analyze_logs
+< from prompts import tool_notifier_agent_prompt
+---
+> from agents.app_utils.log_copier import copy_logs
+> from agents.app_utils import (
+>   call_llm,
+>   prompt_creation,
+>   beautiful_graph_output,
+>   chunk_store_analyze_logs,
+> )
+> # Prompts
+> from agents.prompts.prompts import tool_notifier_agent_prompt
+16c23
+< from tools import (
+---
+> from agents.tools.tools import (
+21c28
+< from llms import (
+---
+> from agents.llms.llms import (
+36,38d42
+< # from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+< from pathlib import Path
+< BASE_DIR = Path(__file__).resolve().parent.parent
+42,46c46,47
+< # load_dotenv(dotenv_path='.env', override=False)
+< # load_dotenv(dotenv_path=".vars.env", override=True)
+< # load env vars
+< load_dotenv(dotenv_path='../.env', override=False)
+< load_dotenv(dotenv_path="../.vars.env", override=True)
+---
+> load_dotenv(dotenv_path='.env', override=False)
+> load_dotenv(dotenv_path=".vars.env", override=True)
+47a49,50
+> # log folder from agents
+> LOG_AGENT_REPORTS_FOLDER = os.path.join(settings.BASE_DIR, 'log_agent_reports')
+83,85d85
+<   #django_logs_folder = os.getenv("DJANGO_LOGS_FOLDER_NAME")
+<   #rust_logs_folder = os.getenv("RUST_LOGS_FOLDER_NAME")
+<   # check that logs folder exist and that those env vars are set
+99,101d98
+<       if "error" in copy_logs_job_result:
+<         propagate_error = copy_logs_job_result["error"]
+<         return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to copy log file {e}. origine error propagated: {propagate_error}"})}]} 
+127d123
+<   print("logs_file_names: ", logs_file_names)
+134d129
+<     print("chunk_store_analyze_logs: ", chunk_store_analyze_logs)
+137c132
+<     return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to chunk and store logs: {e}"})}]}
+---
+>     return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to chunk and store logs: {e}"})}]}
+144c139
+<   print("chunk and store logs (conditional edge) last message: ", last_message, type(last_message))
+---
+> 
+151,153c146,153
+<     messages = state['messages']
+<     last_message = messages[-1].content
+< 
+---
+>   messages = state['messages']
+>   # contains success message
+>   last_message = messages[-1].content
+>   if "success" in json.dumps(last_message):
+>     # get the chunk from database and call llm to get advice on it
+>     # make a report on the fly for the error in a special `agents_logs_report` folder
+>     flags = json.laods(os.getenv("FLAGS")) # list of log levels
+>     # We get advice and report made, the for loop on the `FLAGS` will be done there
+155,180c155,161
+<         parsed_message = json.loads(last_message)
+<         print("Parsed last_message: ", parsed_message)
+<     except json.JSONDecodeError as e:
+<         print(f"Error parsing last_message: {e}")
+<         return {"messages": [{"role": "ai", "content": json.dumps({"error": "Invalid JSON in last_message"})}]}
+< 
+<     if "success" in parsed_message:
+<         flags = json.loads(os.getenv("FLAGS"))
+<         print("Flags: ", flags)
+< 
+<         try:
+<             advice_log_report_response = get_advice_on_logs(flags)
+<             print("Advice Log Report Response: ", advice_log_report_response)
+< 
+<             if "error" in advice_log_report_response:
+<                 return {"messages": [{"role": "ai", "content": json.dumps({"error": advice_log_report_response['error']})}]}
+< 
+<             return {"messages": [{"role": "ai", "content": json.dumps({"success": advice_log_report_response['success']})}]}
+< 
+<         except Exception as e:
+<             print(f"Error in advice_agent_report_creator: {e}")
+<             return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occurred: {e}"})}]}
+< 
+<     return {"messages": [{"role": "ai", "content": json.dumps({"error": "Unexpected last_message content"})}]}
+< 
+< 
+---
+>       # should return a dict with `success` or `error`
+>       advice_log_report_response = get_advice_on_logs(flags)
+>       if "error" in advice_log_report_response:
+>         return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to get advice log report: {advice_log_report_response['error']}"})}]}
+>       return  {"messages": [{"role": "ai", "content": json.dumps({"success": f"Successfully created log reports: {advice_log_report_response['success']}"})}]}
+>     except Exception as e:
+>       return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to produce advice report on logs: {e}"})}]}
+192d172
+< # NODE
+194,201c174,177
+<   messages = state['messages']
+<   last_message = messages[-1].content
+< 
+<   # Generate a query
+<   query = prompt_creation.prompt_creation(tool_notifier_agent_prompt["human"], user_initial_query="I need to send logs issues notifications to Discord for the Devops security team")
+<   print("QUERY: ", query)
+< 
+<   try:
+---
+>     messages = state['messages']
+>     last_message = messages[-1].content
+>     # print("messages from call_model func: ", messages)
+>     query = prompt_creation(tool_notifier_agent_prompt["human"], folder_name_parameter=LOG_AGENT_REPORTS_FOLDER)
+203,206d178
+<     print("LLM with tool choice response: ", response)
+<     return {"messages": [response]}
+<   except Exception as e:
+<     return {"messages": [{"role": "tool", "content": json.dumps({"error": f"An error occurred: {e}"})}]}
+207a180
+>     return {"messages": [response]}
+210d182
+< 
+212,215c184,186
+<     messages = state['messages']
+<     print("Messages coming from discord sent notification agent: ", messages, type(messages))
+<     last_message = messages[-1].content
+<     print("Last message content (discord notification conditional edge): ", last_message)
+---
+>   messages = state['messages']
+>   # should be 'success' or 'error'
+>   last_message = json.loads(messages[-1].content)
+217,228c188,190
+<     try:
+<         # returns: {'messages': [{'role': 'ai', 'content': '{"success": {"success": "All logs have been transmitted to DeviOps/Security team."}}'}]}
+<         # so json.loads is done once in the full message and inside on the `.content` to be able to access `success`
+<         last_message_data = json.loads(json.loads(last_message)['messages'][-1]['content'])
+<         # Parse the content
+<         print("json load last message (discord notification conditional edge): ", last_message_data)
+<         if 'success' in last_message_data:
+<             return "temporary_log_files_cleaner"
+<         return "error_handler"
+<     except json.JSONDecodeError as e:
+<         print(f"Error decoding JSON: {e}")
+<         return "error_handler"
+---
+>   if 'success' in last_message:
+>     return "temporary_log_files_cleaner"
+>   return "error_handler"
+243,244c205
+<     copy_log_destination_folder = os.getenv("COPY_LOGS_DESTINATION_FOLDER")
+<     delete_initialy_copied_log_result = delete_all_files_in_dir(os.path.join(BASE_DIR, copy_log_destination_folder))
+---
+>     delete_initialy_copied_log_result = delete_all_files_in_dir()
+257c218
+<   with open(os.path.join(BASE_DIR, 'log_agent_reports', 'logs_analyzer_agent_graph.log'), "a", encoding="utf-8") as conditional:
+---
+>   with open(os.path.join(settings.BASE_DIR, 'log_agent_reports', 'logs_analyzer_agent_graph.log'), "a", encoding="utf-8") as conditional:
+265c226
+< def temporary_log_files_cleaner_success_or_error(state: MessagesState):
+---
+> def temporary_log_files_cleaner_success_or_error(state: MessagesSate):
+353c314
+<   with open(os.path.join(BASE_DIR, 'logs_agent_team.png'), "wb") as f:
+---
+>   with open(os.path.join(settings.BASE_DIR, 'log_agent_reports', 'logs_agent_team.png'), "wb") as f:
+373a335
+> """
+377,378c339,340
+<   logs_agent_team(os.path.join(BASE_DIR, "logs"))
+< 
+---
+>   logs_agent_team(user_query)
+> """

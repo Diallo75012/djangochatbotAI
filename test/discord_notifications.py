@@ -1,4 +1,5 @@
 import os
+import json
 from dotenv import load_dotenv
 from discord_webhook import DiscordWebhook
 # from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here

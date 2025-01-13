@@ -1,3 +1,0 @@
-{"time": "2024-12-28 26:29:25,470", "level": "CRITICAL", "name": "httpx", "message": "critic retrieval_graph_logs", "user_id": "anonymous"}
-{"time": "2024-12-28 26:29:25,551", "level": "ERROR", "name": "httpx", "message": "err retrieval_graph_logs", "user_id": "anonymous"}
-{"time": "2024-12-28 26:29:25,553", "level": "WARNING", "name": "httpx", "message": "warn retrieval_graph_logs", "user_id": "anonymous"}

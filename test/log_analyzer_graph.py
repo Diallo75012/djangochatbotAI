@@ -95,7 +95,8 @@ def copy_log_files(state: MessagesState):
         count_no_log_file_in_folder_tracker += 1
       elif "error" in copy_logs_job_result:
         return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to copy log file: {['error']}"})}]} 
-    except Exception as e:
+
+   except Exception as e:
       if "error" in copy_logs_job_result:
         propagate_error = copy_logs_job_result["error"]
         return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to copy log file {e}. origine error propagated: {propagate_error}"})}]} 
@@ -210,11 +211,16 @@ def tool_notifier_agent(state: MessagesState):
 
 def discord_notification_flow_success_or_error(state: MessagesState):
     messages = state['messages']
+    print("Messages coming from discord sent notification agent: ", messages, type(messages))
     last_message = messages[-1].content
-    print("Last message content: ", last_message)
+    print("Last message content (discord notification conditional edge): ", last_message)
 
     try:
-        last_message_data = json.loads(last_message)  # Parse the content
+        # returns: {'messages': [{'role': 'ai', 'content': '{"success": {"success": "All logs have been transmitted to DeviOps/Security team."}}'}]}
+        # so json.loads is done once in the full message and inside on the `.content` to be able to access `success`
+        last_message_data = json.loads(json.loads(last_message)['messages'][-1]['content'])
+        # Parse the content
+        print("json load last message (discord notification conditional edge): ", last_message_data)
         if 'success' in last_message_data:
             return "temporary_log_files_cleaner"
         return "error_handler"
