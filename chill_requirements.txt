@@ -21,6 +21,7 @@ psycopg2==2.9.10
 psycopg2-binary==2.9.10
 pygraphviz==1.14
 pytest-django==4.9.0
+python-crontab==3.2.0
 python-memcached==1.62
 rust-lib==0.1.0
 tiktoken==0.8.0

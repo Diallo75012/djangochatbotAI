@@ -1929,6 +1929,20 @@ sudo chmod +x setup_cronjob.sh
 
 ```
 
+# to update cronjob time:
+```bash
+crontab -e
+# then select vim or nano and update time
+10 19 * * *   fo rme to see it running now and test it which is 19:10
+# to delete cronjob
+crontab -r
+# to list available cronjobs
+crontab -e
+# where is cron file located
+sudo cat  /var/spool/cron/crontabs/<user>
+```
+
+
 # curl command to test Discord webhook
 curl -X POST -H "Content-Type: application/json" \
 -d '{"content": "Hello, Discord! This is a test message from curl."}' \
