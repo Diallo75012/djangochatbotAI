@@ -13,4 +13,5 @@ urlpatterns = [
   path('chatbotsettings/', include('chatbotsettings.urls')),
   path('clientchat/', include('clientchat.urls')),
   path('agents/', include('agents.urls')),
+  path('common/', include('common.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

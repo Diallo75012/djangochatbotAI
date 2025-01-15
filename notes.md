@@ -1976,7 +1976,13 @@ Now that the graph works fine and environment variables are set, just need to mo
 Therefore, we will put the graph in a folder at the root directory of the project. where the cronjob will be able to action it from. all folders path are set properly already but still need to change the one that copies the log files. to be next to the graph log analyzer. so, set this up and then start coding the bash script
 
 
-
+# Decisions for the agent graph flow and how it would be trigggered
+I wanted to use cronjob but actually, I have decided to have a full django workflow for that and not a cronjob, 
+The admin would login and go to a specific path which will be hosted by the`common` app.
+Then it will render a html page with a button asking to start log analysis by agent team.
+Then the html page would render the result while in parallele the agent team would send log files chunks to the discord server for those Devops/Security team emmber having there an acces to it.
+Also this is decided as later on prometheus will be plugged in to handle logs and this is an extra using AI agents that would be triggered by Devops/Security team to get report in Discord. And when the process starts it runs by itself even if user logs out as I will subprocess and the agent is running not dependent of `settings.py`.
+I will see if I can make it `asynchronous` and also havea table in database that would write the outcome and date of launch and who launch the agents team. So that when Devops/Security team logs in again the webUI for that special route would show the database history of a certain number of lastes row of the db table.
 
 
 
