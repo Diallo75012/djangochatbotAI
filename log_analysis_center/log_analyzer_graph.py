@@ -33,17 +33,18 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph, MessagesState
 # env vars
 from dotenv import load_dotenv, set_key
-# from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+#from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+#BASE_DIR = settings.BASE_DIR
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# load env vars
-# load_dotenv(dotenv_path='.env', override=False)
-# load_dotenv(dotenv_path=".vars.env", override=True)
+
 # load env vars
 load_dotenv(dotenv_path='../.env', override=False)
 load_dotenv(dotenv_path="../.vars.env", override=True)
+#load_dotenv(dotenv_path='.env', override=False)
+#load_dotenv(dotenv_path=".vars.env", override=True)
 
 
 # Helper functions
@@ -84,7 +85,9 @@ def copy_log_files(state: MessagesState):
   #rust_logs_folder = os.getenv("RUST_LOGS_FOLDER_NAME")
   # check that logs folder exist and that those env vars are set
   django_and_rust_logs_fodler_names = [os.getenv("DJANGO_LOGS_FOLDER_NAME"), os.getenv("RUST_LOGS_FOLDER_NAME")]
+  print("django and rust log folders: ", django_and_rust_logs_fodler_names)
   for log_folder_name in  django_and_rust_logs_fodler_names:
+    print("Log folder name: ", log_folder_name)
     try:
       copy_logs_job_result = copy_logs(log_folder_name)
       if "success" in copy_logs_job_result:
@@ -94,13 +97,13 @@ def copy_log_files(state: MessagesState):
       elif "nothing" in copy_logs_job_result:
         count_no_log_file_in_folder_tracker += 1
       elif "error" in copy_logs_job_result:
-        return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to copy log file: {['error']}"})}]} 
+        return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An error occured while trying to copy log file: {copy_logs_job_result}"})}]}
 
     except Exception as e:
       if "error" in copy_logs_job_result:
         propagate_error = copy_logs_job_result["error"]
         return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to copy log file {e}. origine error propagated: {propagate_error}"})}]} 
-      return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to copy log file {e}"})}]} 
+      return {"messages": [{"role": "ai", "content": json.dumps({"error": f"An exception occured while trying to copy log file {e}"})}]}
 
   # here we check as we can have also issue with log folder empty
   if len(count_no_log_file_in_folder_tracker) == len(django_and_rust_logs_fodler_names):

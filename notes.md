@@ -1954,7 +1954,7 @@ curl -X POST -H "Content-Type: application/json" \
 - [x] have already added dummy data is logs files and will use that to verify that the data expected to have on `discord` is the same
 - [x] Have already tested the discord webhook using curl command and it works so if agent is not hallucinating while using the tool it should work
 - [x] run the full graph successfully
-- [] have to test the cronjob after having ran successfully the full graph to see if it launches the job and works fine (no permission errors for example)
+- [x] have to test the cronjob after having ran successfully the full graph to see if it launches the job and works fine (no permission errors for example)
 - [] add logging to common app utility functions
 - [] run the django server with gunicorn until it works fine and then use the application and see if all works fine at minimum
 - [] setup nginx after gunicorn works
@@ -1984,11 +1984,29 @@ Then the html page would render the result while in parallele the agent team wou
 Also this is decided as later on prometheus will be plugged in to handle logs and this is an extra using AI agents that would be triggered by Devops/Security team to get report in Discord. And when the process starts it runs by itself even if user logs out as I will subprocess and the agent is running not dependent of `settings.py`.
 I will see if I can make it `asynchronous` and also havea table in database that would write the outcome and date of launch and who launch the agents team. So that when Devops/Security team logs in again the webUI for that special route would show the database history of a certain number of lastes row of the db table.
 
+### Logging Agent Now Works Fine 
+With the implementation of Django view special for super_user to start the agent team we get the webui returning the status `error/success/running` 
+depending on the where the task is at and if it fails or not thanks to the database record of those and the sdtout and stderr recorded to db.
+This permits to have a table showing history of how many runs have been done and how long it took and who started those runs.
+The agent is sending notification to discord on success with the advice on each log lines. And in the code there is a sleep time of `0.7` seconds to not get rate limited.
+But here we could also implement a full local llm solution like `LMStudio` or `Ollama`
 
+- for the asynchronous run ofit, we are not going to it now to passto next task and keep going and not add complexity.
+But having talked with ChatGPT-4o, I got recommendation to run `Celery` queues and maybe use `Redis`. It is good idea but not now yet.
+**GPT-4o Recommendation**
+```markdown
+- Recommendation
+  If the current solution meets your needs for performance and scale, you can leave it as-is for now. However, consider this a temporary solution and plan for the following:
 
+  - Load Testing:
+    Simulate high usage and larger log datasets to see if the subprocess-based approach holds up under load.
+  - Future-Proofing:
+    As your project grows, plan to migrate to a task queue like Celery for better scalability, fault tolerance, and distributed execution.
+  - Code Readiness:
+    Design the code so the transition to Celery or another task queue would be smooth. For example, encapsulate the log analysis logic in a separate module or function.
+```
 
-
-
+**might need to implement a cronjob still that would delete all logs files for rotation as django rotate those files but create more files actually. so the past ones need to be deleted.**
 
 
 

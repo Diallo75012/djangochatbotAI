@@ -22,13 +22,16 @@ from llms import (
 )
 from discord_notifications import send_agent_log_report_to_discord
 from dotenv import load_dotenv
-# from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+#from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+#BASE_DIR = settings.BASE_DIR
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 # load env vars
 load_dotenv(dotenv_path='../.env', override=False)
 load_dotenv(dotenv_path="../.vars.env", override=True)
+#load_dotenv(dotenv_path='.env', override=False)
+#load_dotenv(dotenv_path=".vars.env", override=True)
 
 
 # TOOLS

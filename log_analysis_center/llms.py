@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 
 # load env vars
 load_dotenv(dotenv_path='../.env', override=False)
+#load_dotenv(dotenv_path='.env', override=False)
+
 
 # GROQ_TEMPERATURE_CREATIVE exist and is at 0.8
 # LLMs

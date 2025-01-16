@@ -3,12 +3,16 @@ import json
 import psycopg
 from typing import List, Dict, Any
 from dotenv import load_dotenv
-from pathlib import Path
+#from django.conf import settings # this used when in django runtime
+#BASE_DIR = settings.BASE_DIR
+from pathlib import Path # this used when running graph as standalone
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 load_dotenv(dotenv_path='../.env', override=False)
-load_dotenv(dotenv_path='../vars.env', override=True)
+load_dotenv(dotenv_path="../.vars.env", override=True)
+#load_dotenv(dotenv_path='.env', override=False)
+#load_dotenv(dotenv_path=".vars.env", override=True)
 
 # db connection vars
 driver=os.getenv("DRIVER") # not psycopg2 as now it required psycopg3 (we install both: pip install psycopg2 psycopg)

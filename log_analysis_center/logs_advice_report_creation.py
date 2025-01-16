@@ -16,13 +16,16 @@ from llms import (
   groq_llm_llama3_70b_versatile,
   groq_llm_gemma_7b,
 )
-# from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+#from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+#BASE_DIR = settings.BASE_DIR
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 load_dotenv(dotenv_path='../.env', override=False)
 load_dotenv(dotenv_path="../.vars.env", override=True)
+#load_dotenv(dotenv_path='.env', override=False)
+#load_dotenv(dotenv_path=".vars.env", override=True)
 
 # db connection vars
 driver=os.getenv("DRIVER") # not psycopg2 as now it required psycopg3 (we install both: pip install psycopg2 psycopg)

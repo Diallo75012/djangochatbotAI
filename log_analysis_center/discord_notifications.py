@@ -2,14 +2,17 @@ import os
 import json
 from dotenv import load_dotenv
 from discord_webhook import DiscordWebhook
-# from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
-from pathlib import Path
+#from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+#BASE_DIR = settings.BASE_DIR
+from pathlib import Path # this to be used when running as standalone
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # load env vars
 load_dotenv(dotenv_path='../.env', override=False)
 load_dotenv(dotenv_path="../.vars.env", override=True)
+#load_dotenv(dotenv_path='.env', override=False)
+#load_dotenv(dotenv_path=".vars.env", override=True)
 
 DISCORD_WEBHOOK_ID = os.getenv("DISCORD_WEBHOOK_ID")
 DISCORD_WEBHOOK_TOKEN = os.getenv("DISCORD_WEBHOOK_TOKEN")

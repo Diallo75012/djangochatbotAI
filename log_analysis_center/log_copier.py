@@ -1,15 +1,25 @@
 import os
 import json
 from typing import Dict
-# from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+from dotenv import load_dotenv
+#from django.conf import settings # can't import from setting or set env var to do that while running standalone script so we just build the BASE_DIR from here
+#BASE_DIR = settings.BASE_DIR
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# load env vars
+load_dotenv(dotenv_path='../.env', override=False)
+load_dotenv(dotenv_path="../.vars.env", override=True)
+#load_dotenv(dotenv_path='.env', override=False)
+#load_dotenv(dotenv_path=".vars.env", override=True)
 
 
 def copy_logs(folder_name: str) -> Dict[str,str]:
   """
     Copies logs from origin folder to log anamyzer agent workspace folder
   """
+  print("BASE DIR from copy_log: ", BASE_DIR)
+  print("folder_name: ", folder_name)
 
   # get all the logs files
   log_file_list = [log_file for log_file in os.listdir(os.path.join(BASE_DIR, folder_name))] or ["nothing"]

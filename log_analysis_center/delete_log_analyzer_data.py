@@ -6,9 +6,6 @@ from dotenv import load_dotenv
 from logs_advice_report_creation import CONNECTION_STRING
 
 
-load_dotenv(dotenv_path='../.env', override=False)
-load_dotenv(dotenv_path="../.vars.env", override=True)
-
 def delete_flagged_log_from_db_table(connection: str = CONNECTION_STRING) -> Dict[str, str]:
   '''
     empty/delete database table `LogAnalyzer` ready for next job

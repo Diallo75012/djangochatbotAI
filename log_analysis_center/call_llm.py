@@ -33,6 +33,8 @@ from dotenv import load_dotenv, set_key
 # load env vars
 load_dotenv(dotenv_path='../.env', override=False)
 load_dotenv(dotenv_path="../.vars.env", override=True)
+#load_dotenv(dotenv_path='.env', override=False)
+#load_dotenv(dotenv_path=".vars.env", override=True)
 
 # creation of prompts
 def prompt_creation(target_prompt_human_system_or_ai: Dict[str, Any], **kwargs: Any) -> str: #-> PromptTemplate:
