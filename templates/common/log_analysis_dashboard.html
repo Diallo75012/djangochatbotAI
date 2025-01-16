@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Log Analysis Dashboard{% endblock %}
+
+{% block content %}
+<div class="container table-container">
+    <h1 class="text-center">Log Analysis Dashboard</h1>
+
+    <!-- Notification about log analysis -->
+    <div class="alert alert-info text-center mt-3" role="alert">
+        <p>
+            Press the "Start Log Analysis" button below to initiate the log analyzer process.
+            Notifications will be sent to Discord, and you can log out while the process runs.
+        </p>
+    </div>
+
+    <!-- Start Log Analysis Button -->
+    <div class="d-flex justify-content-end mb-3">
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-add">
+                <i class="fas fa-play"></i> Start Log Analysis
+            </button>
+        </form>
+    </div>
+
+    <!-- Log Analysis Records Table -->
+    <div class="table-wrapper">
+        <h2 class="text-center">Recent Log Analysis Records</h2>
+        <table class="table table-bordered table-hover table-dark">
+            <thead class="thead-light">
+                <tr>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Status</th>
+                    <th>Output</th>
+                    <th>Triggered By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                    <tr>
+                        <td>{{ task.start_time|date:"Y-m-d H:i:s" }}</td>
+                        <td>{{ task.end_time|date:"Y-m-d H:i:s" }}</td>
+                        <td class="{% if task.status == 'Success' %}text-success{% elif task.status == 'Error' %}text-danger{% else %}text-warning{% endif %}">
+                            {{ task.status }}
+                        </td>
+                        <td>
+                            <pre style="white-space: pre-wrap;">{{ task.output }}</pre>
+                        </td>
+                        <td>{{ task.user.username }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No log analysis records available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

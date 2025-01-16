@@ -46,10 +46,10 @@ def addBusinessData(request):
       # here we save to database
       business_data = form.save(commit=False)
       business_data.user = request.user
-      
+
       businessdata_app_logger.info(f"Business user: {request.user}")
       print("Business user: ", request.user)
-      
+
       business_data.save()
       messages.success(
         request,

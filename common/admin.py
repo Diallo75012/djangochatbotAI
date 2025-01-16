@@ -1,3 +1,5 @@
 from django.contrib import admin
+from common.models import LogAnalysisTask
 
-# Register your models here.
+
+admin.site.register(LogAnalysisTask)

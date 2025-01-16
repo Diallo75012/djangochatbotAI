@@ -767,3 +767,19 @@ form {
 body.container .mt-4 {
   width: 100%;
 }
+
+/* CSS FOR LOG ANALYZER TEMPLATE DASHBOARD */
+.badge-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.badge-error {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.badge-running {
+    background-color: var(--primary-color);
+    color: white;
+}

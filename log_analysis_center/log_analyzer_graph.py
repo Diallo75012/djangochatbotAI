@@ -256,7 +256,7 @@ def error_handler(state: MessagesState):
   messages = state['messages']
 
   # Log the graph errors in a file
-  with open(os.path.join(BASE_DIR, os.getenv("LOG_AGENT_REPORT_FOLDER"), 'logs_analyzer_agent_graph.log'), "a", encoding="utf-8") as conditional:
+  with open(os.path.join(BASE_DIR, os.getenv("LOG_AGENT_REPORTS_FOLDER"), 'logs_analyzer_agent_graph.log'), "a", encoding="utf-8") as conditional:
       json_error_message = messages[-1].content
       conditional.write(f"\n\n{json_error_message}\n\n")
   print(f"Error Handler: ", messages[-1].content)

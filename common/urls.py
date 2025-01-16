@@ -5,5 +5,5 @@ from . import views
 app_name = 'common'
 
 urlpatterns = [
-    path('runloaganalyzer', views.runLogAnalyzer, name='runloganalyzer'),
+    path('runloganalyzer', views.runLogAnalyzer, name='runloganalyzer'),
 ]

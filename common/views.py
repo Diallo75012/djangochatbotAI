@@ -1,80 +1,100 @@
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.conf import settings
+from django.utils.timezone import now
+from django.contrib import messages
 import subprocess
 import os
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib import messages
+from common.record_to_db import db_recorder
+from common.models import LogAnalysisTask
 from dotenv import load_dotenv
-# load env vars
+
+
+# Load environment variables
 load_dotenv(dotenv_path='.env', override=False)
-load_dotenv(dotenv_path=".vars.env", override=True)
+load_dotenv(dotenv_path='.vars.env', override=True)
 
-
-
-# function for decorator check if user is in the `admin` group of users
-# `is_superuser` is a flag and `is_staff` as well and don't need import to check
-# if needed a group. this need to be created by admin in webUI or programmatically
-def is_admin_user(user):
-  return user.is_superuser
-
-# send user to business user login as admin is also a business user
-'''
-  Maybe here could create a `users:loginadminuser` new path and view function just for admin tasks.
-  Need also to create proper html page rendered for admin to see what is going on or just the result
-  Need also to create a database table using models.py but after using just `psycopg3` connection to write
-  to bd the outcome of the AI agent launch, who started it, when.
-  And when Devops/Security team login they would see the latest rows (a certain number of row only) of past reports.
-  So can just login, launch it and come back later, or just check the Discord to see report files from Agent.
-'''
-# get root project folder path
-base_dir = setting.BASE_DIR
-log_agent_graph_file_name = os.getenv("LOG_AGENT_GRAPH_FILE_NAME")
-log_analysis_center = os.getnev("LOG_ANALYSIS_CENTER")
-python_binary_env_path = os.getnev("PYTHON_BINARY_ENV_PATH")
+# Environment configurations
+base_dir = settings.BASE_DIR
 log_analyzer_folder = os.getenv("LOG_AGENT_ANALYZER_FOLDER")
-log_job_output_file = os.getenv("LOG_JOB_OUTPUT_FILE")
-job_output_write_file = os.path.join(base_dir, log_analyzer_folder, log_job_output_file)
+log_analyzer_file = os.getenv("LOG_AGENT_GRAPH_FILE_NAME")
+python_binary_env_path = os.getenv("PYTHON_BINARY_ENV_PATH")
+job_output_file = os.getenv("LOG_JOB_OUTPUT_FILE")
+
+script_path = os.path.join(base_dir, log_analyzer_folder, log_analyzer_file)
+python_path = os.path.join(base_dir, python_binary_env_path)
+job_output_path = os.path.join(base_dir, log_analyzer_folder, job_output_file)
+
+
+# Function to check if the user is an admin
+def is_admin_user(user):
+    return user.is_superuser
+
 
 @login_required(login_url='users:loginbusinessuser')
 @user_passes_test(is_admin_user, login_url='users:loginbusinessuser')
 def runLogAnalyzer(request):
-    try:
-        # Set the path to your Python script
-        script_path = os.path.join(
-            os.path.dirname(
-                base_dir, 
-                log_analyzer_folder,
-                log_agent_graph_file_name
+    """
+    Handles GET and POST requests for the log analysis dashboard.
+    """
+    if request.method == "POST":
+        # Create an initial log entry in the database
+        task = LogAnalysisTask.objects.create(user=request.user, status="Running")
+
+        # Run the Python log analyzer script
+        try:
+            process = subprocess.run(
+                [python_path, script_path],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
             )
 
-        # path of python binary in python virt env
-        python_binary = os.path.join(base_dir, python_binary_env_path)
+            # Capture stdout and stderr
+            stdout = process.stdout
+            stderr = process.stderr
 
-        # Run the Python script using subprocess
-        process = subprocess.run(
-            [python_binary, script_path],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
+            # Determine task status and output
+            if process.returncode == 0:
+                task.status = "Success"
+                task.output = stdout
+            else:
+                task.status = "Error"
+                task.output = stderr
 
-        # Capture output and errors
-        stdout = process.stdout
-        stderr = process.stderr
+            # Save task completion time and update the database
+            task.end_time = now()
+            task.save()
 
-        if process.returncode == 0:
-            # write to the job output file the stdout
-            with open(job_output_write_file, "a", encoding="utf-8") as job_output_file:
-                job_output_file.write(f"Success stdout: {stdout}")
-            return JsonResponse({"status": "success", "stdout": stdout})
-        else:
-            with open(job_output_write_file, "a", encoding="utf-8") as job_output_file:
-                job_output_file.write(f"Error stderr: {stderr}")
-            return JsonResponse({"status": "error", "stderr": stderr})
+            # Record task details to the database
+            record_query = """
+                INSERT INTO common_loganalysistask (user_id, start_time, end_time, output, status)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            db_recorder(
+                record_query,
+                task.user.id,
+                task.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+                task.end_time.strftime("%Y-%m-%d %H:%M:%S"),
+                task.output or "",
+                task.status
+            )
 
-    except Exception as e:
-        with open(job_output_write_file, "a", encoding="utf-8") as job_output_file:
-            job_output_file.write(f"Exception stderr: {stderr}")
-        return JsonResponse({"status": "error", "message": str(e)})
+        except Exception as e:
+            # Handle any unexpected exceptions
+            task.status = "Error"
+            task.output = str(e)
+            task.end_time = now()
+            task.save()
+
+            with open(job_output_path, "a", encoding="utf-8") as log_file:
+                log_file.write(f"Error occurred: {e}\n")
+
+    # Retrieve the latest 10 tasks for the dashboard
+    tasks = LogAnalysisTask.objects.order_by("-start_time")[:10]
+
+    context = {
+        "tasks": tasks
+    }
+    return render(request, "common/log_analysis_dashboard.html", context)
 
