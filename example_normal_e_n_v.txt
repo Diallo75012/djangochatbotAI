@@ -1,3 +1,6 @@
+PROJECT_NAME="chatbotAI"
+
+
 # LM Studio
 #LM_OPENAI_API_KEY="no_need_api_key_for_lmstudio"
 #LM_OPENAI_MODEL_NAME="TheBloke/OpenHermes-2.5-Mistral-7B-GGUF/openhermes-2.5-mistral-7b.Q3_K_M.gguf"

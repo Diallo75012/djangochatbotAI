@@ -5,6 +5,7 @@ django-filter==24.3
 django-restframework==0.0.1
 djangorestframework==3.15.2
 duckduckgo-search==6.3.7
+gunicorn==23.0.0
 importlib-metadata==8.0.0
 jaraco.collections==5.1.0
 langchain-community==0.3.10

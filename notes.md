@@ -394,7 +394,7 @@ as the code is compile and used by Pyo# we can't see the `println!'s` instead we
 - [x] then implement retrieval when user sends a message (Use Rust and LangGraph)
 - then need to do all the unit tests (I want to cry! hihihihihiiii, ChatGPT Agent Will work with me to streamline this quicker/more productive)
 - [x] then make those agents to interact with user
-- then add logging in the codebase
+- [x] then add logging in the codebase
 - then create the other asynchrone workflow with agents analyzing logs
 - then create a report or email stream for Devops/SRE team to have reports on the app logs
 - then dockerrize the app
