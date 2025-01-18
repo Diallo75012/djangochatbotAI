@@ -151,7 +151,7 @@ def embedData(request, pk):
 
   # loop through the list
   for question, answer in business_document_question_answer.items():
-    agents_app_logger(f"quesiton_answer: {question, answer}")
+    agents_app_logger.info(f"quesiton_answer: {question, answer}")
     # print("quesiton_answer: ", question, answer)
     # format the document to be embedded using langchain `Document` on the fly and add to list of docs
     count += 1
@@ -169,7 +169,7 @@ def embedData(request, pk):
          "id": f"{doc_unique_id}-{count}",
       }
     )
-    agents_app_logger(f"Embedding document {count}... please wait...")
+    agents_app_logger.info(f"Embedding document {count}... please wait...")
     print(f"Doc {count}: {doc}")
     list_of_docs.append(doc)
 

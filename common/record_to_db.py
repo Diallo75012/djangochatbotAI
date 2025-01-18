@@ -1,10 +1,14 @@
 import os
 import json
+import logging
 import psycopg
 from typing import List, Dict, Any, Tuple
 from django.conf import settings
 from dotenv import load_dotenv
 
+
+# logger
+agents_app_logger = logging.getLogger('common')
 
 load_dotenv(dotenv_path='.env', override=False)
 load_dotenv(dotenv_path='vars.env', override=True)
@@ -16,8 +20,9 @@ port=int(os.getenv("DBPORT"))
 database=os.getenv("DBNAME")
 user=os.getenv("DBUSER")
 password=os.getenv("DBPASSWORD")
-CONNECTION_STRING = f"postgresql+{driver}://{user}:{password}@{host}:{port}/{database}"
-
+# `psycopg.connect()` doesn't expect a `{driver}` line `SQLALquemy` would therefore we drop ot for this `psycopg3` like connection
+#CONNECTION_STRING = f"postgresql+{driver}://{user}:{password}@{host}:{port}/{database}"
+CONNECTION_STRING = f"postgresql://{user}:{password}@{host}:{port}/{database}"
 
 def db_recorder(record_query: str, *args: Tuple[str, ...], connection: str = CONNECTION_STRING) -> Dict:
   '''
@@ -34,6 +39,9 @@ def db_recorder(record_query: str, *args: Tuple[str, ...], connection: str = CON
           cur.execute(f"{record_query}",args)
 
       except BaseException:
+
+        agents_app_logger.error(f"Log Analyzer Agent creating cursor (db_recorder): Exception -> {e}")
+
         # rollback if issue
         conn.rollback()
       else:
@@ -44,4 +52,7 @@ def db_recorder(record_query: str, *args: Tuple[str, ...], connection: str = CON
         conn.close()
       return {"success": "data recorded"}
   except Exception as e:
+
+    agents_app_logger.error(f"Log Analyzer Agent storing record in db (db_recorder): Exception -> {e}")
+
     return {"error": f"An exception occured when recorded data to database: {e}"}

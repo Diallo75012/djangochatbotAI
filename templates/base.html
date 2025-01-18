@@ -31,9 +31,16 @@
     <nav class="nav">
       {% if user.is_authenticated %}
         {% if user|has_group:"business" %}
-          <a href="{% url 'businessdata:businessdatamanagement' %}">Home</a>
-          <a href="{% url 'chatbotsettings:chatbotsettingsmanagement' %}">Bot Settings</a>
-          <a href="{% url 'users:logoutbusinessuser' %}" >Logout</a>
+          {% if user.is_superuser %}
+            <a href="{% url 'businessdata:businessdatamanagement' %}">Home</a>
+            <a href="{% url 'chatbotsettings:chatbotsettingsmanagement' %}">Bot Settings</a>
+            <a href="{% url 'common:runloganalyzer' %}">Log Analysis Agent</a>
+            <a href="{% url 'users:logoutbusinessuser' %}" >Logout</a>
+          {% else %}
+            <a href="{% url 'businessdata:businessdatamanagement' %}">Home</a>
+            <a href="{% url 'chatbotsettings:chatbotsettingsmanagement' %}">Bot Settings</a>
+            <a href="{% url 'users:logoutbusinessuser' %}" >Logout</a>
+          {% endif %}
         {% elif user|has_group:"client" %}
           <a href="{% url 'clientchat:clientuserchat' %}">Home</a>
           <a href="{% url 'users:updateclientuser' %}">Update Details</a>

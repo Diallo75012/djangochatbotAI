@@ -1,14 +1,17 @@
+import logging
+import subprocess
+import os
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.conf import settings
 from django.utils.timezone import now
 from django.contrib import messages
-import subprocess
-import os
 from common.record_to_db import db_recorder
 from common.models import LogAnalysisTask
 from dotenv import load_dotenv
 
+# logger
+agents_app_logger = logging.getLogger('common')
 
 # Load environment variables
 load_dotenv(dotenv_path='.env', override=False)
@@ -40,6 +43,7 @@ def runLogAnalyzer(request):
     if request.method == "POST":
         # Create an initial log entry in the database
         task = LogAnalysisTask.objects.create(user=request.user, status="Running")
+        agents_app_logger.info("Log Analyzer Agent Status (runLogAnalyzer): Running")
 
         # Run the Python log analyzer script
         try:
@@ -58,9 +62,11 @@ def runLogAnalyzer(request):
             if process.returncode == 0:
                 task.status = "Success"
                 task.output = stdout
+                agents_app_logger.info("Log Analyzer Agent Status (runLogAnalyzer): Success")
             else:
                 task.status = "Error"
                 task.output = stderr
+                agents_app_logger.error("Log Analyzer Agent Status (runLogAnalyzer): Error")
 
             # Save task completion time and update the database
             task.end_time = now()
@@ -79,6 +85,7 @@ def runLogAnalyzer(request):
                 task.output or "",
                 task.status
             )
+            agents_app_logger.info("Log Analyzer Agent Query (runLogAnalyzer): recording to db")
 
         except Exception as e:
             # Handle any unexpected exceptions
@@ -86,6 +93,8 @@ def runLogAnalyzer(request):
             task.output = str(e)
             task.end_time = now()
             task.save()
+
+            agents_app_logger.error(f"Log Analyzer Agent Status (runLogAnalyzer): Exception -> {e}")
 
             with open(job_output_path, "a", encoding="utf-8") as log_file:
                 log_file.write(f"Error occurred: {e}\n")

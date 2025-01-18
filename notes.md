@@ -1955,7 +1955,7 @@ curl -X POST -H "Content-Type: application/json" \
 - [x] Have already tested the discord webhook using curl command and it works so if agent is not hallucinating while using the tool it should work
 - [x] run the full graph successfully
 - [x] have to test the cronjob after having ran successfully the full graph to see if it launches the job and works fine (no permission errors for example)
-- [] add logging to common app utility functions
+- [x] add logging to common app utility functions
 - [] run the django server with gunicorn until it works fine and then use the application and see if all works fine at minimum
 - [] setup nginx after gunicorn works
 - [] do unit tests even if we don't want to do those, lets cover some percentage of the application using GPT or Gemini or Bolt.new/ottodev ....

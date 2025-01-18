@@ -1,8 +1,12 @@
 import os
+import logging
 from dotenv import load_dotenv
 from discord_webhook import DiscordWebhook
 from django.conf import settings
 
+
+# logger
+agents_app_logger = logging.getLogger('common')
 
 # load env vars
 load_dotenv(dotenv_path='.env', override=False)
@@ -24,6 +28,9 @@ def send_file_to_discord(file_path):
   """
   webhook = DiscordWebhook(url=DISCORD_WEBHOOK_URL, content=f"📄 **Log Report Chunk**: {os.path.basename(file_path)}")
   try:
+
+    agents_app_logger.info("Log Analyzer Agent (send_file_to_discord): Trying to send file to Discord")
+
     with open(file_path, "rb") as file:
       # max file size is 8MB
       webhook.add_file(file=file.read(), filename=os.path.basename(file_path))
@@ -32,9 +39,15 @@ def send_file_to_discord(file_path):
 
     if response.status_code == 200:
       print(f"Chunk {os.path.basename(file_path)} sent successfully.")
+
+      agents_app_logger.info(f"Log Analyzer Agent (send_file_to_discord): Chunk {os.path.basename(file_path)} sent successfully.")
+
       return "success"
     else:
       print(f"Failed to send chunk {os.path.basename(file_path)}. HTTP Status Code: {response.status_code}")
+
+      agents_app_logger.error(f"Log Analyzer Agent Exception (send_file_to_discord): Failed to send chunk {os.path.basename(file_path)}. HTTP Status Code: {response.status_code}")
+
       print(response.content)
       raise Exception(f"failed: HTTP status code was {response.status_code}")
   except Exception as e:
@@ -63,8 +76,11 @@ def send_agent_log_report_to_discord(log_report_folder_path: str = LOG_AGENT_REP
 
     # Check if the file exists
     if not os.path.exists(log_file_path):
-      print(f"Error: The file '{log_file_path}' does not exist.")
-      return f"error: The file '{log_file_path}' does not exist."
+      print(f"Error: The file {log_file_path} does not exist.")
+
+      agents_app_logger.error(f"Log Analyzer Agent Error (send_agent_log_report_to_discord): The file {log_file_path} does not exist.")
+
+      return f"error: The file {log_file_path} does not exist."
 
     # Get the file size
     file_size = os.path.getsize(log_file_path)
@@ -73,7 +89,13 @@ def send_agent_log_report_to_discord(log_report_folder_path: str = LOG_AGENT_REP
       # Send the file as-is if it's under the limit
       try:
         send_file_to_discord(log_file_path)
+
+        agents_app_logger.info(f"Log Analyzer Agent (send_agent_log_report_to_discord): The file {log_file_path}")
+
       except Exception as e:
+
+        agents_app_logger.error(f"Log Analyzer Agent Exception (send_agent_log_report_to_discord): Exception while sending file in under MAX_FILE_SIZE -> {e}")
+
         return f"error occured while trying to get file transmission result: {e}"
     else:
       # Split and send the file in chunks
@@ -86,6 +108,9 @@ def send_agent_log_report_to_discord(log_report_folder_path: str = LOG_AGENT_REP
           # Read a chunk of MAX_FILE_SIZE bytes
           chunk = file.read(MAX_FILE_SIZE)
           if not chunk:
+            
+            agents_app_logger.info("Log Analyzer Agent Chunk File (send_agent_log_report_to_discord): No more Chunks for file")
+
             break
 
           # Create a temporary chunk file
@@ -96,13 +121,23 @@ def send_agent_log_report_to_discord(log_report_folder_path: str = LOG_AGENT_REP
             # Send the chunk to Discord
             print(f"Sending chunk {chunk_number}...")
             try:
+
+              agents_app_logger.info(f"Log Analyzer Agent (send_agent_log_report_to_discord): sending chunk {chunk_filename}")
+
               send_file_result = send_file_to_discord(chunk_filename)
 
               # Delete the temporary chunk file after sending
               os.remove(chunk_filename)
               chunk_number += 1
+
+              agents_app_logger.info(f"Log Analyzer Agent (send_agent_log_report_to_discord): deleting sent chunk {chunk_filename} - chunk number: {chunk_number}")
+
             except Exception as e:
+
+              agents_app_logger.error(f"Log Analyzer Agent Exception Sending Chunk (send_agent_log_report_to_discord): chunk {chunk_filename}")
+
               return f"error occured while trying to get file transmission result: {e}"
 
   print("All chunks have been sent successfully.")
+  agents_app_logger.info(f"Log Analyzer Agent (send_agent_log_report_to_discord): All chunks have been sent successfully.")
   return "success all logs have been transmitted to Devops/Security team"

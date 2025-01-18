@@ -1,4 +1,1 @@
-{"time": "2024-12-26 21:40:05,565", "level": "INFO", "name": "users", "message": "Username OR Password is incorrect", "user_id": "anonymous"}
-{"time": "2024-12-28 23:39:25,470", "level": "CRITICAL", "name": "httpx", "message": "critic user", "user_id": "anonymous"}
-{"time": "2024-12-28 23:39:25,551", "level": "ERROR", "name": "httpx", "message": "err user", "user_id": "anonymous"}
-{"time": "2024-12-28 23:39:25,553", "level": "WARNING", "name": "httpx", "message": "warn user", "user_id": "anonymous"}
+{"time": "2025-01-18 07:52:52,180", "level": "INFO", "name": "users", "message": "Username OR Password is incorrect", "user_id": "anonymous"}
