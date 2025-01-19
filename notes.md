@@ -2009,6 +2009,57 @@ But having talked with ChatGPT-4o, I got recommendation to run `Celery` queues a
 **might need to implement a cronjob still that would delete all logs files for rotation as django rotate those files but create more files actually. so the past ones need to be deleted.**
 
 
+# GUNICORN
+
+### To know how many core the system has:
+```bash
+nproc --all
+```
+
+### To know workers limit capacity
+```bash
+ulimit -u
+```
+If too low can update config file directly: `/etc/security/limits.conf` OR use `ulimit`
+
+### Formula used for `Gunicorn` Workers number setup
+```bash
+... --workers $((2 * $(nproc --all) + 1)) ...
+```
+By multiplying the number of CPU cores by 2, the formula accounts for a scenario where workers alternate between being active (CPU-bound) and waiting (I/O-bound).
+Adding +1 for Additional Capacity:
+The +1 ensures there is always one extra worker ready to handle a request when all other workers are busy.
+This is particularly useful in cases where there are occasional spikes in traffic, preventing the application from queuing requests unnecessarily. (Chatte J'ai Pipi)
+
+### How many workers for server running it all
+
+Yes, in fact not only `gunicorn` is running in the server so we need to make sure every process has enough processor/memory to work smoothly... like a smoothy!
 
 
+```bash
+eg.:
+Total CPU cores: 12 (from nproc --all).
+Reserved cores: 2 (for Nginx, Prometheus, and OS).
+Gunicorn workers:
 
+workers = ((12 - 2) * 2) + 1 = 21
+```
+**Calculation estimation of workers needed for `gunicorn` CPU based**
+`gunicorn` command would be to dynamically get that:
+```bash
+gunicorn --workers $((( $(nproc --all) - 2 ) * 2 + 1)) --bind unix:/path/to/gunicorn.sock <project>.wsgi:application
+`:w!```
+**Calculation estimation of worker needed for `gunicorn` MEmory based**
+```bash
+eg.:
+Available RAM: 16 GB.
+Reserved for other services: 4 GB.
+Available for Gunicorn: 12 GB.
+Memory per worker: 100 MB.
+Max workers by memory:
+
+workers = 12 GB / 100 MB = 120 workers
+```
+
+**Choose the smaller value between the CPU-based and memory-based calculations.**
+**Also do not create the `.sock` file otherwise you will get an error `...sock is not a socket`. Just let gunicorn create it where it has been confirgured in the congif servcie file**
