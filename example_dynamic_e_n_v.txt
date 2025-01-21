@@ -1,10 +1,26 @@
-# no default set in function
+# no default set in /unction
 SCORE055="0.55"
 SCORE063="0.63"
 # default set to 3 in function
 TOP_N=3
+# app log folder names
+RUST_LOGS_FOLDER_NAME="logs_rust"
+DJANGO_LOGS_FOLDER_NAME="logs"
 # log flags for logs analyzer AI agent
 FLAGS='["WARNING", "ERROR", "CRITICAL"]'
+# log report file name
+PYTHON_BINARY_ENV_PATH="venv/bin/python"
+LOG_AGENT_ANALYZER_FOLDER="log_analysis_center"
+COPY_LOGS_DESTINATION_FOLDER="log_analysis_center/logs_to_analyze"
+LOGS_REPORT_CRITICAL_FILE_NAME="critical_log_analyzer_advice_report.md"
+LOGS_REPORT_WARNING_FILE_NAME="warning_log_analyzer_advice_report.md"
+LOGS_REPORT_ERROR_FILE_NAME="error_log_analyzer_advice_report.md"
+LOG_JOB_OUTPUT_FILE="log_job_output.md"
+LOG_AGENT_GRAPH_FILE_NAME="log_analyzer_graph.py"
+LOG_ANALYZER_ADVICE_TO_SEND_DISCORD_FOLDER="log_agent_reports"
+LOG_AGENT_REPORTS_FOLDER="log_agent_reports"
+
+
 # this env var is needed for default value filling and will help create AI_PERSONALITY_TRAITS (with `S`)
 DEFAULT_AI_PERSONALITY_TRAIT='{"name": "Work Helper", "description": "Always polite helper for users.", "age": "42", "origin": "Japan", "dream": "Dreaming of going one day to Paris.", "tone": "happy joyful", "expertise": "Specialist of customer service.", "avatar":{"url": "/images/chatbot_dummy.png"}, "business_user": {"username": "None"}, "business_user_uuid": "None"}'
 #USER_INITIAL_QUERY="what is the biggest capital city in Asia?"

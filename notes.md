@@ -1495,7 +1495,7 @@ class UserIDFilter(logging.Filter):
 ```
 
     - in the code: just use it this way for the custom field `user_id` to be populated. Maybe need here to add hashing of the id before storing so it is really anonymized (or an algo that only Devops Security team can verse to identify user (Ban, notify, warn..etc..))
-   
+
 ```python
 logger = logging.getLogger('agents')
 logger.info("Something happened", extra={'user_id': request.user.id})
@@ -1956,8 +1956,8 @@ curl -X POST -H "Content-Type: application/json" \
 - [x] run the full graph successfully
 - [x] have to test the cronjob after having ran successfully the full graph to see if it launches the job and works fine (no permission errors for example)
 - [x] add logging to common app utility functions
-- [] run the django server with gunicorn until it works fine and then use the application and see if all works fine at minimum
-- [] setup nginx after gunicorn works
+- [x] run the django server with gunicorn until it works fine and then use the application and see if all works fine at minimum
+- [x] setup nginx after gunicorn works
 - [] do unit tests even if we don't want to do those, lets cover some percentage of the application using GPT or Gemini or Bolt.new/ottodev ....
 - [] check that the github action works fine
 - [] create container of app and also a docker-compose and see if it wokrs in local docker so that we can kubernetize it...
@@ -2062,4 +2062,112 @@ workers = 12 GB / 100 MB = 120 workers
 ```
 
 **Choose the smaller value between the CPU-based and memory-based calculations.**
-**Also do not create the `.sock` file otherwise you will get an error `...sock is not a socket`. Just let gunicorn create it where it has been confirgured in the congif servcie file**
+**Also do not create the `.sock` file otherwise you will get an error `...sock is not a socket`. Just let gunicorn create it where it has been confirgured in the config servcie file**
+
+**Start django server using gunicorn**
+- have the `gunicorn.service` file located at : `/etc/systemd/system/gunicorn.service`
+- then enable the service: `sudo systemctl daemon-reload && sudo systemctl enable gunicorn`
+- then start the servcie:  `sudo systemctl start gunicorn`
+- then if you change the config you need to reload and start service again: `sudo systemctl reload gunicorn && sudo systemctl start gunicorn`
+- `gunicorn.service` config file content (can use formula for numebr of workers here we just use 3):
+```bash
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=creditizens
+Group=creditizens
+WorkingDirectory=/home/creditizens/djangochatAI/chatbotAI
+ExecStart=/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/gunicorn --workers 3 --bind unix:/home/creditizens/djangochatAI/chatbotAI/gunicorn/gunicorn.sock chatbotAI.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+```
+- then start `Django` using `gunicorn`:
+gunicorn -b 0.0.0.0:8000 chatbotAI.wsgi:application
+
+
+# How to check from another server which ports are exposed from the server that we have setup
+
+### **Remotely**
+- nmap:
+```bash
+sudo apt update
+sudo apt install nmap
+# `-p` to scan the 65535 port (ALL) or adjust for port range
+nmap -p 1-65535 SERVER_IP
+# most common port scan only
+nmap  SERVER_IP
+```
+- telnet:
+```bash
+sudo apt update
+sudo apt install telnet
+# eg. fro port 80
+telnet SERVER_IP 80
+```
+- netcat
+```bash
+sudo apt update
+sudo apt install netcat
+# eg. for port 80 with option `-z`(no data sent), -v (verbose)
+netcat -zv SERVER_IP 80
+# eg. for mutiple ports
+nc -zv SERVER_IP 1-1000
+```
+- curl
+```bash
+curl -I http://SERVER_IP
+```
+
+### **From the server itself**
+```bash
+sudo ufw status
+sudo iptables -L -n -v
+```
+
+### Disable and reset ufw
+- get rid of all rule
+```bash
+sudo ufw disable
+sudo ufw reset
+sudo ufw reload
+sudo ufw status
+```
+
+### Nginx firewall rule setup
+- if `Nginx Full` available (but should be normally)`:
+  -  interactive mode (you provide password ont erminal:
+     sudo ufw allow "Nginx Full"
+  -  for headless script mode and using env var to pass in password use `S` flag
+     subprocess.run(
+       ["sudo", "-S", "ufw", "allow", "Nginx Full"],
+       # just have env var set to pass the password in `f-string`
+       input=f"{sudo_password}\n",
+       text=True,
+       check=True
+     )
+
+- if it is not available just set rules like that:
+```bash
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+```
+
+# Next
+Have setup a python script that will setup a full server. have tried all functions except the postgresql setup functions and th epython dependencies install one , so the first functions
+All of the rest works fine and have variabilized those, meaning that centralized .env file will be the point to set all path and names and so on.
+- Nginx setup almost still need to fix the static files rendering as runing `python3 manage.py collecstatic` does collec but nginx is not rendering the site properly... need to see if those need to be in a special folder as i use the project root directory from the user home at the moment. Need to check logs of `nginx` as maybe the user of nginx need permission on those.
+
+- Gunicorn setup OK!
+- [x] add logging to common app utility functions
+- [x] run the django server with gunicorn until it works fine and then use the application and see if all works fine at minimum
+- [x] setup nginx after gunicorn works
+- [] use the wsl part to test the postgresql setup functions and the python dependencies installl creating a virtual env that we are going to get rid of when it works and after come back here to validate that it works fine
+- [] fix nginx serving static files with correct permissions or copy those after a `collectstatic` to a folder where `nginx` or `www-data` user have permission.
+- [] do unit tests even if we don't want to do those, lets cover some percentage of the application using GPT or Gemini or Bolt.new/ottodev ....
+- [] check that the github action works fine
+- [] create container of app and also a docker-compose and see if it wokrs in local docker so that we can kubernetize it...
+- [] then use this app for any devops workflow that we want to do (push enhancement of app and have the ci/cd work by itself and do all necessary notifications (Dicord: the webhook stuff is simple and works fine so we will be using that)
+

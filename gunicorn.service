@@ -1,0 +1,23 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=creditizens
+Group=creditizens
+WorkingDirectory=/home/creditizens/djangochatAI/chatbotAI
+ExecStart=/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/gunicorn --workers 3 --bind unix:/home/creditizens/djangochatAI/chatbotAI/gunicorn/gunicorn.sock chatbotAI.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+
+USER="creditizens"
+GROUP="creditizens"
+PROJECT_DIR="/home/creditizens/djangochatAI/chatbotAI"
+# this one should be installed in the virtual env so be in requirements.txt
+GUNICORN_BINARY="/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/gunicorn"
+# the `gunicorn.sock` file will be created by `gunicorn` we just need to provide the path otherwise you get error
+SOCK_FILE_PATH="/home/creditizens/djangochatAI/chatbotAI/gunicorn"
+PROJECT_WSGI="chatbotAI.wsgi"
+# or a one line to be able to write to the file with correct line return and spacing
+#[Unit]\nDescription=gunicorn daemon\nAfter=network.target\n\n[Service]\nUser={USER}\nGroup={GROUP}\nWorkingDirectory={PROJECT_DIR}\nExecStart={GUNICORN_BINARY} --workers 3 --bind unix:{SOCK_FILE_PATH}/gunicorn.sock {PROJECT_WSGI}:application\n\n[Install]\nWantedBy=multi-user.target

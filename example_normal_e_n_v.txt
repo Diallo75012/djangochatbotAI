@@ -1,4 +1,24 @@
-PROJECT_NAME="chatbotAI"
+# DJANGO AI SERVER SETUP ENV VARS
+SSL_DIR="/etc/ssl/creditizens"
+USER="creditizens"
+GROUP="creditizens"
+PROJECT_DIR="/home/creditizens/djangochatAI/chatbotAI"
+# this one should be installed in the virtual env so be in requirements.txt
+GUNICORN_BINARY="/home/creditizens/djangochatAI/chatbotAI/venv/bin/gunicorn"
+# the `gunicorn.sock` file will be created by `gunicorn` we just need to provide the path otherwise you get error
+SOCK_FILE_PATH="/home/creditizens/djangochatAI/chatbotAI/gunicorn"
+PROJECT_WSGI="chatbotAI.wsgi"
+SUDO_PASSWORD="bonjour"
+NGINX_IMAGE="nginx:1.26.2"
+VIRTUAL_ENV_PATH_FROM_USER_HOME="djangochatAI/chatbotAI/venv"
+NGINX_LOGS_FOLDER_PATH="/home/creditizens/djangochatAI/chatbotAI/nginx_logs"
+GUNICORN_CENTRAL_DIR="/home/creditiznes/djangochatAI/chatbotAI/gunicorn"
+
+
+
+
+
+
 
 
 # LM Studio
