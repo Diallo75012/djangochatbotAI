@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import shutil
 import subprocess
 from dotenv import load_dotenv
 
@@ -30,141 +31,176 @@ VIRTUAL_ENV_PATH_FROM_USER_HOME = os.getenv("VIRTUAL_ENV_PATH_FROM_USER_HOME")
 NGINX_LOGS_FOLDER_PATH = os.getenv("NGINX_LOGS_FOLDER_PATH")
 
 # Functions
-'''
 def install_python_dependencies():
     print("Installing Python build dependencies...")
     subprocess.run(["sudo", "apt", "install", "-y", "build-essential", "python3.12-dev", "libpq-dev"], check=True)
     print("Python dependencies installed.")
 
+def install_postgresql():
+    POSTGRES_VERSION = os.getenv("POSTGRES_VERSION", "17")
+    print("Installing PostgreSQL...")
+
+    try:
+        # Add PostgreSQL APT repository
+        subprocess.run(
+            "sudo sh -c 'echo \"deb [arch=amd64] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main\" > /etc/apt/sources.list.d/pgdg.list'",
+            shell=True,
+            check=True
+        )
+
+        # Create the keyrings directory and add the PostgreSQL GPG key
+        subprocess.run(
+            "sudo mkdir -p /etc/apt/keyrings && sudo wget -qO /etc/apt/keyrings/postgresql.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc",
+            shell=True,
+            check=True
+        )
+
+        # Update package lists
+        subprocess.run(["sudo", "apt", "update", "-y"], check=True)
+
+        # Install PostgreSQL and contrib packages
+        subprocess.run(
+            ["sudo", "apt", "install", f"postgresql-{POSTGRES_VERSION}", "postgresql-contrib", "-y"],
+            check=True
+        )
+
+        # Install pgvector extension
+        subprocess.run(
+            ["sudo", "apt", "install", f"postgresql-{POSTGRES_VERSION}-pgvector", "-y"],
+            check=True
+        )
+
+        # Start PostgreSQL service
+        #subprocess.run(["sudo", "service", "postgresql", "start"], check=True)
+        # Start and enable PostgreSQL service
+        subprocess.run(["sudo", "systemctl", "start", "postgresql"], check=True)
+        subprocess.run(["sudo", "systemctl", "enable", "postgresql"], check=True) # `enable` to start on every reboot (Prod)
+
+        print("PostgreSQL and pgvector installed and started successfully.")
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error installing PostgreSQL: {e}")
+
+def configure_postgresql():
+
+
+    DB_NAME = os.getenv("DB_NAME")
+    DB_USER = os.getenv("DB_USER")
+    DB_PASSWORD = os.getenv("DB_PASSWORD")
+    POSTGRES_VERSION = os.getenv("POSTGRES_VERSION")
+
+    print("Configuring PostgreSQL...")
+
+    try:
+        # Step 1: Update pg_hba.conf to replace peer with md5
+        pg_hba_path = f"/etc/postgresql/{POSTGRES_VERSION}/main/pg_hba.conf"
+        update_pg_hba_command = f"""
+sudo sed -i -e '/^local\\s\\+all\\s\\+all\\s\\+peer/s/peer/md5/' \\
+            -e '/^host\\s\\+all\\s\\+all\\s\\+127.0.0.1\\/32\\s\\+peer/s/peer/md5/' \\
+            -e '/^host\\s\\+all\\s\\+all\\s\\+::1\\/128\\s\\+peer/s/peer/md5/' {pg_hba_path}
+"""
+        subprocess.run(update_pg_hba_command, shell=True, check=True)
+        print("pg_hba.conf updated for md5 authentication.")
+
+        # Restart PostgreSQL to apply changes
+        subprocess.run(["sudo", "systemctl", "restart", "postgresql"], check=True) # `systemctl` way
+        #subprocess.run(["sudo", "service", "postgresql", "restart"], check=True) # `service` way for `WSL2`
+        print("PostgreSQL service restarted successfully.")
+
+        # Create database, user, and enable pgvector extension
+        # Create the database if it doesn't exist
+        subprocess.run(
+            [
+                "sudo",
+                "-u",
+                "postgres",
+                "bash",
+                "-c",
+                f"if ! psql -lqt | cut -d '|' -f 1 | grep -qw {DB_NAME}; then "
+                f"createdb {DB_NAME}; "
+                f"echo 'Database {DB_NAME} created successfully.'; "
+                f"else "
+                f"echo 'Database {DB_NAME} already exists.'; "
+                f"fi",
+            ],
+            check=True,
+        )
+
+        # Create the role if it doesn't exist
+        subprocess.run(
+            [
+                "sudo",
+                "-u",
+                "postgres",
+                "bash",
+                "-c",
+                f"if ! psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='{DB_USER}';\" | grep -qw 1; then "
+                f"psql -c \"CREATE ROLE {DB_USER} WITH LOGIN PASSWORD '{DB_PASSWORD}';\"; "
+                f"echo 'Role {DB_USER} created successfully.'; "
+                f"else "
+                f"echo 'Role {DB_USER} already exists.'; "
+                f"fi",
+            ],
+            check=True,
+        )
+
+        # Configure the role
+        subprocess.run(
+            [
+                "sudo",
+                "-u",
+                "postgres",
+                "bash",
+                "-c",
+                f"psql -c \"ALTER ROLE {DB_USER} WITH SUPERUSER;\"; "
+                f"psql -c \"ALTER ROLE {DB_USER} SET client_encoding TO 'utf8';\"; "
+                f"psql -c \"ALTER ROLE {DB_USER} SET default_transaction_isolation TO 'read committed';\"; "
+                f"psql -c \"ALTER ROLE {DB_USER} SET timezone TO 'UTC';\"; "
+                f"echo 'Role {DB_USER} configured successfully.';",
+            ],
+            check=True,
+        )
+
+        # Grant privileges to the user on the database
+        subprocess.run(
+            [
+                "sudo",
+                "-u",
+                "postgres",
+                "bash",
+                "-c",
+                f"psql -c \"GRANT ALL PRIVILEGES ON DATABASE {DB_NAME} TO {DB_USER};\"",
+            ],
+            check=True,
+        )
+
+        # Enable pgvector extension
+        subprocess.run(
+            [
+                "sudo",
+                "-u",
+                "postgres",
+                "bash",
+                "-c",
+                f"if ! psql -d {DB_NAME} -tAc \"SELECT 1 FROM pg_extension WHERE extname='vector';\" | grep -qw 1; then "
+                f"psql -d {DB_NAME} -c \"CREATE EXTENSION vector;\"; "
+                f"echo 'pgvector extension enabled for database {DB_NAME}.'; "
+                f"else "
+                f"echo 'pgvector extension is already enabled for database {DB_NAME}.'; "
+                f"fi",
+            ],
+            check=True,
+        )
+
+        print(f"PostgreSQL configured successfully with database '{DB_NAME}', user '{DB_USER}', and 'pgvector' extension enabled.")
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error configuring PostgreSQL: {e}")
+
 def setup_gunicorn_logs():
     GUNICORN_CENTRAL_DIR = os.getenv("GUNICORN_CENTRAL_DIR")
     os.makedirs(GUNICORN_CENTRAL_DIR, exist_ok=True)
     print(f"Gunicorn logs directory created at {GUNICORN_CENTRAL_DIR}")
-
-def install_postgresql():
-    POSTGRES_VERSION = os.getenv("POSTGRES_VERSION", "17")
-    print("Installing PostgreSQL...")
-    subprocess.run([
-        "sudo", "sh", "-c",
-        "echo \"deb [arch=amd64] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main\" > /etc/apt/sources.list.d/pgdg.list"
-    ], check=True)
-    subprocess.run([
-        "wget", "-qO", "-", "https://www.postgresql.org/media/keys/ACCC4CF8.asc", "|", "sudo", "apt-key", "add", "-"
-    ], check=True)
-
-    subprocess.run(["sudo", "apt", "update"], check=True)
-    subprocess.run(["sudo", "apt", "install", f"postgresql-{POSTGRES_VERSION}", "postgresql-contrib", "-y"], check=True)
-    subprocess.run(["sudo", "systemctl", "start", "postgresql"], check=True)
-    subprocess.run(["sudo", "systemctl", "enable", "postgresql"], check=True)
-
-    print("PostgreSQL installed and started.")
-
-def configure_postgresql():
-    DB_NAME = os.getenv("DBNAME")
-    DB_USER = os.getenv("DBUSER")
-    DB_PASSWORD = os.getenv("DBPASSWORD")
-    DB_HOST = os.getenv("DBHOST", "localhost")
-    DB_PORT = os.getenv("DBPORT", "5432")
-
-    print("Configuring PostgreSQL...")
-    setup_script = f"""
-sudo su postgres <<EOF
-createdb {DB_NAME};
-psql -c \"CREATE ROLE {DB_USER};\"
-psql -c \"ALTER ROLE {DB_USER} WITH LOGIN;\"
-psql -c \"ALTER ROLE {DB_USER} WITH SUPERUSER;\"
-psql -c \"CREATE USER {DB_USER} WITH PASSWORD '{DB_PASSWORD}';\"
-psql -c \"ALTER ROLE {DB_USER} SET client_encoding TO 'utf8';\"
-psql -c \"ALTER ROLE {DB_USER} SET default_transaction_isolation TO 'read committed';\"
-psql -c \"ALTER ROLE {DB_USER} SET timezone TO 'UTC';\"
-psql -c \"GRANT ALL PRIVILEGES ON DATABASE {DB_NAME} TO {DB_USER};\"
-psql -c \"CREATE EXTENSION IF NOT EXISTS pgvector;\"
-exit
-EOF
-"""
-    subprocess.run(setup_script, shell=True, check=True)
-    print(f"PostgreSQL configured with database {DB_NAME}, user {DB_USER}, and extensions.")
-
-def setup_nginx():
-    import subprocess
-    import os
-
-    print("Installing and configuring Nginx...")
-
-    # Install Nginx
-    subprocess.run(["sudo", "apt", "update"], check=True)
-    subprocess.run(["sudo", "apt", "install", "-y", "nginx"], check=True)
-
-    # Create Nginx configuration
-    PROJECT_DIR = os.getenv("PROJECT_DIR")
-    NGINX_LOGS_FOLDER_PATH = os.getenv("NGINX_LOGS_FOLDER_PATH")
-    os.makedirs(NGINX_LOGS_FOLDER_PATH, exist_ok=True)
-    subprocess.run(["sudo", "chown", "creditizens:creditizens", NGINX_LOGS_FOLDER_PATH], check=True)
-
-    nginx_conf = f"""### NGINX CONF
-server {{
-  server_name creditizens.local;
-
-  location /favicon.ico {{
-      access_log off;
-      log_not_found off;
-  }}
-
-  gzip on;
-  gzip_types application/json text/css text/plain text/javascript application/javascript;
-  gzip_proxied any;
-  gzip_min_length 256;
-  gzip_vary on;
-  gunzip on;
-
-  add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload" always;
-  add_header Referrer-Policy origin;
-  add_header Permissions-Policy "geolocation=(),midi=(),sync-xhr=(),microphone=(),camera=(),fullscreen=(self),payment=()";
-  add_header X-XSS-Protection "1; mode=block";
-  add_header X-Frame-Options "SAMEORIGIN";
-  add_header X-Content-Type-Options "nosniff";
-
-  location / {{
-      proxy_pass http://localhost:8000/;
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto $scheme;
-  }}
-
-  location /static/ {{
-      alias {os.path.join(PROJECT_DIR, 'static')};
-      expires 30d;
-      add_header Cache-Control "public, max-age=2592000";
-  }}
-
-  location /media/ {{
-      alias {os.path.join(PROJECT_DIR, 'media')};
-      expires 30d;
-      add_header Cache-Control "public, max-age=2592000";
-  }}
-
-  error_log {os.path.join(NGINX_LOGS_FOLDER_PATH, 'error.log')};
-  access_log {os.path.join(NGINX_LOGS_FOLDER_PATH, 'access.log')};
-}}"""
-
-    nginx_conf_path = "/etc/nginx/sites-available/creditizens.local"
-    nginx_symlink_path = "/etc/nginx/sites-enabled/creditizens.local"
-
-    # Write Nginx configuration with sudo
-    try:
-        with open("/tmp/creditizens.local", "w") as temp_file:
-            temp_file.write(nginx_conf)
-
-        subprocess.run(["sudo", "mv", "/tmp/creditizens.local", nginx_conf_path], check=True)
-        subprocess.run(["sudo", "ln", "-sf", nginx_conf_path, nginx_symlink_path], check=True)
-    except Exception as e:
-        print(f"Error writing Nginx configuration: {e}")
-        return
-
-    # Restart Nginx to apply changes
-    subprocess.run(["sudo", "systemctl", "restart", "nginx"], check=True)
-    print("Nginx installed and configured.")
 
 def setup_ssl():
     import subprocess
@@ -174,7 +210,7 @@ def setup_ssl():
 
     # Define the SSL directory (eg.: "/etc/ssl/creditizens")
     SSL_DIR = os.getenv("SSL_DIR")
-    USER = os.getnev("USER")
+    USER = os.getenv("USER")
 
     # Create the directory with sudo
     subprocess.run(["sudo", "mkdir", "-p", SSL_DIR], check=True)
@@ -221,7 +257,6 @@ def setup_ssl():
 
     print("Self-signed SSL certificate created.")
 
-
 def rotate_ssl_certificates():
     print("Rotating SSL certificates...")
     USER = os.getenv("USER")
@@ -234,6 +269,162 @@ def rotate_ssl_certificates():
     ], check=True)
     subprocess.run(["sudo", "systemctl", "reload", "nginx"], check=True)
     print("SSL certificates rotated and Nginx reloaded.")
+
+def setup_nginx():
+    import subprocess
+    import os
+
+    print("Installing and configuring Nginx...")
+
+    # Install Nginx
+    subprocess.run(["sudo", "apt", "update"], check=True)
+    subprocess.run(["sudo", "apt", "install", "-y", "nginx"], check=True)
+
+    # Create Nginx configuration
+    USER = os.getenv("USER")
+    GROUP = os.getenv("GROUP")
+    SSL_DIR = os.getenv("SSL_DIR")
+    STATIC_DESTINATION = os.getenv("STATIC_DESTINATION")
+    MEDIA_DESTINATION = os.getenv("MEDIA_DESTINATION")
+    PROJECT_DIR = os.getenv("PROJECT_DIR")
+    NGINX_LOGS_FOLDER_PATH = os.getenv("NGINX_LOGS_FOLDER_PATH")
+    os.makedirs(NGINX_LOGS_FOLDER_PATH, exist_ok=True)
+    subprocess.run(["sudo", "chown", f"{USER}:{GROUP}", NGINX_LOGS_FOLDER_PATH], check=True)
+
+    nginx_conf = f"""### NGINX CONF
+# Redirect HTTP traffic to HTTPS
+server {{
+  listen 80;
+  server_name {USER}.local;
+
+  # Redirect all HTTP requests to HTTPS
+  return 301 https://$host$request_uri;
+}}
+server {{
+  listen 443 ssl;
+  server_name {USER}.local;
+
+  ssl_certificate {SSL_DIR}/{USER}.crt;
+  ssl_certificate_key {SSL_DIR}/{USER}.key;
+
+  location /favicon.ico {{
+      access_log off;
+      log_not_found off;
+  }}
+
+  gzip on;
+  gzip_types application/json text/css text/plain text/javascript application/javascript;
+  gzip_proxied any;
+  gzip_min_length 256;
+  gzip_vary on;
+  gunzip on;
+
+  add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload" always;
+  add_header Referrer-Policy origin;
+  add_header Permissions-Policy "geolocation=(),midi=(),sync-xhr=(),microphone=(),camera=(),fullscreen=(self),payment=()";
+  add_header X-XSS-Protection "1; mode=block";
+  add_header X-Frame-Options "SAMEORIGIN";
+  add_header X-Content-Type-Options "nosniff";
+
+  location / {{
+      proxy_pass http://localhost:8000/;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+  }}
+
+  location /static/ {{
+      alias {STATIC_DESTINATION};
+      expires 30d;
+      add_header Cache-Control "public, max-age=2592000";
+  }}
+
+  location /media/ {{
+      alias {MEDIA_DESTINATION};
+      expires 30d;
+      add_header Cache-Control "public, max-age=2592000";
+  }}
+
+
+  error_log {os.path.join(NGINX_LOGS_FOLDER_PATH, 'error.log')};
+  access_log {os.path.join(NGINX_LOGS_FOLDER_PATH, 'access.log')};
+}}"""
+
+    nginx_conf_path = f"/etc/nginx/sites-available/{USER}.local"
+    nginx_symlink_path = "/etc/nginx/sites-enabled/{USER}.local"
+
+    # Write Nginx configuration with sudo
+    try:
+        with open("/tmp/creditizens.local", "w") as temp_file:
+            temp_file.write(nginx_conf)
+
+        subprocess.run(["sudo", "mv", f"/tmp/{USER}.local", nginx_conf_path], check=True)
+        subprocess.run(["sudo", "ln", "-sf", nginx_conf_path, nginx_symlink_path], check=True)
+    except Exception as e:
+        print(f"Error writing Nginx configuration: {e}")
+        return
+
+    # Restart Nginx to apply changes
+    subprocess.run(["sudo", "systemctl", "restart", "nginx"], check=True)
+    print("Nginx installed and configured.")
+
+def prepare_django_app():
+    """
+    Prepares the Django application by collecting static files, migrating the database,
+    and setting up static/media files for Nginx to serve.
+    """
+    print("Preparing Django application...")
+
+    USER = os.getenv("USER")
+    PROJECT_DIR = os.getenv("PROJECT_DIR")
+    STATIC_DESTINATION = os.getenv("STATIC_DESTINATION", "/var/www/static")
+    MEDIA_DESTINATION = os.getenv("MEDIA_DESTINATION", "/var/www/media")
+    NGINX_USER = "www-data"  # Directly using www-data as confirmed from nginx.conf
+
+    # Ensure the destination directories for static and media exist
+    for destination in [STATIC_DESTINATION, MEDIA_DESTINATION]:
+        if not os.path.exists(destination):
+            subprocess.run(["sudo", "mkdir", "-p", destination], check=True)
+        # Give ownership to the current user during preparation
+        subprocess.run(["sudo", "chown", "-R", f"{USER}:{USER}", destination], check=True)
+
+    try:
+        # Change to project directory
+        os.chdir(PROJECT_DIR)
+
+        # Collect static files
+        print("Collecting static files...")
+        subprocess.run(["python3", "manage.py", "collectstatic", "--noinput"], check=True)
+
+        # Migrate the database
+        print("Running database migrations...")
+        subprocess.run(["python3", "manage.py", "migrate"], check=True)
+
+        # Copy static and media files to the Nginx-served directories
+        print(f"Copying static files to {STATIC_DESTINATION}...")
+        shutil.copytree(
+            os.path.join(PROJECT_DIR, "static"), STATIC_DESTINATION, dirs_exist_ok=True
+        )
+
+        print(f"Copying media files to {MEDIA_DESTINATION}...")
+        shutil.copytree(
+            os.path.join(PROJECT_DIR, "media"), MEDIA_DESTINATION, dirs_exist_ok=True
+        )
+
+        # Set permissions for Nginx to serve files
+        print("Setting permissions for static and media files...")
+        subprocess.run(["sudo", "chown", "-R", f"{NGINX_USER}:{NGINX_USER}", STATIC_DESTINATION], check=True)
+        subprocess.run(["sudo", "chmod", "-R", "775", STATIC_DESTINATION], check=True)
+        subprocess.run(["sudo", "chown", "-R", f"{NGINX_USER}:{NGINX_USER}", MEDIA_DESTINATION], check=True)
+        subprocess.run(["sudo", "chmod", "-R", "775", MEDIA_DESTINATION], check=True)
+
+        print("Django application prepared successfully.")
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error while preparing Django application: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 def create_gunicorn_service():
     print("Creating Gunicorn systemd service...")
@@ -257,6 +448,7 @@ def create_gunicorn_service():
     subprocess.run(["sudo", "systemctl", "daemon-reload"], check=True)
     subprocess.run(["sudo", "systemctl", "enable", "gunicorn"], check=True)
     subprocess.run(["sudo", "systemctl", "start", "gunicorn"], check=True)
+    #subprocess.run(["sudo", "service", "gunicorn", "start"], check=True) # `service` way like `WSL2`
     print("Gunicorn service created and started.")
 
 def configure_ufw():
@@ -265,7 +457,7 @@ def configure_ufw():
     # Retrieve the password from the environment variable
     SUDO_PASSWORD = os.getenv("SUDO_PASSWORD")
 
-    if not sudo_password:
+    if not SUDO_PASSWORD:
         print("Error: SUDO_PASSWORD environment variable is not set.")
         return
 
@@ -351,10 +543,9 @@ CMD ["{GUNICORN_BINARY}", "-b", "0.0.0.0:8000", "{PROJECT_WSGI}:application"]"""
 
     print(f"Dockerfile created at {dockerfile_path}.")
 
-'''
 def create_docker_compose():
-    GUNICORN_CENTRAL_DIR = os.getnev("GUNICORN_CENTRAL_DIR")
-    NGINX_IMAGE = os.getnev("NGINX_IMAGE")
+    GUNICORN_CENTRAL_DIR = os.getenv("GUNICORN_CENTRAL_DIR")
+    NGINX_IMAGE = os.getenv("NGINX_IMAGE")
     NGINX_LOGS_FOLDER_PATH = os.getenv("NGINX_LOGS_FOLDER_PATH")
     POSTGRES_VERSION = os.getenv("POSTGRES_VERSION", "17")
     DB_NAME = os.getenv("DBNAME")
@@ -408,16 +599,29 @@ networks:
 
 if __name__ == "__main__":
     try:
-        install_python_dependencies()
-        setup_gunicorn_logs()
-        install_postgresql()
-        configure_postgresql()
-        setup_nginx()
+        # install python3.12 and setup environment and installs requirements
+        #install_python_dependencies()
+        # creates the gunicor log folder in root project directory
+        #setup_gunicorn_logs()
+        # install postgresql {version} and enables service, installs pgvector
+        #install_postgresql()
+        # create user, database, activates pgvector, permissions, hba config set to md5
+        #configure_postgresql()
+        # setup ssl certificates self signed on domain `user.local` and updates `/etc/hosts` with `user.local`
         setup_ssl()
-        rotate_ssl_certificates()
+        # option to rotate ssl certificates and reloads nginx
+        #rotate_ssl_certificates()
+        # setup nginx domain to serve django on `user.local` starts nginx service
+        setup_nginx()
+        # does collecti static, migration and copy static to nginx path with permissions for nginx
+        prepare_django_app()
+        # create systemd `gunicorn.service` file and enables it to start django server through `chatbotAI.wsgi`
         create_gunicorn_service()
+        # configures the `ufw` to have only port 80 and 443 (http and https) opened
         configure_ufw()
+        # created a `Dockerfile` for the project but doesn't build it just create the file
         create_dockerfile()
+        # creates a `docker-compose` file for the project but doesn't start stack has server `gunicorn`, database 'postgresql' with set version, proxy `nginx`, volumes and network
         create_docker_compose()
         print("Setup completed successfully.")
     except subprocess.CalledProcessError as e:

@@ -2084,7 +2084,7 @@ ExecStart=/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/gunicorn --wor
 [Install]
 WantedBy=multi-user.target
 ```
-- then start `Django` using `gunicorn`:
+- can also start `Django` using `gunicorn` for debugging using the following command otherwise for production server use `systemd` with the config file `systemctl` enabled:
 gunicorn -b 0.0.0.0:8000 chatbotAI.wsgi:application
 
 
@@ -2164,7 +2164,7 @@ All of the rest works fine and have variabilized those, meaning that centralized
 - [x] add logging to common app utility functions
 - [x] run the django server with gunicorn until it works fine and then use the application and see if all works fine at minimum
 - [x] setup nginx after gunicorn works
-- [] use the wsl part to test the postgresql setup functions and the python dependencies installl creating a virtual env that we are going to get rid of when it works and after come back here to validate that it works fine
+- [x] use the wsl part to test the postgresql setup functions and the python dependencies installl creating a virtual env that we are going to get rid of when it works and after come back here to validate that it works fine
 - [] fix nginx serving static files with correct permissions or copy those after a `collectstatic` to a folder where `nginx` or `www-data` user have permission.
 - [] do unit tests even if we don't want to do those, lets cover some percentage of the application using GPT or Gemini or Bolt.new/ottodev ....
 - [] check that the github action works fine

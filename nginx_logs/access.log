@@ -1,0 +1,4 @@
+127.0.0.1 - - [21/Jan/2025:16:54:32 -0500] "GET / HTTP/1.1" 502 166 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:134.0) Gecko/20100101 Firefox/134.0"
+127.0.0.1 - - [21/Jan/2025:16:54:37 -0500] "GET / HTTP/1.1" 502 166 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:134.0) Gecko/20100101 Firefox/134.0"
+127.0.0.1 - - [21/Jan/2025:16:57:09 -0500] "GET /admin HTTP/1.1" 502 166 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:134.0) Gecko/20100101 Firefox/134.0"
+127.0.0.1 - - [21/Jan/2025:16:57:46 -0500] "GET / HTTP/1.1" 502 166 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:134.0) Gecko/20100101 Firefox/134.0"

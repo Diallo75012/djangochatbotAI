@@ -136,9 +136,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 # can be here the dir where also Nginx will serve django staticfiles
-STATIC_ROOT = os.path.join(BASE_DIR, 'nginx/static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'staticfiles'),
 ]
 
 # Media configuration
