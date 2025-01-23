@@ -2165,9 +2165,139 @@ All of the rest works fine and have variabilized those, meaning that centralized
 - [x] run the django server with gunicorn until it works fine and then use the application and see if all works fine at minimum
 - [x] setup nginx after gunicorn works
 - [x] use the wsl part to test the postgresql setup functions and the python dependencies installl creating a virtual env that we are going to get rid of when it works and after come back here to validate that it works fine
-- [] fix nginx serving static files with correct permissions or copy those after a `collectstatic` to a folder where `nginx` or `www-data` user have permission.
+- [x] fix nginx serving static files with correct permissions or copy those after a `collectstatic` to a folder where `nginx` or `www-data` user have permission.
+- [] update the `full_server setup` script with the correclt files as now the server works fine and nginx finds the static files correcly.
+- [] add logic to the script `full_server setup` to create right permissions and create the files and folders properly and to `reload-daemon` properly
 - [] do unit tests even if we don't want to do those, lets cover some percentage of the application using GPT or Gemini or Bolt.new/ottodev ....
 - [] check that the github action works fine
 - [] create container of app and also a docker-compose and see if it wokrs in local docker so that we can kubernetize it...
 - [] then use this app for any devops workflow that we want to do (push enhancement of app and have the ci/cd work by itself and do all necessary notifications (Dicord: the webhook stuff is simple and works fine so we will be using that)
+need to set the upstream in nginx to point to gunicorn with the domain name and in the sevrers under at any locatuon be proxy passing http://domain name..
+need to set permission on /run/gunicorn to the server user creditizens:creditizens
+for nginx access to static files make sure to not forget the `/` at he end of `../media/` and `../static/` path otherwise it will just `no such file in directory` error
+didn't need to change/set in nginx.cong the user from `www-data` to `creditizens` like in pdf_llm AI project previously while used doyble server behind ngins `sreamlit` and `django gunicorn`
 
+### Nginx config file to variablize:
+```bash
+### NGINX CONF
+# Redirect HTTP traffic to HTTPS
+upstream creditizens.local {
+    server unix:/run/gunicorn/gunicorn.sock fail_timeout=0;
+}
+
+# to not display nginx server version in headers
+server_tokens             off;
+
+server {
+  listen 80;
+  server_name creditizens.local;
+
+  # Redirect all HTTP requests to HTTPS
+  return 301 https://$host$request_uri;
+}
+server {
+  listen 443 ssl;
+  server_name creditizens.local;
+
+  ssl_certificate /etc/ssl/creditizens/creditizens.crt;
+  ssl_certificate_key /etc/ssl/creditizens/creditizens.key;
+
+  # General proxy settings
+  proxy_http_version 1.1;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header Host $host;
+  proxy_set_header Upgrade $http_upgrade;
+  proxy_set_header Connection "upgrade";
+  proxy_read_timeout 86400;
+
+  # if user file upload enabled this is for: file upload max size allowed
+  #client_max_body_size 2000M;
+
+
+  location /favicon.ico {
+      access_log off;
+      log_not_found off;
+  }
+
+  gzip on;
+  gzip_types application/json text/css text/plain text/javascript application/javascript;
+  gzip_proxied any;
+  gzip_min_length 256;
+  gzip_vary on;
+  gunzip on;
+
+  add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload" always;
+  add_header Referrer-Policy origin;
+  add_header Permissions-Policy "geolocation=(),midi=(),sync-xhr=(),microphone=(),camera=(),fullscreen=(self),payment=()";
+  add_header X-XSS-Protection "1; mode=block";
+  add_header X-Frame-Options "SAMEORIGIN";
+  add_header X-Content-Type-Options "nosniff";
+
+  location / {
+      # we are not using direct connection to Django server, Gunicorn handles it
+      #proxy_pass http://localhost:8000/;
+      # we are using gunicorn UNIX socket to point to Django server
+      proxy_pass http://creditizens.local;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location /static/ {
+      alias /var/www/static/;
+      expires 30d;
+      add_header Cache-Control "public, max-age=2592000";
+  }
+
+  location /media/ {
+      alias /var/www/static/media/;
+      expires 30d;
+      add_header Cache-Control "public, max-age=2592000";
+  }
+
+
+  error_log /home/creditizens/djangochatAI/chatbotAI/logs/nginx_error.log;
+  access_log /home/creditizens/djangochatAI/chatbotAI/logs/nginx_access.log;
+}
+
+
+```
+### Gunicorn service to variablelize:
+```bash
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=creditizens
+Group=creditizens
+WorkingDirectory=/home/creditizens/djangochatAI/chatbotAI
+ExecStart=/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/gunicorn --workers 3 --access-logfile --error-logfile --bind unix:/run/gunicorn/gunicorn.sock chatbotAI.wsgi:application
+# see doc for more:https://docs.gunicorn.org/en/stable/deploy.html#systemd
+#Restart=on-failure
+#ExecReload=/bin/kill -s HUP $MAINPID
+#KillMode=mixed
+#TimeoutStopSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+```
+### can add this to `setting.py` to define site for django using the domain name:
+```python
+from django.contrib.sites.models import Site
+
+def configure_site():
+    site_id = 1  # Default site ID
+    domain = "creditizens.local"
+    name = "Creditizens"
+    Site.objects.update_or_create(
+        id=site_id,
+        defaults={"domain": domain, "name": name}
+    )
+
+# Call the function when the app starts
+configure_site()
+
+```

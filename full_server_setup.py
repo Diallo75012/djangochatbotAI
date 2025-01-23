@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import time
 import shutil
 import subprocess
 from dotenv import load_dotenv
@@ -22,13 +23,14 @@ PROJECT_DIR=os.getenv("PROJECT_DIR")
 # this one should be installed in the virtual env so be in requirements.txt
 GUNICORN_BINARY=os.getenv("GUNICORN_BINARY")
 # the `gunicorn.sock` file will be created by `gunicorn` we just need to provide the path otherwise you get error
-SOCK_FILE_PATH=os.getenv("SOCK_FILE_PATH")
+SOCK_FILE_DIR="/run/gunicorn"
+SOCK_FILE_NAME="gunicorn.sock"
 PROJECT_WSGI=os.getenv("PROJECT_WSGI")
 GUNICORN_CENTRAL_DIR = os.getenv("GUNICORN_CENTRAL_DIR")
 SSL_DIR = os.getenv("SSL_DIR")
 NGINX_IMAGE = os.getenv("NGINX_IMAGE")
 VIRTUAL_ENV_PATH_FROM_USER_HOME = os.getenv("VIRTUAL_ENV_PATH_FROM_USER_HOME")
-NGINX_LOGS_FOLDER_PATH = os.getenv("NGINX_LOGS_FOLDER_PATH")
+LOGS_FOLDER_PATH = os.getenv("LOGS_FOLDER_PATH")
 
 # Functions
 def install_python_dependencies():
@@ -197,9 +199,16 @@ sudo sed -i -e '/^local\\s\\+all\\s\\+all\\s\\+peer/s/peer/md5/' \\
     except subprocess.CalledProcessError as e:
         print(f"Error configuring PostgreSQL: {e}")
 
-def setup_gunicorn_logs():
+def setup_gunicorn_center_dir():
+
+    #USER = os.getenv("USER")
+    #NGINX_USER = os.getenv("NGINX_USER")
     GUNICORN_CENTRAL_DIR = os.getenv("GUNICORN_CENTRAL_DIR")
+
     os.makedirs(GUNICORN_CENTRAL_DIR, exist_ok=True)
+    #subprocess.run(["sudo", "mkdir", GUNICORN_CENTRAL_DIR], check=True)
+    subprocess.run(["sudo", "chmod", "-R", "755", GUNICORN_CENTRAL_DIR], check=True)
+
     print(f"Gunicorn logs directory created at {GUNICORN_CENTRAL_DIR}")
 
 def setup_ssl():
@@ -284,12 +293,13 @@ def setup_nginx():
     USER = os.getenv("USER")
     GROUP = os.getenv("GROUP")
     SSL_DIR = os.getenv("SSL_DIR")
+    GUNICORN_CENTRAL_DIR = os.getenv("GUNICORN_CENTRAL_DIR")
     STATIC_DESTINATION = os.getenv("STATIC_DESTINATION")
     MEDIA_DESTINATION = os.getenv("MEDIA_DESTINATION")
     PROJECT_DIR = os.getenv("PROJECT_DIR")
-    NGINX_LOGS_FOLDER_PATH = os.getenv("NGINX_LOGS_FOLDER_PATH")
-    os.makedirs(NGINX_LOGS_FOLDER_PATH, exist_ok=True)
-    subprocess.run(["sudo", "chown", f"{USER}:{GROUP}", NGINX_LOGS_FOLDER_PATH], check=True)
+    LOGS_FOLDER_PATH = os.getenv("LOGS_FOLDER_PATH")
+    os.makedirs(LOGS_FOLDER_PATH, exist_ok=True)
+    subprocess.run(["sudo", "chown", f"{USER}:{GROUP}", LOGS_FOLDER_PATH], check=True)
 
     nginx_conf = f"""### NGINX CONF
 # Redirect HTTP traffic to HTTPS
@@ -327,7 +337,10 @@ server {{
   add_header X-Content-Type-Options "nosniff";
 
   location / {{
-      proxy_pass http://localhost:8000/;
+      # we are not using direct connection to Django server, Gunicorn handles it
+      #proxy_pass http://localhost:8000/;
+      # we are using gunicorn UNIX socket to point to Django server
+      proxy_pass http://unix:{GUNICORN_CENTRAL_DIR}/gunicorn.sock;
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -347,8 +360,8 @@ server {{
   }}
 
 
-  error_log {os.path.join(NGINX_LOGS_FOLDER_PATH, 'error.log')};
-  access_log {os.path.join(NGINX_LOGS_FOLDER_PATH, 'access.log')};
+  error_log {os.path.join(LOGS_FOLDER_PATH, 'nginx_error.log')};
+  access_log {os.path.join(LOGS_FOLDER_PATH, 'nginx_access.log')};
 }}"""
 
     nginx_conf_path = f"/etc/nginx/sites-available/{USER}.local"
@@ -380,7 +393,7 @@ def prepare_django_app():
     PROJECT_DIR = os.getenv("PROJECT_DIR")
     STATIC_DESTINATION = os.getenv("STATIC_DESTINATION", "/var/www/static")
     MEDIA_DESTINATION = os.getenv("MEDIA_DESTINATION", "/var/www/media")
-    NGINX_USER = "www-data"  # Directly using www-data as confirmed from nginx.conf
+    NGINX_USER = os.getenv("NGINX_USER")  # Directly using www-data as confirmed from nginx.conf
 
     # Ensure the destination directories for static and media exist
     for destination in [STATIC_DESTINATION, MEDIA_DESTINATION]:
@@ -427,28 +440,67 @@ def prepare_django_app():
         print(f"An unexpected error occurred: {e}")
 
 def create_gunicorn_service():
+    import os
+    import subprocess
+    import time
+
     print("Creating Gunicorn systemd service...")
 
-    USER=os.getenv("USER")
-    GROUP=os.getenv("GROUP")
-    PROJECT_DIR=os.getenv("PROJECT_DIR")
-    # this one should be installed in the virtual env so be in requirements.txt
-    GUNICORN_BINARY=os.getenv("GUNICORN_BINARY")
-    # the `gunicorn.sock` file will be created by `gunicorn` we just need to provide the path otherwise you get error
-    SOCK_FILE_PATH=os.getenv("SOCK_FILE_PATH")
-    PROJECT_WSGI=os.getenv("PROJECT_WSGI")
+    USER = os.getenv("USER")
+    GROUP = os.getenv("GROUP")
+    PROJECT_DIR = os.getenv("PROJECT_DIR")
+    WORKERS = os.getenv("WORKERS")
+    GUNICORN_BINARY = os.getenv("GUNICORN_BINARY")
+    SOCK_FILE_DIR=os.getenv("SOCK_FILE_DIR")
+    SOCK_FILE_NAME=os.getenv("SOCK_FILE_NAME")
+    SOCK_FILE_PATH = os.path.join(SOCK_FILE_DIR, SOCK_FILE_NAME)
+    PROJECT_WSGI = os.getenv("PROJECT_WSGI")
+    LOG_DIR = os.path.join(PROJECT_DIR, "logs")
 
+    # Ensure the log directory exists and set permissions
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR, exist_ok=True)
+        subprocess.run(["sudo", "chown", "-R", f"{USER}:{GROUP}", LOG_DIR], check=True)
+        subprocess.run(["sudo", "chmod", "-R", "755", LOG_DIR], check=True)
 
-    gunicorn_service = f"""[Unit]\nDescription=gunicorn daemon\nAfter=network.target\n\n[Service]\nUser={USER}\nGroup={GROUP}\nWorkingDirectory={PROJECT_DIR}\nExecStart={GUNICORN_BINARY} --workers 3 --bind unix:{SOCK_FILE_PATH}/gunicorn.sock {PROJECT_WSGI}:application\n\n[Install]\nWantedBy=multi-user.target"""
+    gunicorn_service = f"""# see doc for more setup: https://docs.gunicorn.org/en/stable/deploy.html#systemd
+[Unit]
+Description=gunicorn daemon
+After=network.target
 
+[Service]
+User={USER}
+Group={GROUP}
+WorkingDirectory={PROJECT_DIR}
+ExecStart={GUNICORN_BINARY} --workers {WORKERS} --bind unix:{SOCK_FILE_PATH} --access-logfile {LOG_DIR}/gunicorn_access.log --error-logfile {LOG_DIR}/gunicorn_error.log {PROJECT_WSGI}:application
+
+[Install]
+WantedBy=multi-user.target
+"""
+
+    # Write the service file
     with open(f"{PROJECT_DIR}/setup_gunicorn.txt", "w") as service_file:
         service_file.write(gunicorn_service)
 
+    # Move the service file to the systemd directory
     subprocess.run(["sudo", "mv", f"{PROJECT_DIR}/setup_gunicorn.txt", "/etc/systemd/system/gunicorn.service"], check=True)
     subprocess.run(["sudo", "systemctl", "daemon-reload"], check=True)
     subprocess.run(["sudo", "systemctl", "enable", "gunicorn"], check=True)
     subprocess.run(["sudo", "systemctl", "start", "gunicorn"], check=True)
-    #subprocess.run(["sudo", "service", "gunicorn", "start"], check=True) # `service` way like `WSL2`
+
+    # Wait for the socket file to be created
+    print("Waiting for the Gunicorn socket file to be created...")
+    for _ in range(10):  # Retry for up to 10 seconds
+        if os.path.exists(SOCK_FILE_PATH):
+            break
+        time.sleep(1)
+    else:
+        raise FileNotFoundError(f"Socket file {SOCK_FILE_PATH} was not created.")
+
+    # Set permissions for the socket dir
+    subprocess.run(["sudo", "chown", f"{USER}:{GROUP}", f"{SOCK_FILE_DIR}"], check=True)
+    subprocess.run(["sudo", "chmod", "-R", "755", f"{SOCK_FILE_DIR}"], check=True)
+
     print("Gunicorn service created and started.")
 
 def configure_ufw():
@@ -546,7 +598,7 @@ CMD ["{GUNICORN_BINARY}", "-b", "0.0.0.0:8000", "{PROJECT_WSGI}:application"]"""
 def create_docker_compose():
     GUNICORN_CENTRAL_DIR = os.getenv("GUNICORN_CENTRAL_DIR")
     NGINX_IMAGE = os.getenv("NGINX_IMAGE")
-    NGINX_LOGS_FOLDER_PATH = os.getenv("NGINX_LOGS_FOLDER_PATH")
+    LOGS_FOLDER_PATH = os.getenv("LOGS_FOLDER_PATH")
     POSTGRES_VERSION = os.getenv("POSTGRES_VERSION", "17")
     DB_NAME = os.getenv("DBNAME")
     DB_USER = os.getenv("DBUSER")
@@ -571,7 +623,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - {NGINX_LOGS_FOLDER_PATH}:/var/log/nginx
+      - {LOGS_FOLDER_PATH}:/var/log/nginx
     depends_on:
       - web
     networks:
@@ -602,27 +654,27 @@ if __name__ == "__main__":
         # install python3.12 and setup environment and installs requirements
         #install_python_dependencies()
         # creates the gunicor log folder in root project directory
-        #setup_gunicorn_logs()
+        setup_gunicorn_center_dir()
         # install postgresql {version} and enables service, installs pgvector
         #install_postgresql()
         # create user, database, activates pgvector, permissions, hba config set to md5
         #configure_postgresql()
         # setup ssl certificates self signed on domain `user.local` and updates `/etc/hosts` with `user.local`
-        setup_ssl()
+        #setup_ssl()
         # option to rotate ssl certificates and reloads nginx
         #rotate_ssl_certificates()
+        # create systemd `gunicorn.service` file and enables it to start django server through `chatbotAI.wsgi`
+        create_gunicorn_service()
         # setup nginx domain to serve django on `user.local` starts nginx service
         setup_nginx()
         # does collecti static, migration and copy static to nginx path with permissions for nginx
         prepare_django_app()
-        # create systemd `gunicorn.service` file and enables it to start django server through `chatbotAI.wsgi`
-        create_gunicorn_service()
         # configures the `ufw` to have only port 80 and 443 (http and https) opened
-        configure_ufw()
+        #configure_ufw()
         # created a `Dockerfile` for the project but doesn't build it just create the file
-        create_dockerfile()
+        #create_dockerfile()
         # creates a `docker-compose` file for the project but doesn't start stack has server `gunicorn`, database 'postgresql' with set version, proxy `nginx`, volumes and network
-        create_docker_compose()
+        #create_docker_compose()
         print("Setup completed successfully.")
     except subprocess.CalledProcessError as e:
         print(f"An error occurred: {e}")

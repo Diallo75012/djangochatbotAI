@@ -21,3 +21,4 @@ Traceback (most recent call last):
     temperature=float(os.getenv("GROQ_TEMPERATURE")),
                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 TypeError: float() argument must be a string or a real number, not 'NoneType'
+/bin/sh: 1: /home/creditizens/djangochatAI/chatbotAI/venv/bin/python: not found

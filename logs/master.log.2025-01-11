@@ -1,4 +1,0 @@
-{"time": "2024-12-27 23:17:25,470", "level": "CRITICAL", "name": "httpx", "message": "critic master", "user_id": "anonymous"}
-{"time": "2024-12-27 23:17:25,551", "level": "ERROR", "name": "httpx", "message": "err master", "user_id": "anonymous"}
-{"time": "2024-12-27 23:17:25,553", "level": "WARNING", "name": "httpx", "message": "warn master", "user_id": "anonymous"}
-
