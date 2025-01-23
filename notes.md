@@ -2176,7 +2176,7 @@ need to set the upstream in nginx to point to gunicorn with the domain name and 
 need to set permission on /run/gunicorn to the server user creditizens:creditizens
 for nginx access to static files make sure to not forget the `/` at he end of `../media/` and `../static/` path otherwise it will just `no such file in directory` error
 didn't need to change/set in nginx.cong the user from `www-data` to `creditizens` like in pdf_llm AI project previously while used doyble server behind ngins `sreamlit` and `django gunicorn`
-
+will get rid of the gunicorn service config that writes logs to file as django logging is already writing logs this would be just double logs so no need.
 ### Nginx config file to variablize:
 ```bash
 ### NGINX CONF
@@ -2273,7 +2273,7 @@ After=network.target
 User=creditizens
 Group=creditizens
 WorkingDirectory=/home/creditizens/djangochatAI/chatbotAI
-ExecStart=/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/gunicorn --workers 3 --access-logfile --error-logfile --bind unix:/run/gunicorn/gunicorn.sock chatbotAI.wsgi:application
+ExecStart=/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/gunicorn --workers 3 --bind unix:/run/gunicorn/gunicorn.sock chatbotAI.wsgi:application
 # see doc for more:https://docs.gunicorn.org/en/stable/deploy.html#systemd
 #Restart=on-failure
 #ExecReload=/bin/kill -s HUP $MAINPID
