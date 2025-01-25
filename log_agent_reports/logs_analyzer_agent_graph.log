@@ -34,3 +34,7 @@
 
 {"error": "An error occured while trying to copy log file: {'error': \"An error occured while trying check if agent log dir exist and if not create it: join() argument must be str, bytes, or os.PathLike object, not 'NoneType'\"}"}
 
+
+
+{"error": "An error occurred: An error occurred while calling the LLM: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama3-70b-8192` in organization `org_01hqrpzhwxfmd8pvzc25nr32hg` service tier `on_demand` on requests per minute (RPM): Limit 30, Used 30, Requested 1. Please try again in 681ms. Visit https://console.groq.com/docs/rate-limits for more information.', 'type': 'requests', 'code': 'rate_limit_exceeded'}}"}
+

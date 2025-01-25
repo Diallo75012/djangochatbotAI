@@ -1942,6 +1942,10 @@ crontab -e
 sudo cat  /var/spool/cron/crontabs/<user>
 ```
 
+# final cronjob setup
+- have created a `.sh` file in root project dir and cronjob will call it to start the log analyzer job.
+  the `.sh` script has the path of the virtualenv `python` binary and the path of the graph
+
 
 # curl command to test Discord webhook
 curl -X POST -H "Content-Type: application/json" \
@@ -2300,4 +2304,36 @@ def configure_site():
 # Call the function when the app starts
 configure_site()
 
+```
+
+# Check how many lines of code in the project
+```bash
+# install `nic`
+sudo apt install cloc -y
+# run
+cloc .
+# output:
+'''
+     368 text files.
+     345 unique files.
+      80 files ignored.
+
+github.com/AlDanial/cloc v 1.90  T=0.25 s (1248.1 files/s, 211106.6 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+JavaScript                      97           5091           4549          19661
+CSS                             25           1230            220           6675
+Python                         121           1526           2329           6046
+Markdown                        17            396              0           2539
+HTML                            17             91             47           1085
+SVG                             23              0              0            880
+YAML                             3             24             16            274
+Rust                             8             46             60            238
+TOML                             2              4              5             34
+Dockerfile                       1             13             11             20
+-------------------------------------------------------------------------------
+SUM:                           314           8421           7237          37452
+-------------------------------------------------------------------------------
+'''
 ```
