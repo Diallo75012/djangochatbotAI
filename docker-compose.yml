@@ -7,7 +7,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./gunicorn:/home/creditiznes/djangochatAI/chatbotAI/gunicorn
+      - ./gunicorn:/run/gunicorn
     networks:
       - app_network
 
@@ -16,7 +16,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - /home/creditizens/djangochatAI/chatbotAI/nginx_logs:/var/log/nginx
+      - /home/creditizens/djangochatAI/chatbotAI/logs:/var/log/nginx
     depends_on:
       - web
     networks:

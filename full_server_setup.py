@@ -86,9 +86,9 @@ def install_postgresql():
 def configure_postgresql():
 
 
-    DB_NAME = os.getenv("DB_NAME")
-    DB_USER = os.getenv("DB_USER")
-    DB_PASSWORD = os.getenv("DB_PASSWORD")
+    DB_NAME = os.getenv("DBNAME")
+    DB_USER = os.getenv("DBUSER")
+    DB_PASSWORD = os.getenv("DBPASSWORD")
     POSTGRES_VERSION = os.getenv("POSTGRES_VERSION")
 
     print("Configuring PostgreSQL...")
@@ -199,21 +199,15 @@ sudo sed -i -e '/^local\\s\\+all\\s\\+all\\s\\+peer/s/peer/md5/' \\
     except subprocess.CalledProcessError as e:
         print(f"Error configuring PostgreSQL: {e}")
 
-def setup_gunicorn_center_dir():
-
-    #USER = os.getenv("USER")
-    #NGINX_USER = os.getenv("NGINX_USER")
-    GUNICORN_CENTRAL_DIR = os.getenv("GUNICORN_CENTRAL_DIR")
-
-    os.makedirs(GUNICORN_CENTRAL_DIR, exist_ok=True)
-    #subprocess.run(["sudo", "mkdir", GUNICORN_CENTRAL_DIR], check=True)
-    subprocess.run(["sudo", "chmod", "-R", "755", GUNICORN_CENTRAL_DIR], check=True)
-
-    print(f"Gunicorn logs directory created at {GUNICORN_CENTRAL_DIR}")
-
 def setup_ssl():
     import subprocess
     import os
+
+    # install openssl as sometimes you get error because file doesn't exist
+    #print("Removing openssl for fresh install")
+    #subprocess.run(["sudo", "apt", "remove", "--purge", "openssl"], check=True)
+    #subprocess.run(["sudo", "apt", "install", "openssl"], check=True)
+    #print("Openssl install done... will now create certs..")
 
     print("Setting up self-signed SSL certificate...")
 
@@ -226,11 +220,13 @@ def setup_ssl():
     subprocess.run(["sudo", "chmod", "700", SSL_DIR], check=True)
 
     # Generate the self-signed SSL certificate
+    #OPENSSL_CONF_FILE_PATH = os.getenv("OPENSSL_CONF_FILE_PATH")
     subprocess.run([
         "sudo", "openssl", "req", "-x509", "-nodes", "-days", "365", "-newkey", "rsa:2048",
         "-keyout", f"{SSL_DIR}/{USER}.key",
         "-out", f"{SSL_DIR}/{USER}.crt",
-        "-subj", "/C=US/ST=State/L=City/O=Organization/OU=Unit/CN={USER}.local"
+        "-subj", f"/C=US/ST=State/L=City/O=Organization/OU=Unit/CN={USER}.local",
+        #"-config", OPENSSL_CONF_FILE_PATH
     ], check=True)
 
     # Ensure proper permissions for the SSL key
@@ -274,7 +270,7 @@ def rotate_ssl_certificates():
         "sudo", "openssl", "req", "-x509", "-nodes", "-days", "367", "-newkey", "rsa:2048",
         "-keyout", f"{SSL_DIR}/{USER}.key",
         "-out", f"{SSL_DIR}/{USER}.crt",
-        "-subj", "/C=US/ST=State/L=City/O=Organization/CN={USER}.local"
+        "-subj", f"/C=US/ST=State/L=City/O=Organization/CN={USER}.local"
     ], check=True)
     subprocess.run(["sudo", "systemctl", "reload", "nginx"], check=True)
     print("SSL certificates rotated and Nginx reloaded.")
@@ -302,6 +298,15 @@ def setup_nginx():
     subprocess.run(["sudo", "chown", f"{USER}:{GROUP}", LOGS_FOLDER_PATH], check=True)
 
     nginx_conf = f"""### NGINX CONF
+### NGINX CONF
+# Redirect HTTP traffic to HTTPS
+upstream {USER}.local {{
+    server unix:/run/gunicorn/gunicorn.sock fail_timeout=0;
+}}
+
+# to not display nginx server version in headers
+server_tokens             off;
+
 # Redirect HTTP traffic to HTTPS
 server {{
   listen 80;
@@ -316,6 +321,17 @@ server {{
 
   ssl_certificate {SSL_DIR}/{USER}.crt;
   ssl_certificate_key {SSL_DIR}/{USER}.key;
+
+  # General proxy settings
+  proxy_http_version 1.1;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header Host $host;
+  proxy_set_header Upgrade $http_upgrade;
+  proxy_set_header Connection "upgrade";
+  proxy_read_timeout 86400;
+
+  # if user file upload enabled this is for: file upload max size allowed
+  #client_max_body_size 2000M;
 
   location /favicon.ico {{
       access_log off;
@@ -348,13 +364,13 @@ server {{
   }}
 
   location /static/ {{
-      alias {STATIC_DESTINATION};
+      alias {STATIC_DESTINATION}/;
       expires 30d;
       add_header Cache-Control "public, max-age=2592000";
   }}
 
   location /media/ {{
-      alias {MEDIA_DESTINATION};
+      alias {MEDIA_DESTINATION}/;
       expires 30d;
       add_header Cache-Control "public, max-age=2592000";
   }}
@@ -365,7 +381,7 @@ server {{
 }}"""
 
     nginx_conf_path = f"/etc/nginx/sites-available/{USER}.local"
-    nginx_symlink_path = "/etc/nginx/sites-enabled/{USER}.local"
+    nginx_symlink_path = f"/etc/nginx/sites-enabled/{USER}.local"
 
     # Write Nginx configuration with sudo
     try:
@@ -377,8 +393,21 @@ server {{
     except Exception as e:
         print(f"Error writing Nginx configuration: {e}")
         return
-
-    # Restart Nginx to apply changes
+    '''
+    # when we runt he script sevral time happens that a file is created in `sites-enables` which causes error
+    # is is actually called `{USER}.local` cause forgot to put `f-string` before so should be fine to remove this code check
+    nginx_error_path_web_running_again_script = "/etc/nginx/sites-enabled/{USER}.local"
+    if not os.path.exists(nginx_error_path_web_running_again_script):
+      # Restart Nginx to apply changes
+      subprocess.run(["sudo", "systemctl", "restart", "nginx"], check=True)
+      print("Nginx installed and configured.")
+    # here we delete the file created by error and restart `nginx`
+    else:
+      # Restart Nginx to apply changes after having delete the troublesome file created
+      subprocess.run(["sudo", "systemctl", "restart", "nginx"], check=True)
+      subprocess.run(["sudo", "rm", nginx_error_path_web_running_again_script], check=True)
+      print("Nginx installed and configured.")
+    '''
     subprocess.run(["sudo", "systemctl", "restart", "nginx"], check=True)
     print("Nginx installed and configured.")
 
@@ -399,7 +428,8 @@ def prepare_django_app():
     for destination in [STATIC_DESTINATION, MEDIA_DESTINATION]:
         if not os.path.exists(destination):
             subprocess.run(["sudo", "mkdir", "-p", destination], check=True)
-        # Give ownership to the current user during preparation
+        # Give ownership to the current user during preparation to be able to copy without permission issues
+        # after later in this function we give right permissions when in the nginx location (`www-data` user)
         subprocess.run(["sudo", "chown", "-R", f"{USER}:{USER}", destination], check=True)
 
     try:
@@ -439,31 +469,55 @@ def prepare_django_app():
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
-def create_gunicorn_service():
-    import os
-    import subprocess
-    import time
+class Gunicorn:
 
-    print("Creating Gunicorn systemd service...")
+  def setup_gunicorn_center_dir():
 
-    USER = os.getenv("USER")
-    GROUP = os.getenv("GROUP")
-    PROJECT_DIR = os.getenv("PROJECT_DIR")
-    WORKERS = os.getenv("WORKERS")
-    GUNICORN_BINARY = os.getenv("GUNICORN_BINARY")
-    SOCK_FILE_DIR=os.getenv("SOCK_FILE_DIR")
-    SOCK_FILE_NAME=os.getenv("SOCK_FILE_NAME")
-    SOCK_FILE_PATH = os.path.join(SOCK_FILE_DIR, SOCK_FILE_NAME)
-    PROJECT_WSGI = os.getenv("PROJECT_WSGI")
-    LOG_DIR = os.path.join(PROJECT_DIR, "logs")
+      USER = os.getenv("USER")
+      GUNICORN_CENTRAL_DIR = os.getenv("GUNICORN_CENTRAL_DIR")
 
-    # Ensure the log directory exists and set permissions
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR, exist_ok=True)
-        subprocess.run(["sudo", "chown", "-R", f"{USER}:{GROUP}", LOG_DIR], check=True)
-        subprocess.run(["sudo", "chmod", "-R", "755", LOG_DIR], check=True)
+      if not os.path.exists(GUNICORN_CENTRAL_DIR):
+          try:
+              #os.makedirs(GUNICORN_CENTRAL_DIR, exist_ok=True)
+              subprocess.run(["sudo", "mkdir", GUNICORN_CENTRAL_DIR], check=True)
+              subprocess.run(["sudo", "chown", f"{USER}:{USER}", GUNICORN_CENTRAL_DIR], check=True)
+              subprocess.run(["sudo", "chmod", "-R", "755", GUNICORN_CENTRAL_DIR], check=True)
+              print(f"Directory {GUNICORN_CENTRAL_DIR} created successfully.")
+          except subprocess.CalledProcessError as e:
+              print(f"An error occurred: {e}")
+      else:
+          print(f"Directory {GUNICORN_CENTRAL_DIR} already exists. Just checking permissison and changing those to be sure")
+          subprocess.run(["sudo", "chown", f"{USER}:{USER}", GUNICORN_CENTRAL_DIR], check=True)
+          subprocess.run(["sudo", "chmod", "-R", "755", GUNICORN_CENTRAL_DIR], check=True)
 
-    gunicorn_service = f"""# see doc for more setup: https://docs.gunicorn.org/en/stable/deploy.html#systemd
+      print(f"Gunicorn logs directory created at {GUNICORN_CENTRAL_DIR}")
+
+  def create_gunicorn_service():
+      import os
+      import subprocess
+      import time
+
+      print("Creating Gunicorn systemd service...")
+
+      USER = os.getenv("USER")
+      GROUP = os.getenv("GROUP")
+      PROJECT_DIR = os.getenv("PROJECT_DIR")
+      WORKERS = os.getenv("WORKERS")
+      GUNICORN_BINARY = os.getenv("GUNICORN_BINARY")
+      SOCK_FILE_DIR=os.getenv("SOCK_FILE_DIR")
+      SOCK_FILE_NAME=os.getenv("SOCK_FILE_NAME")
+      SOCK_FILE_PATH = os.path.join(SOCK_FILE_DIR, SOCK_FILE_NAME)
+      PROJECT_WSGI = os.getenv("PROJECT_WSGI")
+      LOG_DIR = os.path.join(PROJECT_DIR, "logs")
+      
+
+      # Ensure the log directory exists and set permissions
+      if not os.path.exists(LOG_DIR):
+          os.makedirs(LOG_DIR, exist_ok=True)
+          subprocess.run(["sudo", "chown", "-R", f"{USER}:{GROUP}", LOG_DIR], check=True)
+          subprocess.run(["sudo", "chmod", "-R", "755", LOG_DIR], check=True)
+
+      gunicorn_service = f"""# see doc for more setup: https://docs.gunicorn.org/en/stable/deploy.html#systemd
 [Unit]
 Description=gunicorn daemon
 After=network.target
@@ -472,36 +526,41 @@ After=network.target
 User={USER}
 Group={GROUP}
 WorkingDirectory={PROJECT_DIR}
-ExecStart={GUNICORN_BINARY} --workers {WORKERS} --bind unix:{SOCK_FILE_PATH} --access-logfile {LOG_DIR}/gunicorn_access.log --error-logfile {LOG_DIR}/gunicorn_error.log {PROJECT_WSGI}:application
+# here `SOCK_FILE_PATH` is combinaison of env vars `SOCK_FILE_DIR`and `SOCK_FILE_NAME`
+ExecStart={GUNICORN_BINARY} --workers {WORKERS} --bind unix:{SOCK_FILE_PATH} {PROJECT_WSGI}:application
 
 [Install]
 WantedBy=multi-user.target
 """
 
-    # Write the service file
-    with open(f"{PROJECT_DIR}/setup_gunicorn.txt", "w") as service_file:
-        service_file.write(gunicorn_service)
+      # Write the service file
+      with open(f"{PROJECT_DIR}/setup_gunicorn.txt", "w") as service_file:
+          service_file.write(gunicorn_service)
 
-    # Move the service file to the systemd directory
-    subprocess.run(["sudo", "mv", f"{PROJECT_DIR}/setup_gunicorn.txt", "/etc/systemd/system/gunicorn.service"], check=True)
-    subprocess.run(["sudo", "systemctl", "daemon-reload"], check=True)
-    subprocess.run(["sudo", "systemctl", "enable", "gunicorn"], check=True)
-    subprocess.run(["sudo", "systemctl", "start", "gunicorn"], check=True)
+      # Move the service file to the systemd directory
+      subprocess.run(["sudo", "mv", f"{PROJECT_DIR}/setup_gunicorn.txt", "/etc/systemd/system/gunicorn.service"], check=True)
+      subprocess.run(["sudo", "systemctl", "daemon-reload"], check=True)
+      subprocess.run(["sudo", "systemctl", "enable", "gunicorn"], check=True)
+      subprocess.run(["sudo", "systemctl", "start", "gunicorn"], check=True)
 
-    # Wait for the socket file to be created
-    print("Waiting for the Gunicorn socket file to be created...")
-    for _ in range(10):  # Retry for up to 10 seconds
-        if os.path.exists(SOCK_FILE_PATH):
-            break
-        time.sleep(1)
-    else:
-        raise FileNotFoundError(f"Socket file {SOCK_FILE_PATH} was not created.")
+      # Wait for the socket file to be created
+      print("Waiting for the Gunicorn socket file to be created...")
+      for t in range(10):  # Retry for up to 10 seconds
+          if os.path.exists(SOCK_FILE_PATH):
+              break
+          time.sleep(5)
+          # restart `Gunicorn` service as the service might run correctly but the file not found and restarting it will create that damn file
+          if t == 5:
+              subprocess.run(["sudo", "systemctl", "restart", "gunicorn"], check=True)
+      else:
+          raise FileNotFoundError(f"Socket file {SOCK_FILE_PATH} was not created.")
 
-    # Set permissions for the socket dir
-    subprocess.run(["sudo", "chown", f"{USER}:{GROUP}", f"{SOCK_FILE_DIR}"], check=True)
-    subprocess.run(["sudo", "chmod", "-R", "755", f"{SOCK_FILE_DIR}"], check=True)
+      # Set permissions for the socket dir | not sure if needed as `gunicorn` service run as 'USER' and not 'ROOT'
+      subprocess.run(["sudo", "chown", f"{USER}:{GROUP}", f"{SOCK_FILE_DIR}"], check=True)
+      subprocess.run(["sudo", "chmod", "-R", "755", f"{SOCK_FILE_DIR}"], check=True)
 
-    print("Gunicorn service created and started.")
+      print("Gunicorn service created and started.")
+
 
 def configure_ufw():
     print("Configuring UFW firewall...")
@@ -652,29 +711,29 @@ networks:
 if __name__ == "__main__":
     try:
         # install python3.12 and setup environment and installs requirements
-        #install_python_dependencies()
-        # creates the gunicor log folder in root project directory
-        setup_gunicorn_center_dir()
+        install_python_dependencies()
         # install postgresql {version} and enables service, installs pgvector
-        #install_postgresql()
+        install_postgresql()
         # create user, database, activates pgvector, permissions, hba config set to md5
-        #configure_postgresql()
+        configure_postgresql()
         # setup ssl certificates self signed on domain `user.local` and updates `/etc/hosts` with `user.local`
-        #setup_ssl()
+        setup_ssl()
         # option to rotate ssl certificates and reloads nginx
-        #rotate_ssl_certificates()
-        # create systemd `gunicorn.service` file and enables it to start django server through `chatbotAI.wsgi`
-        create_gunicorn_service()
-        # setup nginx domain to serve django on `user.local` starts nginx service
-        setup_nginx()
+        # rotate_ssl_certificates()
         # does collecti static, migration and copy static to nginx path with permissions for nginx
         prepare_django_app()
+        # creates the gunicor log folder in root project directory
+        Gunicorn.setup_gunicorn_center_dir()
+        # create systemd `gunicorn.service` file and enables it to start django server through `chatbotAI.wsgi`
+        Gunicorn.create_gunicorn_service()
+        # setup nginx domain to serve django on `user.local` starts nginx service
+        setup_nginx()
         # configures the `ufw` to have only port 80 and 443 (http and https) opened
-        #configure_ufw()
+        configure_ufw()
         # created a `Dockerfile` for the project but doesn't build it just create the file
-        #create_dockerfile()
+        create_dockerfile()
         # creates a `docker-compose` file for the project but doesn't start stack has server `gunicorn`, database 'postgresql' with set version, proxy `nginx`, volumes and network
-        #create_docker_compose()
+        create_docker_compose()
         print("Setup completed successfully.")
     except subprocess.CalledProcessError as e:
         print(f"An error occurred: {e}")

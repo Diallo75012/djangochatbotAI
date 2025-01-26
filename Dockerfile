@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set up the virtual environment
-RUN python3 -m venv /home/creditizens/djangochatAI/chatbotAI/venv
-ENV PATH="/home/creditizens/djangochatAI/chatbotAI/venv/bin:$PATH"
+RUN python3 -m venv /home/creditizens//home/creditizens/djangochatAI/djangochatbotAI_venv
+ENV PATH="/home/creditizens//home/creditizens/djangochatAI/djangochatbotAI_venv/bin:$PATH"
 
 # Install Python dependencies
 COPY requirements.txt .
@@ -27,10 +27,10 @@ WORKDIR /app
 RUN groupadd -r creditizens && useradd --no-log-init -r -g creditizens creditizens
 
 # Copy virtual environment from the builder stage
-COPY --from=builder /home/creditizens/djangochatAI/chatbotAI/venv /home/creditizens/djangochatAI/chatbotAI/venv
+COPY --from=builder /home/creditizens//home/creditizens/djangochatAI/djangochatbotAI_venv /home/creditizens//home/creditizens/djangochatAI/djangochatbotAI_venv
 
 # Update PATH to use the virtual environment
-ENV PATH="/home/creditizens/djangochatAI/chatbotAI/venv/bin:$PATH"
+ENV PATH="/home/creditizens//home/creditizens/djangochatAI/djangochatbotAI_venv/bin:$PATH"
 
 # Copy project files
 COPY . /home/creditizens/djangochatAI/chatbotAI
@@ -41,4 +41,4 @@ RUN chown -R creditizens:creditizens /home/creditizens/djangochatAI/chatbotAI
 USER creditizens
 
 # Define the command to run the application
-CMD ["/home/creditizens/djangochatAI/chatbotAI/venv/bin/gunicorn", "-b", "0.0.0.0:8000", "chatbotAI.wsgi:application"]
+CMD ["/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/gunicorn", "-b", "0.0.0.0:8000", "chatbotAI.wsgi:application"]

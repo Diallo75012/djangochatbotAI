@@ -1,0 +1,17 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=creditizens
+Group=creditizens
+WorkingDirectory=/home/creditizens/djangochatAI/chatbotAI
+ExecStart=/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/gunicorn --workers 3 --bind unix:/run/gunicorn/gunicorn.sock chatbotAI.wsgi:application
+# see doc for more:https://docs.gunicorn.org/en/stable/deploy.html#systemd
+#Restart=on-failure
+#ExecReload=/bin/kill -s HUP $MAINPID
+#KillMode=mixed
+#TimeoutStopSec=5
+
+[Install]
+WantedBy=multi-user.target

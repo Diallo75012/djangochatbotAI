@@ -2170,17 +2170,22 @@ All of the rest works fine and have variabilized those, meaning that centralized
 - [x] setup nginx after gunicorn works
 - [x] use the wsl part to test the postgresql setup functions and the python dependencies installl creating a virtual env that we are going to get rid of when it works and after come back here to validate that it works fine
 - [x] fix nginx serving static files with correct permissions or copy those after a `collectstatic` to a folder where `nginx` or `www-data` user have permission.
-- [] update the `full_server setup` script with the correclt files as now the server works fine and nginx finds the static files correcly.
-- [] add logic to the script `full_server setup` to create right permissions and create the files and folders properly and to `reload-daemon` properly
+- [x] update the `full_server setup` script with the correclt files as now the server works fine and nginx finds the static files correcly.
+- [x] add logic to the script `full_server setup` to create right permissions and create the files and folders properly and to `reload-daemon` properly
 - [] do unit tests even if we don't want to do those, lets cover some percentage of the application using GPT or Gemini or Bolt.new/ottodev ....
 - [] check that the github action works fine
 - [] create container of app and also a docker-compose and see if it wokrs in local docker so that we can kubernetize it...
 - [] then use this app for any devops workflow that we want to do (push enhancement of app and have the ci/cd work by itself and do all necessary notifications (Dicord: the webhook stuff is simple and works fine so we will be using that)
-need to set the upstream in nginx to point to gunicorn with the domain name and in the sevrers under at any locatuon be proxy passing http://domain name..
-need to set permission on /run/gunicorn to the server user creditizens:creditizens
-for nginx access to static files make sure to not forget the `/` at he end of `../media/` and `../static/` path otherwise it will just `no such file in directory` error
-didn't need to change/set in nginx.cong the user from `www-data` to `creditizens` like in pdf_llm AI project previously while used doyble server behind ngins `sreamlit` and `django gunicorn`
-will get rid of the gunicorn service config that writes logs to file as django logging is already writing logs this would be just double logs so no need.
+
+# Lessons From Error Setting Up Full Server
+- need to set the upstream in nginx to point to gunicorn with the domain name and in the sevrers under at any location be proxy passing http://domain name..
+- need to set permission on /run/gunicorn to the server user creditizens:creditizens
+- for nginx access to static files make sure to not forget the `/` at he end of `../media/` and `../static/` path otherwise it will just `no such file in directory` error
+- didn't need to change/set in nginx.conf the user from `www-data` to `creditizens` like in pdf_llm AI project previously while used doyble server behind ngins `sreamlit` and `django gunicorn`
+- will get rid of the gunicorn service config that writes logs to file as django logging is already writing logs this would be just double logs so no need.
+
+After that it worked perfectly!!!!
+
 ### Nginx config file to variablize:
 ```bash
 ### NGINX CONF
@@ -2337,3 +2342,36 @@ SUM:                           314           8421           7237          37452
 -------------------------------------------------------------------------------
 '''
 ```
+
+# Purge openssl and do a fresh start as it is not standard
+Got to install some torch libraries and other stuff for testing in my server, feel like it has messed up with openssl.
+so the script should do fresh install of openssl for consistency purpose. 
+As it worked before without any issues and now, I tested and it is not working anymore.
+
+```bash
+sudo apt purge openssl -y
+sudo apt autoremove --purge -y
+# Verify OpenSSL is Removed
+which openssl
+# If a path is returned, it means there’s another OpenSSL binary on your system. Locate it with:
+sudo find / -iname openssl
+# Manually delete any leftover OpenSSL-related binaries or files if necessary.
+
+### Reinstall OpenSSL
+sudo apt update
+sudo apt install openssl -y
+# Check the Installation. The default configuration file should be located at /etc/ssl/openssl.cnf.
+openssl version -a
+# Verify Default OpenSSL Configuration File
+ls -l /etc/ssl/openssl.cnf
+# If the file is missing or corrupt, reinstall the ca-certificates package, which ensures the correct configuration:
+sudo apt install --reinstall ca-certificates
+sudo apt update
+# Recreate Symbolic Links
+sudo ln -sf /etc/ssl/openssl.cnf /usr/lib/ssl/openssl.cnf
+# Test OpenSSL
+openssl req -x509 -newkey rsa:2048 -keyout test.key -out test.crt -days 365 -nodes
+
+
+
+
