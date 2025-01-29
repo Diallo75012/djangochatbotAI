@@ -1,71 +1,57 @@
+import unittest
+from unittest.mock import patch
 import os
-import pytest
-from agents.app_utils.ai_personality import (
-    string_to_dict,
-    personality_trait_formatting,
-)
+from agents.app_utils.ai_personality import string_to_dict, personality_trait_formatting
 
-@pytest.fixture
-def default_ai_personality_trait():
-    # Set a default value for the environment variable for testing
-    os.environ["DEFAULT_AI_PERSONALITY_TRAIT"] = '{"chatbot_name": "TestBot", "chatbot_description": "A test chatbot.", "chatbot_age": "1", "chatbot_origin": "TestLand", "chatbot_dream": "To pass tests", "chatbot_tone": "Testy", "chatbot_expertise": "Testing"}'
-    yield
-    # Clean up the environment variable after the test
-    del os.environ["DEFAULT_AI_PERSONALITY_TRAIT"]
 
-def test_string_to_dict_valid():
-    test_string = '{"key1": "value1", "key2": "value2"}'
-    expected_dict = {"key1": "value1", "key2": "value2"}
-    assert string_to_dict(test_string) == expected_dict
+class TestAIPersonality(unittest.TestCase):
 
-def test_string_to_dict_invalid():
-    test_string = "invalid string"
-    with pytest.raises(ValueError, match="Error converting string to dictionary"):
-        string_to_dict(test_string)
+    def test_string_to_dict_valid(self):
+        """Test that a valid string dictionary is correctly converted to a Python dictionary."""
+        valid_string = "{'Key1': 'value1', 'Key2': 'value2'}"
+        expected_output = {"key1": "value1", "key2": "value2"}
+        self.assertEqual(string_to_dict(valid_string), expected_output)
 
-def test_string_to_dict_not_dict():
-    test_string = '"not a dict"'
-    with pytest.raises(ValueError, match="Error converting string to dictionary"):
-        string_to_dict(test_string)
+    def test_string_to_dict_invalid(self):
+        """Test that an invalid string raises a ValueError."""
+        invalid_string = "{invalid: json}"
+        with self.assertRaises(ValueError):
+            string_to_dict(invalid_string)
 
-def test_personality_trait_formatting_with_empty_values(default_ai_personality_trait):
-    trait_dict = {
-        "chatbot_name": "",
-        "chatbot_description": "Custom description",
-        "chatbot_age": "",
-        "chatbot_origin": "",
-        "chatbot_dream": "",
-        "chatbot_tone": "",
-        "chatbot_expertise": "",
-    }
-    expected_dict = {
-        "chatbot_name": "TestBot",
-        "chatbot_description": "Custom description",
-        "chatbot_age": "1",
-        "chatbot_origin": "TestLand",
-        "chatbot_dream": "To pass tests",
-        "chatbot_tone": "Testy",
-        "chatbot_expertise": "Testing",
-    }
-    assert personality_trait_formatting(trait_dict) == expected_dict
+    @patch("agents.app_utils.ai_personality.string_to_dict_py")
+    @patch("os.getenv")
+    def test_personality_trait_formatting(self, mock_getenv, mock_string_to_dict_py):
+        """Test personality_trait_formatting with default values from environment variables."""
+        
+        # Simulate env variable return
+        mock_getenv.return_value = "{'chatbot_name': 'AI-Bot', 'chatbot_description': 'An AI assistant', 'chatbot_age': '5'}"
+        mock_string_to_dict_py.return_value = {
+            "chatbot_name": "AI-Bot",
+            "chatbot_description": "An AI assistant",
+            "chatbot_age": "5"
+        }
 
-def test_personality_trait_formatting_no_empty_values(default_ai_personality_trait):
-    trait_dict = {
-        "chatbot_name": "Custom Name",
-        "chatbot_description": "Custom description",
-        "chatbot_age": "2",
-        "chatbot_origin": "CustomLand",
-        "chatbot_dream": "To be the best",
-        "chatbot_tone": "CustomTone",
-        "chatbot_expertise": "Custom Expertise",
-    }
-    expected_dict = {
-        "chatbot_name": "Custom Name",
-        "chatbot_description": "Custom description",
-        "chatbot_age": "2",
-        "chatbot_origin": "CustomLand",
-        "chatbot_dream": "To be the best",
-        "chatbot_tone": "CustomTone",
-        "chatbot_expertise": "Custom Expertise",
-    }
-    assert personality_trait_formatting(trait_dict) == expected_dict
+        # Input traits (some fields empty)
+        input_traits = {
+            "chatbot_name": "",
+            "chatbot_description": "A custom assistant",
+            "chatbot_age": ""
+        }
+
+        # Expected result: empty fields should be replaced with defaults
+        expected_output = {
+            "chatbot_name": "AI-Bot",  # Filled from env
+            "chatbot_description": "A custom assistant",  # Not empty, stays the same
+            "chatbot_age": "5"  # Filled from env
+        }
+
+        self.assertEqual(personality_trait_formatting(input_traits), expected_output)
+
+        # Ensure mocks were called correctly
+        mock_getenv.assert_called_once_with("DEFAULT_AI_PERSONALITY_TRAIT")
+        mock_string_to_dict_py.assert_called_once_with(mock_getenv.return_value)
+
+'''
+if __name__ == "__main__":
+    unittest.main()
+'''

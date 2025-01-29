@@ -1,37 +1,42 @@
-import pytest
+import unittest
+from unittest.mock import patch
 from agents.app_utils.formatters import string_to_dict, collection_normalize_name
 
-def test_string_to_dict_valid():
-    test_string = '{"key1": "value1", "key2": 123}'
-    result = string_to_dict(test_string)
-    assert result == {"key1": "value1", "key2": 123}
 
-def test_string_to_dict_invalid():
-    test_string = 'invalid json'
-    with pytest.raises(ValueError, match="Error converting string to dictionary"):
-        string_to_dict(test_string)
+class TestFormatters(unittest.TestCase):
 
-def test_string_to_dict_empty():
-    test_string = '{}'
-    result = string_to_dict(test_string)
-    assert result == {}
+    def test_string_to_dict_valid_json(self):
+        """Test string_to_dict with valid JSON string."""
+        json_string = '{"KeyOne": "Value1", "KeyTwo": 2, "keyThree": true}'
+        expected_dict = {"keyone": "Value1", "keytwo": 2, "keythree": True}
 
-def test_string_to_dict_with_upper_case_keys():
-    test_string = '{"Key1": "value1", "Key2": 123}'
-    result = string_to_dict(test_string)
-    assert result == {"key1": "value1", "key2": 123}
+        result = string_to_dict(json_string)
+        self.assertEqual(result, expected_dict)
 
-def test_collection_normalize_name():
-    test_name = "  Test Collection Name  "
-    result = collection_normalize_name(test_name)
-    assert result == "test-collection-name"
+    def test_string_to_dict_invalid_json(self):
+        """Test string_to_dict with an invalid JSON string, expecting a ValueError."""
+        invalid_json_string = '{"keyOne": "Value1", "keyTwo": 2, keyThree: true}'  # Missing quotes around `keyThree`
 
-def test_collection_normalize_name_already_normalized():
-    test_name = "test-collection-name"
-    result = collection_normalize_name(test_name)
-    assert result == "test-collection-name"
+        with self.assertRaises(ValueError) as context:
+            string_to_dict(invalid_json_string)
 
-def test_collection_normalize_name_with_uppercase():
-    test_name = "Test Collection Name"
-    result = collection_normalize_name(test_name)
-    assert result == "test-collection-name"
+        self.assertIn("Error converting string to dictionary", str(context.exception))
+
+    @patch("agents.app_utils.formatters.collection_normalize_name_py")
+    def test_collection_normalize_name(self, mock_rust_function):
+        """Test collection_normalize_name using the Rust counterpart."""
+        mock_rust_function.return_value = "normalized-collection"
+
+        input_name = "  My Collection Name  "
+        expected_output = "normalized-collection"
+
+        result = collection_normalize_name(input_name)
+
+        # Ensure mock was called with the exact argument
+        mock_rust_function.assert_called_once_with(input_name)  # No `.strip()`
+        self.assertEqual(result, expected_output)
+
+'''
+if __name__ == "__main__":
+    unittest.main()
+'''

@@ -2372,6 +2372,28 @@ sudo ln -sf /etc/ssl/openssl.cnf /usr/lib/ssl/openssl.cnf
 # Test OpenSSL
 openssl req -x509 -newkey rsa:2048 -keyout test.key -out test.crt -days 365 -nodes
 
+# **Unit Tests Better With `ChatGPT4o`**
+Will continue to work on those unit test with `ChatGPT4o` as the `gemini-2.0-flash-exp` is a bit tired...
+```bash
+coverage run --source='.' -m pytest --ds=chatbotAI.settings --cache-clear
+================================================================= test session starts ==================================================================
+platform linux -- Python 3.12.7, pytest-8.3.3, pluggy-1.5.0
+django: version: 5.1.3, settings: chatbotAI.settings (from option)
+rootdir: /home/creditizens/aider_assistant/aider_working_project_dir
+plugins: django-4.9.0, anyio-4.7.0
+collected 31 items                                                                                                                                     
 
+tests/agents/test_ai_personality.py ...                                                                                                          [  9%]
+tests/agents/test_beautiful_graph_output.py ...                                                                                                  [ 19%]
+tests/agents/test_call_llm.py ....                                                                                                               [ 32%]
+tests/agents/test_delete_embeddings.py ..                                                                                                        [ 38%]
+tests/agents/test_embed_data.py ..                                                                                                               [ 45%]
+tests/agents/test_formatters.py ...                                                                                                              [ 54%]
+tests/agents/test_json_dumps_manager.py ....                                                                                                     [ 67%]
+tests/agents/test_prompt_creation.py ....                                                                                                        [ 80%]
+tests/agents/test_retrieve_answer.py ....                                                                                                        [ 93%]
+tests/agents/test_token_count_helper.py ..                                                                                                       [100%]
 
+================================================================== 31 passed in 6.36s ===
+```
 
