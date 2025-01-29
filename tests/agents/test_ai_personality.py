@@ -1,55 +1,60 @@
 import unittest
-from unittest.mock import patch
+import json
 import os
-from agents.app_utils.ai_personality import string_to_dict, personality_trait_formatting
+from agents.app_utils.ai_personality import personality_trait_formatting
+from rust_lib import string_to_dict_py
 
 
 class TestAIPersonality(unittest.TestCase):
 
     def test_string_to_dict_valid(self):
-        """Test that a valid string dictionary is correctly converted to a Python dictionary."""
-        valid_string = "{'Key1': 'value1', 'Key2': 'value2'}"
-        expected_output = {"key1": "value1", "key2": "value2"}
-        self.assertEqual(string_to_dict(valid_string), expected_output)
+        """Test that a valid JSON string dictionary is correctly converted to a Python dictionary."""
+        valid_json_string = '{"Key1": "value1", "Key2": "value2"}'  # ✅ FIX: Use JSON format
+        expected_output = {"key1": "value1", "key2": "value2"}  # ✅ Ensures lowercase keys
+
+        self.assertEqual(string_to_dict_py(valid_json_string), expected_output)  # ✅ FIXED
 
     def test_string_to_dict_invalid(self):
         """Test that an invalid string raises a ValueError."""
-        invalid_string = "{invalid: json}"
+        invalid_string = "{invalid: json}"  # Still an invalid format
         with self.assertRaises(ValueError):
-            string_to_dict(invalid_string)
+            string_to_dict_py(invalid_string)
 
-    @patch("agents.app_utils.ai_personality.string_to_dict_py")
-    @patch("os.getenv")
-    def test_personality_trait_formatting(self, mock_getenv, mock_string_to_dict_py):
+    def test_personality_trait_formatting(self):
         """Test personality_trait_formatting with default values from environment variables."""
         
-        # Simulate env variable return
-        mock_getenv.return_value = "{'chatbot_name': 'AI-Bot', 'chatbot_description': 'An AI assistant', 'chatbot_age': '5'}"
-        mock_string_to_dict_py.return_value = {
+        # ✅ FIX: Use JSON format for `DEFAULT_AI_PERSONALITY_TRAIT`
+        default_traits = {
             "chatbot_name": "AI-Bot",
             "chatbot_description": "An AI assistant",
             "chatbot_age": "5"
         }
+        os.environ["DEFAULT_AI_PERSONALITY_TRAIT"] = json.dumps(default_traits)
 
         # Input traits (some fields empty)
         input_traits = {
-            "chatbot_name": "",
-            "chatbot_description": "A custom assistant",
-            "chatbot_age": ""
+            "chatbot_name": "",  # Should be replaced with "AI-Bot"
+            "chatbot_description": "A custom assistant",  # Should remain unchanged
+            "chatbot_age": ""  # Should be replaced with "5"
         }
 
-        # Expected result: empty fields should be replaced with defaults
         expected_output = {
-            "chatbot_name": "AI-Bot",  # Filled from env
-            "chatbot_description": "A custom assistant",  # Not empty, stays the same
-            "chatbot_age": "5"  # Filled from env
+            "chatbot_name": "AI-Bot",  # ✅ FIXED
+            "chatbot_description": "A custom assistant",
+            "chatbot_age": "5"  # ✅ FIXED
         }
 
-        self.assertEqual(personality_trait_formatting(input_traits), expected_output)
+        try:
+            result = personality_trait_formatting(input_traits)
+            print("\n=== Rust Function Debugging ===")
+            print("Input Traits:", json.dumps(input_traits, indent=2))
+            print("Default Traits:", json.dumps(default_traits, indent=2))
+            print("Rust Function Output:", result)
 
-        # Ensure mocks were called correctly
-        mock_getenv.assert_called_once_with("DEFAULT_AI_PERSONALITY_TRAIT")
-        mock_string_to_dict_py.assert_called_once_with(mock_getenv.return_value)
+            self.assertEqual(result, expected_output)
+        except Exception as e:
+            print("Rust function failed:", str(e))
+            self.fail(f"Rust function failed unexpectedly: {str(e)}")
 
 '''
 if __name__ == "__main__":

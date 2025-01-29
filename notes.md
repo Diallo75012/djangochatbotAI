@@ -2397,3 +2397,47 @@ tests/agents/test_token_count_helper.py ..                                      
 ================================================================== 31 passed in 6.36s ===
 ```
 
+
+
+# `AIDER` Unit Test Coder Assistnat
+Using here `Architect` node in a `Python` script where the config files are used to have:
+- `gemini` as Architect
+- `cerebras llama3.3-7b` as secondary model
+- `groq llama3.3-70b` as fallback separate config.
+
+Need to install requirements and for the `rust_lib` need to `cd` in the folder and run `maturin` develop tobuild all `PYo3` dependencies.
+(`have commented out the line form requirements.txt that is trying to build rust from github links as it fails everytimes. so it will be a two step. `)
+- 2 steps are therefore:
+  - `pip install -r requirements.txt` # this will install `maturin` and the rest
+  - `cd rust_lib && maturin develop` # this will build `PYo3` rust libraries
+
+Need also to do a `git init` in the root directory of the project for `aider` to commit there and be aware of files and folders from there.
+- run `git init`
+- then start the script
+```bash
+python3 aider_assistant_unit_test_coder.py
+```
+
+# runnin aider command
+```bash
+aider --auto-commit --model gemini/gemini-2.0-flash-exp --architect --editor-model groq/deepseek-r1-distill-llama-70b
+```
+- use `/add` to add files to `aider` context
+- use `/drop` to drop files from the context of `aider`
+- use `/read-only`to put files as `read-only` to aider context so it doesn't chnage their content
+
+- **Warning with `aider`**: be careful as even though we can control a bi the context and what is changed, 
+    `aider` will always try to ask you to put a file in its context or try to ask you if it can change it,
+     this is `Hallucination`. Just say `N` (no) and repeat your query.
+
+
+
+### Running test command to target one test file or folder
+```bash
+# like in `Rust` `Pytest` is using `::` to reference the tree 
+coverage run --source='.' -m pytest --ds=chatbotAI.settings --cache-clear tests/clientchat/test_views.py::TestClientUserChatView
+```
+
+- have done tests with chatGPT4o until it becomes weak and have been in Gemini and it could do it easily.
+- so i will be keeping doing that to gain some time until au unit tests are done.
+

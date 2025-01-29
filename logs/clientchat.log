@@ -1,3 +1,112 @@
-{"time": "2024-12-28 23:19:25,470", "level": "CRITICAL", "name": "httpx", "message": "critic clientchat", "user_id": "anonymous"}
-{"time": "2024-12-28 23:19:25,551", "level": "ERROR", "name": "httpx", "message": "err clientchat", "user_id": "anonymous"}
-{"time": "2024-12-28 23:19:25,553", "level": "WARNING", "name": "httpx", "message": "warn clientchat", "user_id": "anonymous"}
+{"time": "2025-01-29 14:18:11,592", "level": "INFO", "name": "clientchat", "message": "default chatbot: Test Chatbot: Test Description...| From None-None", "user_id": "17"}
+{"time": "2025-01-29 14:18:12,459", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "", "chatbot_description": "", "message": "Test message", "document_title_id": "2"}'", "user_id": "18"}
+{"time": "2025-01-29 14:18:12,459", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': '', 'chatbot_description': '', 'message': 'Test message', 'document_title_id': '2'}", "user_id": "18"}
+{"time": "2025-01-29 14:18:12,485", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 2, Type 2:  <class 'int'>", "user_id": "18"}
+{"time": "2025-01-29 14:18:12,489", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "18"}
+{"time": "2025-01-29 14:18:12,509", "level": "INFO", "name": "clientchat", "message": "chatbot_name or chatbot_description missing.", "user_id": "18"}
+{"time": "2025-01-29 14:18:13,258", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "3"}'", "user_id": "19"}
+{"time": "2025-01-29 14:18:13,258", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '3'}", "user_id": "19"}
+{"time": "2025-01-29 14:18:13,278", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 3, Type 3:  <class 'int'>", "user_id": "19"}
+{"time": "2025-01-29 14:18:13,282", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "19"}
+{"time": "2025-01-29 14:18:13,325", "level": "INFO", "name": "clientchat", "message": "An error occured while trying to get retrieved data from clientchat view: 400", "user_id": "19"}
+{"time": "2025-01-29 14:18:13,797", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "4"}'", "user_id": "20"}
+{"time": "2025-01-29 14:18:13,798", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '4'}", "user_id": "20"}
+{"time": "2025-01-29 14:18:13,812", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 4, Type 4:  <class 'int'>", "user_id": "20"}
+{"time": "2025-01-29 14:18:13,812", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "20"}
+{"time": "2025-01-29 14:18:13,847", "level": "INFO", "name": "clientchat", "message": "Bot Response Content: This is a mock response from the retrieval agent.", "user_id": "20"}
+{"time": "2025-01-29 14:26:12,610", "level": "INFO", "name": "clientchat", "message": "default chatbot: Test Chatbot: Test Description...| From None-None", "user_id": "17"}
+{"time": "2025-01-29 14:26:13,424", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "", "chatbot_description": "", "message": "Test message", "document_title_id": "2"}'", "user_id": "18"}
+{"time": "2025-01-29 14:26:13,425", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': '', 'chatbot_description': '', 'message': 'Test message', 'document_title_id': '2'}", "user_id": "18"}
+{"time": "2025-01-29 14:26:13,441", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 2, Type 2:  <class 'int'>", "user_id": "18"}
+{"time": "2025-01-29 14:26:13,444", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "18"}
+{"time": "2025-01-29 14:26:13,461", "level": "INFO", "name": "clientchat", "message": "chatbot_name or chatbot_description missing.", "user_id": "18"}
+{"time": "2025-01-29 14:26:13,945", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "3"}'", "user_id": "19"}
+{"time": "2025-01-29 14:26:13,946", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '3'}", "user_id": "19"}
+{"time": "2025-01-29 14:26:13,966", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 3, Type 3:  <class 'int'>", "user_id": "19"}
+{"time": "2025-01-29 14:26:13,969", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "19"}
+{"time": "2025-01-29 14:26:14,014", "level": "INFO", "name": "clientchat", "message": "An error occured while trying to get retrieved data from clientchat view: 400", "user_id": "19"}
+{"time": "2025-01-29 14:26:14,492", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "4"}'", "user_id": "20"}
+{"time": "2025-01-29 14:26:14,493", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '4'}", "user_id": "20"}
+{"time": "2025-01-29 14:26:14,512", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 4, Type 4:  <class 'int'>", "user_id": "20"}
+{"time": "2025-01-29 14:26:14,512", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "20"}
+{"time": "2025-01-29 14:26:14,561", "level": "INFO", "name": "clientchat", "message": "Bot Response Content: This is a mock response from the retrieval agent.", "user_id": "20"}
+{"time": "2025-01-29 14:32:20,562", "level": "INFO", "name": "clientchat", "message": "default chatbot: Test Chatbot: Test Description...| From None-None", "user_id": "17"}
+{"time": "2025-01-29 14:32:21,358", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "", "chatbot_description": "", "message": "Test message", "document_title_id": "2"}'", "user_id": "18"}
+{"time": "2025-01-29 14:32:21,358", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': '', 'chatbot_description': '', 'message': 'Test message', 'document_title_id': '2'}", "user_id": "18"}
+{"time": "2025-01-29 14:32:21,374", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 2, Type 2:  <class 'int'>", "user_id": "18"}
+{"time": "2025-01-29 14:32:21,378", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "18"}
+{"time": "2025-01-29 14:32:21,398", "level": "INFO", "name": "clientchat", "message": "chatbot_name or chatbot_description missing.", "user_id": "18"}
+{"time": "2025-01-29 14:32:21,893", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "3"}'", "user_id": "19"}
+{"time": "2025-01-29 14:32:21,893", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '3'}", "user_id": "19"}
+{"time": "2025-01-29 14:32:21,916", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 3, Type 3:  <class 'int'>", "user_id": "19"}
+{"time": "2025-01-29 14:32:21,919", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "19"}
+{"time": "2025-01-29 14:32:21,963", "level": "INFO", "name": "clientchat", "message": "An error occured while trying to get retrieved data from clientchat view: 400", "user_id": "19"}
+{"time": "2025-01-29 14:32:22,439", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "4"}'", "user_id": "20"}
+{"time": "2025-01-29 14:32:22,440", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '4'}", "user_id": "20"}
+{"time": "2025-01-29 14:32:22,459", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 4, Type 4:  <class 'int'>", "user_id": "20"}
+{"time": "2025-01-29 14:32:22,459", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "20"}
+{"time": "2025-01-29 14:32:22,503", "level": "INFO", "name": "clientchat", "message": "Bot Response Content: This is a mock response from the retrieval agent.", "user_id": "20"}
+{"time": "2025-01-29 14:33:41,243", "level": "INFO", "name": "clientchat", "message": "default chatbot: Test Chatbot: Test Description...| From None-None", "user_id": "17"}
+{"time": "2025-01-29 14:33:41,925", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "", "chatbot_description": "", "message": "Test message", "document_title_id": "2"}'", "user_id": "18"}
+{"time": "2025-01-29 14:33:41,925", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': '', 'chatbot_description': '', 'message': 'Test message', 'document_title_id': '2'}", "user_id": "18"}
+{"time": "2025-01-29 14:33:41,941", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 2, Type 2:  <class 'int'>", "user_id": "18"}
+{"time": "2025-01-29 14:33:41,944", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "18"}
+{"time": "2025-01-29 14:33:41,960", "level": "INFO", "name": "clientchat", "message": "chatbot_name or chatbot_description missing.", "user_id": "18"}
+{"time": "2025-01-29 14:33:42,429", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "3"}'", "user_id": "19"}
+{"time": "2025-01-29 14:33:42,430", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '3'}", "user_id": "19"}
+{"time": "2025-01-29 14:33:42,448", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 3, Type 3:  <class 'int'>", "user_id": "19"}
+{"time": "2025-01-29 14:33:42,451", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "19"}
+{"time": "2025-01-29 14:33:42,492", "level": "INFO", "name": "clientchat", "message": "An error occured while trying to get retrieved data from clientchat view: 400", "user_id": "19"}
+{"time": "2025-01-29 14:33:42,983", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "4"}'", "user_id": "20"}
+{"time": "2025-01-29 14:33:42,984", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '4'}", "user_id": "20"}
+{"time": "2025-01-29 14:33:42,999", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 4, Type 4:  <class 'int'>", "user_id": "20"}
+{"time": "2025-01-29 14:33:43,000", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "20"}
+{"time": "2025-01-29 14:33:43,039", "level": "INFO", "name": "clientchat", "message": "Bot Response Content: This is a mock response from the retrieval agent.", "user_id": "20"}
+{"time": "2025-01-29 14:41:18,037", "level": "INFO", "name": "clientchat", "message": "default chatbot: Test Chatbot: Test Description...| From None-None", "user_id": "17"}
+{"time": "2025-01-29 14:41:18,744", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "", "chatbot_description": "", "message": "Test message", "document_title_id": "2"}'", "user_id": "18"}
+{"time": "2025-01-29 14:41:18,745", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': '', 'chatbot_description': '', 'message': 'Test message', 'document_title_id': '2'}", "user_id": "18"}
+{"time": "2025-01-29 14:41:18,761", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 2, Type 2:  <class 'int'>", "user_id": "18"}
+{"time": "2025-01-29 14:41:18,766", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "18"}
+{"time": "2025-01-29 14:41:18,786", "level": "INFO", "name": "clientchat", "message": "chatbot_name or chatbot_description missing.", "user_id": "18"}
+{"time": "2025-01-29 14:41:19,287", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "3"}'", "user_id": "19"}
+{"time": "2025-01-29 14:41:19,288", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '3'}", "user_id": "19"}
+{"time": "2025-01-29 14:41:19,304", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 3, Type 3:  <class 'int'>", "user_id": "19"}
+{"time": "2025-01-29 14:41:19,307", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "19"}
+{"time": "2025-01-29 14:41:19,352", "level": "INFO", "name": "clientchat", "message": "An error occured while trying to get retrieved data from clientchat view: 400", "user_id": "19"}
+{"time": "2025-01-29 14:41:19,827", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "4"}'", "user_id": "20"}
+{"time": "2025-01-29 14:41:19,827", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '4'}", "user_id": "20"}
+{"time": "2025-01-29 14:41:19,845", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 4, Type 4:  <class 'int'>", "user_id": "20"}
+{"time": "2025-01-29 14:41:19,846", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "20"}
+{"time": "2025-01-29 14:41:19,890", "level": "INFO", "name": "clientchat", "message": "Bot Response Content: This is a mock response from the retrieval agent.", "user_id": "20"}
+{"time": "2025-01-29 14:50:29,970", "level": "INFO", "name": "clientchat", "message": "default chatbot: Test Chatbot: Test Description...| From None-None", "user_id": "17"}
+{"time": "2025-01-29 14:50:30,774", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "", "chatbot_description": "", "message": "Test message", "document_title_id": "2"}'", "user_id": "18"}
+{"time": "2025-01-29 14:50:30,775", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': '', 'chatbot_description': '', 'message': 'Test message', 'document_title_id': '2'}", "user_id": "18"}
+{"time": "2025-01-29 14:50:30,791", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 2, Type 2:  <class 'int'>", "user_id": "18"}
+{"time": "2025-01-29 14:50:30,793", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "18"}
+{"time": "2025-01-29 14:50:30,810", "level": "INFO", "name": "clientchat", "message": "chatbot_name or chatbot_description missing.", "user_id": "18"}
+{"time": "2025-01-29 14:50:31,300", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "3"}'", "user_id": "19"}
+{"time": "2025-01-29 14:50:31,301", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '3'}", "user_id": "19"}
+{"time": "2025-01-29 14:50:31,317", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 3, Type 3:  <class 'int'>", "user_id": "19"}
+{"time": "2025-01-29 14:50:31,320", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "19"}
+{"time": "2025-01-29 14:50:31,365", "level": "INFO", "name": "clientchat", "message": "An error occured while trying to get retrieved data from clientchat view: 400", "user_id": "19"}
+{"time": "2025-01-29 14:50:31,865", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "4"}'", "user_id": "20"}
+{"time": "2025-01-29 14:50:31,866", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '4'}", "user_id": "20"}
+{"time": "2025-01-29 14:50:31,884", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 4, Type 4:  <class 'int'>", "user_id": "20"}
+{"time": "2025-01-29 14:50:31,884", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "20"}
+{"time": "2025-01-29 14:50:31,929", "level": "INFO", "name": "clientchat", "message": "Bot Response Content: This is a mock response from the retrieval agent.", "user_id": "20"}
+{"time": "2025-01-29 14:53:49,391", "level": "INFO", "name": "clientchat", "message": "default chatbot: Test Chatbot: Test Description...| From None-None", "user_id": "17"}
+{"time": "2025-01-29 14:53:50,041", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "", "chatbot_description": "", "message": "Test message", "document_title_id": "2"}'", "user_id": "18"}
+{"time": "2025-01-29 14:53:50,041", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': '', 'chatbot_description': '', 'message': 'Test message', 'document_title_id': '2'}", "user_id": "18"}
+{"time": "2025-01-29 14:53:50,057", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 2, Type 2:  <class 'int'>", "user_id": "18"}
+{"time": "2025-01-29 14:53:50,060", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "18"}
+{"time": "2025-01-29 14:53:50,077", "level": "INFO", "name": "clientchat", "message": "chatbot_name or chatbot_description missing.", "user_id": "18"}
+{"time": "2025-01-29 14:53:50,562", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "3"}'", "user_id": "19"}
+{"time": "2025-01-29 14:53:50,562", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '3'}", "user_id": "19"}
+{"time": "2025-01-29 14:53:50,579", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 3, Type 3:  <class 'int'>", "user_id": "19"}
+{"time": "2025-01-29 14:53:50,583", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "19"}
+{"time": "2025-01-29 14:53:50,632", "level": "INFO", "name": "clientchat", "message": "An error occured while trying to get retrieved data from clientchat view: 400", "user_id": "19"}
+{"time": "2025-01-29 14:53:51,109", "level": "INFO", "name": "clientchat", "message": "REQUEST SEND BY AJAX: b'{"chatbot_name": "AI Bot", "chatbot_description": "AI Assistant", "message": "Hello AI!", "document_title_id": "4"}'", "user_id": "20"}
+{"time": "2025-01-29 14:53:51,110", "level": "INFO", "name": "clientchat", "message": "Data send from javascript: {'chatbot_name': 'AI Bot', 'chatbot_description': 'AI Assistant', 'message': 'Hello AI!', 'document_title_id': '4'}", "user_id": "20"}
+{"time": "2025-01-29 14:53:51,130", "level": "INFO", "name": "clientchat", "message": "Document Title Id: 4, Type 4:  <class 'int'>", "user_id": "20"}
+{"time": "2025-01-29 14:53:51,131", "level": "INFO", "name": "clientchat", "message": "document_title_name: Test Document", "user_id": "20"}
+{"time": "2025-01-29 14:53:51,173", "level": "INFO", "name": "clientchat", "message": "Bot Response Content: This is a mock response from the retrieval agent.", "user_id": "20"}

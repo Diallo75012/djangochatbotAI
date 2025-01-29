@@ -77,10 +77,10 @@ def clientUserChat(request):
 
     # get document id received from Javascript and use it to fetch document title (save as env var)
     document_title_id = data.get('document_title_id')
-    
+
     clientchat_app_logger.info(f"Document Title Id: {document_title_id}, Type {int(document_title_id)}:  {type(int(document_title_id))}")
     print("Document Title Id: ", document_title_id, "Type int(document_title_id): ", type(int(document_title_id)))
-    
+
     # get document title to set it as en var for helper functions
     business_document = get_object_or_404(BusinessUserData, pk=int(document_title_id))
     document_title_name = business_document.document_title
@@ -95,12 +95,14 @@ def clientUserChat(request):
 
     # Check if required chatbot fields are missing
     if not chatbot_name or not chatbot_description:
-  
+
       clientchat_app_logger.info("chatbot_name or chatbot_description missing.")
       print("chatbot_name or chatbot_description missing.")
-  
+
       messages.error(request, "AI personality 'Name' and 'Description' are mandatory.")
-      return json({'error': 'Chatbot name and description are required.'})
+      # had to change that after unit test for httpresponse keeping it if any issue
+      #return json({'error': 'Chatbot name and description are required.'})
+      return HttpResponse(json.dumps({'error': 'Chatbot name and description are required.'}), content_type="application/json", status=400)
 
     # Gather other chatbot fields
     # default fields will be done by next logic `ai_personality_traits`
@@ -109,7 +111,7 @@ def clientUserChat(request):
     chatbot_dream = data.get('chatbot_dream', '')
     chatbot_tone = data.get('chatbot_tone', '')
     chatbot_expertise = data.get('chatbot_expertise', '')
-    
+
     # make a function that is going to handle ai personality and use default values if field not field by client user of business user settings
     ai_traits_dict = {
       "chatbot_name": chatbot_name,
