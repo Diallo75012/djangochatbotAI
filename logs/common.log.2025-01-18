@@ -1,0 +1,14 @@
+{"time": "2025-01-18 08:02:12,264", "level": "INFO", "name": "common", "message": "Log Analyzer Agent Status (runLogAnalyzer): Running", "user_id": "1"}
+{"time": "2025-01-18 08:03:09,151", "level": "INFO", "name": "common", "message": "Log Analyzer Agent Status (runLogAnalyzer): Success", "user_id": "1"}
+{"time": "2025-01-18 08:03:09,180", "level": "ERROR", "name": "common", "message": "Log Analyzer Agent storing record in db (db_recorder): Exception -> missing "=" after "postgresql+psycopg://creditizens:metaverse@localhost:5432/chatbotaidb" in connection info string
+", "user_id": "1"}
+{"time": "2025-01-18 08:03:09,181", "level": "INFO", "name": "common", "message": "Log Analyzer Agent Query (runLogAnalyzer): recording to db", "user_id": "1"}
+{"time": "2025-01-18 08:10:50,694", "level": "INFO", "name": "common", "message": "Log Analyzer Agent Status (runLogAnalyzer): Running", "user_id": "1"}
+{"time": "2025-01-18 08:11:45,068", "level": "INFO", "name": "common", "message": "Log Analyzer Agent Status (runLogAnalyzer): Success", "user_id": "1"}
+{"time": "2025-01-18 08:11:45,083", "level": "ERROR", "name": "common", "message": "Log Analyzer Agent storing record in db (db_recorder): Exception -> missing "=" after "postgresql+psycopg://creditizens:metaverse@localhost:5432/chatbotaidb" in connection info string
+", "user_id": "1"}
+{"time": "2025-01-18 08:11:45,083", "level": "INFO", "name": "common", "message": "Log Analyzer Agent Query (runLogAnalyzer): recording to db", "user_id": "1"}
+{"time": "2025-01-18 08:21:01,056", "level": "INFO", "name": "common", "message": "Log Analyzer Agent Status (runLogAnalyzer): Running", "user_id": "1"}
+{"time": "2025-01-18 08:22:13,164", "level": "INFO", "name": "common", "message": "Log Analyzer Agent Status (runLogAnalyzer): Running", "user_id": "1"}
+{"time": "2025-01-18 08:25:17,752", "level": "INFO", "name": "common", "message": "Log Analyzer Agent Status (runLogAnalyzer): Success", "user_id": "1"}
+{"time": "2025-01-18 08:25:17,816", "level": "INFO", "name": "common", "message": "Log Analyzer Agent Query (runLogAnalyzer): recording to db", "user_id": "1"}

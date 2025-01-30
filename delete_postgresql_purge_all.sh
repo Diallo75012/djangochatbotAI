@@ -1,3 +1,4 @@
+#!/usr/bin/bash
 sudo systemctl stop postgresql
 sudo DEBIAN_FRONTEND=noninteractive apt remove --purge postgresql postgresql-* -y
 sudo rm -rf /etc/postgresql /var/lib/postgresql

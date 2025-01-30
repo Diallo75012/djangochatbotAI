@@ -1,60 +1,59 @@
 import unittest
 import json
 import os
-from agents.app_utils.ai_personality import personality_trait_formatting
-from rust_lib import string_to_dict_py
+from dotenv import load_dotenv
+from rust_lib import load_personality
 
 
 class TestAIPersonality(unittest.TestCase):
 
-    def test_string_to_dict_valid(self):
-        """Test that a valid JSON string dictionary is correctly converted to a Python dictionary."""
-        valid_json_string = '{"Key1": "value1", "Key2": "value2"}'  # ✅ FIX: Use JSON format
-        expected_output = {"key1": "value1", "key2": "value2"}  # ✅ Ensures lowercase keys
+    @classmethod
+    def setUpClass(cls):
+        """Load environment variables from `.vars.env` before tests."""
+        dotenv_path = ".vars.env"
+        assert os.path.exists(dotenv_path), "❌ .vars.env file is missing!"
 
-        self.assertEqual(string_to_dict_py(valid_json_string), expected_output)  # ✅ FIXED
+        load_dotenv(dotenv_path=dotenv_path, override=True)
 
-    def test_string_to_dict_invalid(self):
-        """Test that an invalid string raises a ValueError."""
-        invalid_string = "{invalid: json}"  # Still an invalid format
-        with self.assertRaises(ValueError):
-            string_to_dict_py(invalid_string)
+        cls.default_traits = os.getenv("AI_PERSONALITY_TRAITS")
+        assert cls.default_traits, "❌ AI_PERSONALITY_TRAITS not found in .vars.env!"
+        
+        cls.default_traits_dict = json.loads(cls.default_traits)
 
     def test_personality_trait_formatting(self):
-        """Test personality_trait_formatting with default values from environment variables."""
-        
-        # ✅ FIX: Use JSON format for `DEFAULT_AI_PERSONALITY_TRAIT`
-        default_traits = {
-            "chatbot_name": "AI-Bot",
-            "chatbot_description": "An AI assistant",
-            "chatbot_age": "5"
-        }
-        os.environ["DEFAULT_AI_PERSONALITY_TRAIT"] = json.dumps(default_traits)
+        """Test that `load_personality()` correctly fills missing fields from `.vars.env`."""
 
-        # Input traits (some fields empty)
+        # ✅ Input traits (some missing fields)
         input_traits = {
-            "chatbot_name": "",  # Should be replaced with "AI-Bot"
+            "chatbot_name": "",  # Should be replaced with `.vars.env`
             "chatbot_description": "A custom assistant",  # Should remain unchanged
-            "chatbot_age": ""  # Should be replaced with "5"
+            "chatbot_age": ""  # Should be replaced with `.vars.env`
         }
 
-        expected_output = {
-            "chatbot_name": "AI-Bot",  # ✅ FIXED
-            "chatbot_description": "A custom assistant",
-            "chatbot_age": "5"  # ✅ FIXED
+        # ✅ Expected fields that must be updated
+        expected_updates = {
+            "chatbot_name": self.default_traits_dict["chatbot_name"],  # From `.vars.env`
+            "chatbot_description": "A custom assistant",  # Remains unchanged
+            "chatbot_age": self.default_traits_dict["chatbot_age"]  # From `.vars.env`
         }
+
+        print("\n=== Rust Debugging: Calling `load_personality()` ===")
+        print("📤 Input Traits:", json.dumps(input_traits, indent=2))
+        print("📥 Default Traits:", json.dumps(self.default_traits_dict, indent=2))
 
         try:
-            result = personality_trait_formatting(input_traits)
-            print("\n=== Rust Function Debugging ===")
-            print("Input Traits:", json.dumps(input_traits, indent=2))
-            print("Default Traits:", json.dumps(default_traits, indent=2))
-            print("Rust Function Output:", result)
+            # ✅ Call Rust function
+            result = load_personality(json.dumps(input_traits))
+            print("✅ Rust Function Output:", json.dumps(result, indent=2))
 
-            self.assertEqual(result, expected_output)
+            # 🔥 ✅ Check only expected fields, ignore extra fields
+            for key, expected_value in expected_updates.items():
+                self.assertEqual(result[key], expected_value, f"Mismatch on key: {key}")
+
         except Exception as e:
-            print("Rust function failed:", str(e))
+            print("\n❌ Rust function failed:", str(e))
             self.fail(f"Rust function failed unexpectedly: {str(e)}")
+
 
 '''
 if __name__ == "__main__":

@@ -2172,7 +2172,7 @@ All of the rest works fine and have variabilized those, meaning that centralized
 - [x] fix nginx serving static files with correct permissions or copy those after a `collectstatic` to a folder where `nginx` or `www-data` user have permission.
 - [x] update the `full_server setup` script with the correclt files as now the server works fine and nginx finds the static files correcly.
 - [x] add logic to the script `full_server setup` to create right permissions and create the files and folders properly and to `reload-daemon` properly
-- [] do unit tests even if we don't want to do those, lets cover some percentage of the application using GPT or Gemini or Bolt.new/ottodev ....
+- [x] do unit tests even if we don't want to do those, lets cover some percentage of the application using GPT or Gemini or Bolt.new/ottodev ....
 - [] check that the github action works fine
 - [] create container of app and also a docker-compose and see if it wokrs in local docker so that we can kubernetize it...
 - [] then use this app for any devops workflow that we want to do (push enhancement of app and have the ci/cd work by itself and do all necessary notifications (Dicord: the webhook stuff is simple and works fine so we will be using that)
@@ -2440,4 +2440,29 @@ coverage run --source='.' -m pytest --ds=chatbotAI.settings --cache-clear tests/
 
 - have done tests with chatGPT4o until it becomes weak and have been in Gemini and it could do it easily.
 - so i will be keeping doing that to gain some time until au unit tests are done.
+
+- if issue with `coverage report`, run `coverage erase` and rerun `coverage run --source='.' -m pytest --ds=chatbotAI.settings` and then you will be able to get report by running `coverage report`
+```bash
+# create a coverage config file
+nano .coveragerc
+[run]
+source = .
+omit =
+    */tests/*
+    */test/*
+    */migrations/*
+    manage.py
+    full_server_setup.py
+# then run
+coverage erase
+# rerun tests
+coverage run --source='.' --omit="*/tests/*,*/test/*,*/migrations/*,manage.py,full_server_setup.py" -m pytest --ds=chatbotAI.settings
+# save report
+coverage report >> coverage_report.md
+```
+
+# Next
+- [] check that the github action works fine
+- [] create container of app and also a docker-compose and see if it wokrs in local docker so that we can kubernetize it...
+- [] then use this app for any devops workflow that we want to do (push enhancement of app and have the ci/cd work by itself and do all necessary notifications (Dicord: the webhook stuff is simple and works fine so we will be using that)
 

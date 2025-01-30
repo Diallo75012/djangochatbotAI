@@ -10,7 +10,8 @@ pub fn personality_trait_formatting(
     mut trait_dict: HashMap<String, String>,
 ) -> Result<HashMap<String, String>, String> {
     // Load the default personality traits from the environment variable
-    let default_traits = load_env_variable("../../.vars.env", "AI_PERSONALITY_TRAITS")?;
+    // let default_traits = load_env_variable("../../.vars.env", "AI_PERSONALITY_TRAITS")?; // during unit test this path wasn't right
+    let default_traits = load_env_variable(".vars.env", "AI_PERSONALITY_TRAITS")?;  // it apparently loads from the django root project dir so no need ro `../../`
     log_debug_info(&format!("Check env var if loaded - default_traits: {:?}", default_traits));
 
     // Parse the default traits into a HashMap using serde_json

@@ -1,119 +1,102 @@
-{"time": "2025-01-29 14:18:05,553", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:06,370", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:06,376", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:06,376", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:06,377", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:06,377", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:06,508", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:07,372", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:07,375", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:07,376", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:07,376", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:07,376", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:07,377", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:07,377", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:08,220", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:08,220", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:18:08,221", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:06,479", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:07,335", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:07,339", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:07,339", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:07,339", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:07,339", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:07,474", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:08,375", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:08,379", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:08,380", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:08,380", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:08,380", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:08,380", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:08,381", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:09,244", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:09,245", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:26:09,245", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:14,459", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:15,422", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:15,425", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:15,426", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:15,426", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:15,426", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:15,552", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:16,402", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:16,407", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:16,407", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:16,407", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:16,407", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:16,408", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:16,408", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:17,267", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:17,267", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:32:17,268", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:35,189", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:36,051", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:36,055", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:36,055", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:36,055", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:36,055", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:36,190", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:37,061", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:37,066", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:37,066", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:37,067", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:37,067", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:37,067", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:37,067", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:37,946", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:37,947", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:33:37,947", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:11,870", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:12,791", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:12,795", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:12,796", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:12,797", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:12,797", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:12,931", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:13,793", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:13,797", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:13,797", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:13,797", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:13,798", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:13,798", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:13,798", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:14,654", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:14,654", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:41:14,654", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:23,975", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:24,850", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:24,853", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:24,853", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:24,854", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:24,854", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:24,975", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:25,822", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:25,827", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:25,829", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:25,829", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:25,830", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:25,830", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:25,830", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:26,692", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:26,693", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:50:26,693", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:43,404", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:44,254", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:44,257", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:44,257", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:44,257", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:44,258", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:44,400", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:45,276", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:45,279", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:45,279", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:45,279", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:45,279", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:45,280", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:45,280", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:46,102", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:46,102", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
-{"time": "2025-01-29 14:53:46,103", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:02,835", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:03,694", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:03,701", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:03,701", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:03,702", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:03,702", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:04,032", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:04,866", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:04,871", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:04,871", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:04,871", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:04,872", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:04,873", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:04,873", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:05,727", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:05,728", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
+{"time": "2025-01-30 03:31:05,728", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:01,535", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:02,390", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:02,395", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:02,395", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:02,396", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:02,396", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:02,534", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:03,398", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:03,403", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:03,404", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:03,404", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:03,404", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:03,405", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:03,405", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:04,285", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:04,285", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
+{"time": "2025-01-30 04:08:04,285", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:14,840", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:15,598", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:15,610", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:15,610", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:15,610", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:15,610", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:15,929", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:16,586", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:16,596", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:16,596", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:16,596", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:16,596", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:16,596", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:16,597", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:17,273", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:17,273", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:14:17,273", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:16,549", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:17,221", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:17,223", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:17,224", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:17,224", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:17,224", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:17,351", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:18,013", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:18,018", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:18,019", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:18,019", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:18,019", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:18,019", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:18,019", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:18,688", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:18,689", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:44:18,689", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:23,037", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:23,781", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:23,786", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:23,786", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:23,787", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:23,787", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:23,957", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:24,670", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:24,673", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:24,674", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:24,675", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:24,675", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:24,675", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:24,675", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:25,409", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:25,409", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:50:25,410", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:10,822", "level": "INFO", "name": "agents", "message": "DELETE COLLECTION RUST returned value: success, <class 'str'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:11,477", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:11,480", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:11,480", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:11,481", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:11,481", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:11,598", "level": "INFO", "name": "agents", "message": "{"error": "An error occured while trying to create embeddings: argument of type 'ResponseError' is not iterable"}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:12,254", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:12,257", "level": "INFO", "name": "agents", "message": "business question answers: {'Q1': 'A1'}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:12,257", "level": "INFO", "name": "agents", "message": "quesiton_answer: ('Q1', 'A1')", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:12,257", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:12,257", "level": "INFO", "name": "agents", "message": "Embedding document 1... please wait...", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:12,258", "level": "INFO", "name": "agents", "message": "embed data result: {'success': 'Embedding Successful'}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:12,258", "level": "INFO", "name": "agents", "message": "{"success": "(x1) Data successfully embeded, ready for client user retrieval."}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:12,910", "level": "INFO", "name": "agents", "message": "Retrieval Response RAW from agents to django view:  {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}, <class 'dict'>", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:12,910", "level": "INFO", "name": "agents", "message": "Retrieval JSON in retrieveData views: {'answer_to_user': {'messages': [{'role': 'ai', 'content': '{"response": "Test Answer"}'}]}}", "user_id": "anonymous"}
+{"time": "2025-01-30 05:53:12,910", "level": "INFO", "name": "agents", "message": "retrieval_message_content_json: {'response': 'Test Answer'}, <class 'dict'>, retrieval_message_content_json Keys(): dict_keys(['response'])", "user_id": "anonymous"}
