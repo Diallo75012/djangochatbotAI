@@ -72,7 +72,7 @@ jobs:
             sleep 5
           done
 
-      # Step 7: Run Migrations
+      # Step 6: Run migrations
       - name: Run migrations
         env:
           DBNAME: test_db
@@ -81,9 +81,10 @@ jobs:
           DBHOST: localhost
           DBPORT: 5432
         run: |
+          source venv/bin/activate  # Ensure the virtual environment is activated
           python manage.py migrate
 
-      # Step 8: Run Tests with Coverage
+      # Step 7: Run tests with coverage
       - name: Run tests with coverage
         env:
           DBNAME: test_db
@@ -92,11 +93,13 @@ jobs:
           DBHOST: localhost
           DBPORT: 5432
         run: |
+          source venv/bin/activate  # Activate virtual environment
           coverage run --source='.' -m pytest --ds=chatbotAI.settings
 
-      # Step 9: Generate and Upload Coverage Report
+      # Step 8: Generate and upload coverage report
       - name: Generate coverage report
         run: |
+          source venv/bin/activate  # Activate virtual environment
           coverage report
           coverage html
 
