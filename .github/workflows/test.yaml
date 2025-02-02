@@ -12,6 +12,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      GROQ_TEMPERATURE: ${{ secrets.GROQ_TEMPERATURE }}
+
     services:
       postgres:
         image: postgres:latest
@@ -39,6 +42,75 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.12
+
+    - name: Create .env file
+      run: |
+        echo "POSTGRES_VERSION=${{ secrets.POSTGRES_VERSION }}" >> .env
+        echo "DRIVER=${{ secrets.DRIVER }}" >> .env
+        echo "DBHOST=${{ secrets.DBHOST }}" >> .env
+        echo "DBPORT=${{ secrets.DBPORT }}" >> .env
+        echo "DBNAME=${{ secrets.DBNAME }}" >> .env
+        echo "DBUSER=${{ secrets.DBUSER }}" >> .env
+        echo "DBPASSWORD=${{ secrets.DBPASSWORD }}" >> .env
+        echo "DJANGO_SECRET=${{ secrets.DJANGO_SECRET }}" >> .env
+        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> .env
+        echo "MODEL_MIXTRAL_7B=${{ secrets.MODEL_MIXTRAL_7B }}" >> .env
+        echo "MODEL_LLAMA3_8B=${{ secrets.MODEL_LLAMA3_8B }}" >> .env
+        echo "MODEL_LLAMA3_70B=${{ secrets.MODEL_LLAMA3_70B }}" >> .env
+        echo "MODEL_LLAMA3_8B_TOOL_USE=${{ secrets.MODEL_LLAMA3_8B_TOOL_USE }}" >> .env
+        echo "MODEL_LLAMA3_70B_TOOL_USE=${{ secrets.MODEL_LLAMA3_70B_TOOL_USE }}" >> .env
+        echo "MODEL_LLAMA3_3_70B_VERSATILE=${{ secrets.MODEL_LLAMA3_3_70B_VERSATILE }}" >> .env
+        echo "MODEL_LLAMA3_VISION_LARGE=${{ secrets.MODEL_LLAMA3_VISION_LARGE }}" >> .env
+        echo "MODEL_GEMMA_7B=${{ secrets.MODEL_GEMMA_7B }}" >> .env
+        echo "MODEL_MIXTRAL_LARGER=${{ secrets.MODEL_MIXTRAL_LARGER }}" >> .env
+        echo "GROQ_MAX_TOKEN=${{ secrets.GROQ_MAX_TOKEN }}" >> .env
+        echo "GROQ_TEMPERATURE=${{ secrets.GROQ_TEMPERATURE }}" >> .env
+        echo "GROQ_TEMPERATURE_CREATIVE=${{ secrets.GROQ_TEMPERATURE_CREATIVE }}" >> .env
+        echo "SSL_DIR=${{ secrets.SSL_DIR }}" >> .env
+        echo "USER=${{ secrets.USER }}" >> .env
+        echo "NGINX_USER=${{ secrets.NGINX_USER }}" >> .env
+        echo "GROUP=${{ secrets.GROUP }}" >> .env
+        echo "PROJECT_DIR=${{ secrets.PROJECT_DIR }}" >> .env
+        echo "WORKERS=${{ secrets.WORKERS }}" >> .env
+        echo "GUNICORN_BINARY=${{ secrets.GUNICORN_BINARY }}" >> .env
+        echo "WORKERS=${{ secrets.WORKERS }}" >> .env
+        echo "SOCK_FILE_DIR=${{ secrets.SOCK_FILE_DIR }}" >> .env
+        echo "SOCK_FILE_NAME=${{ secrets.SOCK_FILE_NAME }}" >> .env
+        echo "PROJECT_WSGI=${{ secrets.PROJECT_WSGI }}" >> .env
+        echo "SUDO_PASSWORD=${{ secrets.SUDO_PASSWORD }}" >> .env
+        echo "NGINX_IMAGE=${{ secrets.NGINX_IMAGE }}" >> .env
+        echo "VIRTUAL_ENV_PATH_FROM_USER_HOME=${{ secrets.VIRTUAL_ENV_PATH_FROM_USER_HOME }}" >> .env
+        echo "LOGS_FOLDER_PATH=${{ secrets.LOGS_FOLDER_PATH }}" >> .env
+        echo "GUNICORN_CENTRAL_DIR=${{ secrets.GUNICORN_CENTRAL_DIR }}" >> .env
+        echo "STATIC_DESTINATION=${{ secrets.STATIC_DESTINATION }}" >> .env
+        echo "MEDIA_DESTINATION=${{ secrets.MEDIA_DESTINATION }}" >> .env
+        echo "OPENSSL_CONF_FILE_PATH=${{ secrets.OPENSSL_CONF_FILE_PATH }}" >> .env
+
+    - name: Create .vars.env file
+      run: |
+        echo "SCORE055=${{ vars.SCORE055 }}" >> .vars.env
+        echo "SCORE063=${{ vars.SCORE063 }}" >> .vars.env
+        echo "TOP_N=${{ vars.TOP_N }}" >> .vars.env
+        echo "RUST_LOGS_FOLDER_NAME=${{ vars.RUST_LOGS_FOLDER_NAME }}" >> .vars.env
+        echo "DJANGO_LOGS_FOLDER_NAME=${{ vars.DJANGO_LOGS_FOLDER_NAME }}" >> .vars.env
+        echo "FLAGS=${{ vars.FLAGS }}" >> .vars.env
+        echo "PYTHON_BINARY_ENV_PATH=${{ vars.PYTHON_BINARY_ENV_PATH }}" >> .vars.env
+        echo "LOG_AGENT_ANALYZER_FOLDER=${{ vars.LOG_AGENT_ANALYZER_FOLDER }}" >> .vars.env
+        echo "COPY_LOGS_DESTINATION_FOLDER=${{ vars.COPY_LOGS_DESTINATION_FOLDER }}" >> .vars.env
+        echo "LOGS_REPORT_CRITICAL_FILE_NAME=${{ vars.LOGS_REPORT_CRITICAL_FILE_NAME }}" >> .vars.env
+        echo "LOGS_REPORT_WARNING_FILE_NAME=${{ vars.LOGS_REPORT_WARNING_FILE_NAME }}" >> .vars.env
+        echo "LOGS_REPORT_ERROR_FILE_NAME=${{ vars.LOGS_REPORT_ERROR_FILE_NAME }}" >> .vars.env
+        echo "LOG_JOB_OUTPUT_FILE=${{ vars.LOG_JOB_OUTPUT_FILE }}" >> .vars.env
+        echo "LOG_AGENT_GRAPH_FILE_NAME=${{ vars.LOG_AGENT_GRAPH_FILE_NAME }}" >> .vars.env
+        echo "LOG_ANALYZER_ADVICE_TO_SEND_DISCORD_FOLDER=${{ vars.LOG_ANALYZER_ADVICE_TO_SEND_DISCORD_FOLDER }}" >> .vars.env
+        echo "LOG_AGENT_REPORTS_FOLDER=${{ vars.LOG_AGENT_REPORTS_FOLDER }}" >> .vars.env
+        echo "DEFAULT_AI_PERSONALITY_TRAIT=${{ vars.DEFAULT_AI_PERSONALITY_TRAIT }}" >> .vars.env
+        echo "THREAD_ID=${{ vars.THREAD_ID }}" >> .vars.env
+        echo "USER_INITIAL_QUERY=${{ vars.USER_INITIAL_QUERY }}" >> .vars.env
+        echo "DOCUMENT_TITLE=${{ vars.DOCUMENT_TITLE }}" >> .vars.env
+        echo "AI_PERSONALITY_TRAITS=${{ vars.AI_PERSONALITY_TRAITS }}" >> .vars.env
+        echo "REPHRASED_USER_QUERY=${{ vars.REPHRASED_USER_QUERY }}" >> .vars.env
+        echo "BUSINESS_COLLECTION_NAME=${{ vars.BUSINESS_COLLECTION_NAME }}" >> .vars.env
 
       # Step 3: Install System Dependencies
       - name: Install system dependencies
