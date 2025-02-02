@@ -42,7 +42,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential python3.12-dev libpq-dev libjpeg-dev zlib1g-dev cargo rustc
+          sudo apt-get install -y build-essential python3.12-dev libpq-dev libjpeg-dev zlib1g-dev cargo rustc graphviz graphviz-dev
 
       # Step 4: Install Python Dependencies
       - name: Install dependencies
