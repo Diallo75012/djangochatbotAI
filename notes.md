@@ -2600,3 +2600,18 @@ raise NotImplementedError	| Placeholder methods that are not meant to be execute
 | users/views.py                                  |      155 |       40 |     74% |
 |                                       **TOTAL** | **1592** |  **392** | **75%** |
 
+__________________________________________________________________________________________________
+
+# issues with `Githib actions`
+Requirements.tt got a line to install the rust libraray that we have created using `PyO3` but it will fail as `pip` can build that.
+Therefore we need to remove the line `-e git+https://github.com/Diallo75012/djangochatbotAI@55951cd92939a196c6bc6a6c08023063096cd065#egg=rust_lib&subdirectory=rust_lib`
+after each `pip freeze > requirements.txt`
+To install the `rust_lib` we need to:
+```bash
+# get all install including maturin
+pip install -r requiremnts.txt
+# go in the rust_lib
+cb rust_lib
+# compile the rust library into a Python one
+maturin develop
+```

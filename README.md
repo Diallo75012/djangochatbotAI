@@ -75,6 +75,16 @@ python3 manage.py runserver
 127.0.0.1:8000/ # this will display error page with route available or dig in the code `urls.py` files
 ```
 
+# To install the `rust_lib` we need to:
+```bash
+# get all install including maturin
+pip install -r requiremnts.txt
+# go in the rust_lib
+cb rust_lib
+# compile the rust library into a Python one
+maturin develop
+```
+
 
 ## Next
 - [ ] Debug application boilerplate

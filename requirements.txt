@@ -75,7 +75,6 @@ PyYAML==6.0.2
 regex==2024.11.6
 requests==2.32.3
 requests-toolbelt==1.0.0
--e git+https://github.com/Diallo75012/djangochatbotAI@55951cd92939a196c6bc6a6c08023063096cd065#egg=rust_lib&subdirectory=rust_lib
 setuptools==75.6.0
 six==1.17.0
 sniffio==1.3.1
