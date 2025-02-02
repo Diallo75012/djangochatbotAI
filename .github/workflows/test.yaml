@@ -31,6 +31,8 @@ jobs:
       # Step 1: Check out the repository
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Ensures all files and history are fetched
 
       # Step 2: Set up Python (Match Local Version)
       - name: Set up Python
