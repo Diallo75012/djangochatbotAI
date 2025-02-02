@@ -44,18 +44,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential python3.12-dev libpq-dev libjpeg-dev zlib1g-dev cargo rustc graphviz graphviz-dev
 
-      # Step 4: Install Python Dependencies
+      # Step 4: Install Python dependencies
       - name: Install dependencies
         run: |
+          python -m venv venv  # Create virtual environment
+          source venv/bin/activate  # Activate virtual environment
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+        shell: bash
 
-      # Step 5: Build Rust Library with Maturin
-      - name: Build Rust PyO3 library
+      # Step 5: Install Rust dependencies and build Rust module
+      - name: Build Rust dependencies
         run: |
-          pip install maturin
+          source venv/bin/activate  # Ensure venv is activated
+          pip install maturin  # Install maturin inside venv
           cd rust_lib
           maturin develop
+        shell: bash
 
       # Step 6: Wait for PostgreSQL to be Ready
       - name: Wait for PostgreSQL to be ready
