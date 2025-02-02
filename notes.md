@@ -2324,22 +2324,22 @@ cloc .
       80 files ignored.
 
 github.com/AlDanial/cloc v 1.90  T=0.25 s (1248.1 files/s, 211106.6 lines/s)
--------------------------------------------------------------------------------
-Language                     files          blank        comment           code
--------------------------------------------------------------------------------
-JavaScript                      97           5091           4549          19661
-CSS                             25           1230            220           6675
-Python                         121           1526           2329           6046
-Markdown                        17            396              0           2539
-HTML                            17             91             47           1085
-SVG                             23              0              0            880
-YAML                             3             24             16            274
-Rust                             8             46             60            238
-TOML                             2              4              5             34
-Dockerfile                       1             13             11             20
--------------------------------------------------------------------------------
-SUM:                           314           8421           7237          37452
--------------------------------------------------------------------------------
+----------------+--------------+---------------+-------------+--------+
+Language        | files        | blank         | comment     |  code  |
+----------------+--------------+---------------+-------------+--------+
+JavaScript      |  97          | 5091          | 4549        |  19661 |
+CSS             |  25          | 1230          |  220        |   6675 |
+Python          | 121          | 1526          | 2329        |   6046 | 
+Markdown        |  17          |  396          |    0        |   2539 |
+HTML            |  17          |   91          |   47        |   1085 | 
+SVG             |  23          |    0          |    0        |    880 |
+YAML            |   3          |   24          |   16        |    274 |
+Rust            |   8          |   46          |   60        |    238 |
+TOML            |   2          |    4          |    5        |     34 |
+Dockerfile      |   1          |   13          |   11        |     20 |
+----------------+--------------+-----------------------------+--------+
+SUM:            | 314          | 8421          | 7237        |  37452 |
+------------------------------+--------------+---------------+--------+
 '''
 ```
 
@@ -2465,4 +2465,138 @@ coverage report >> coverage_report.md
 - [] check that the github action works fine
 - [] create container of app and also a docker-compose and see if it wokrs in local docker so that we can kubernetize it...
 - [] then use this app for any devops workflow that we want to do (push enhancement of app and have the ci/cd work by itself and do all necessary notifications (Dicord: the webhook stuff is simple and works fine so we will be using that)
+
+
+# Issue while doing unit tests
+- `cleaned_data()` method used in `chatbotsettings/models.py` is not working and can't check for image doubles in database as it is only available for `forms.py` checks.
+  As I have decided to do those checks at the models.py level when the `chatbot settings` are savedm I need to change it for a `.` notation to access image in database and check.
+```python
+# before:
+# this will check that file doesn't exist already for the picture
+def clean_avatar(self):
+  avatar = self.cleaned_data.get('avatar')
+
+  if avatar:
+    # Check if there's an existing ChatBotSettings with the same avatar filename
+    existing_avatar = ChatBotSettings.objects.filter(avatar=avatar.name).first()
+    if existing_avatar:
+      raise ValidationError("This image filename is already being used by another ChatBot. Please upload a unique image.")
+return avatar # here we return avatar as it is a form.py `cleaned_data()` so we need the cleane `avatar`	  
+```
+- so use :
+```python
+def clean_avatar(self):
+  """Ensure avatar filename uniqueness within ChatBotSettings."""
+  if self.avatar:
+    # Check if an existing ChatBotSettings has the same avatar filename
+    existing_avatar = ChatBotSettings.objects.filter(avatar=self.avatar.name).exclude(id=self.id).first()
+    if existing_avatar:
+      raise ValidationError("This image filename is already being used by another ChatBot. Please upload a unique image.")
+# Here no return needed as it is a `models.py` check not like in forms.py when we need the value to save it after check
+```
+- Error not getting mocks work:
+```bash
+# dont forget to install `pytest-mock`
+pip install pytest-mock
+```
+
+# command to get coverage report in markdown, i=omitting the files that we are not going to test
+```bash
+coverage report --format=markdown --omit=log_analysis_center/*,users/serializers.py,chatbotAI/asgi.py,chatbotAI/wsgi.py,agents/graph/*
+```
+
+# this is the `.coveragerc` coverage ignore file content and run the above command without --omit after having run the test again
+```bash
+[run]
+source = .
+omit =
+    */tests/*
+    */test/*
+    */migrations/*
+    manage.py
+    full_server_setup.py
+    log_analysis_center/*
+    users/serializers.py
+    chatbotAI/asgi.py
+    chatbotAI/wsgi.py
+    agents/graph/*
+    __pycache__/
+    *__init__.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if settings.DEBUG
+    raise NotImplementedError
+```
+
+Excluded Code	                | Why?                                                         |
+--------------------------------+--------------------------------------------------------------+
+pragma: no cover	        | Explicitly marked lines to skip.                             |
+def __repr__	                | String representations of models, not critical for coverage. |
+if settings.DEBUG         	| Conditional code used only in debugging mode.                |
+raise NotImplementedError	| Placeholder methods that are not meant to be executed.       |
+--------------------------------+---------------------------------------------------------------
+
+# Final coverage report:
+| Name                                            |    Stmts |     Miss |   Cover |
+|------------------------------------------------ | -------: | -------: | ------: |
+| agents/admin.py                                 |        3 |        0 |    100% |
+| agents/app\_utils/ai\_personality.py            |       32 |       17 |     47% |
+| agents/app\_utils/beautiful\_graph\_output.py   |       17 |        3 |     82% |
+| agents/app\_utils/call\_llm.py                  |       41 |       14 |     66% |
+| agents/app\_utils/delete\_embeddings.py         |       11 |        0 |    100% |
+| agents/app\_utils/embed\_data.py                |       37 |        0 |    100% |
+| agents/app\_utils/formatters.py                 |       20 |        1 |     95% |
+| agents/app\_utils/json\_dumps\_manager.py       |        8 |        0 |    100% |
+| agents/app\_utils/prompt\_creation.py           |       10 |        0 |    100% |
+| agents/app\_utils/retrieve\_answer.py           |      114 |       38 |     67% |
+| agents/app\_utils/token\_count\_helper.py       |       11 |        0 |    100% |
+| agents/apps.py                                  |        4 |        0 |    100% |
+| agents/llms/llms.py                             |       11 |        0 |    100% |
+| agents/models.py                                |        4 |        0 |    100% |
+| agents/prompts/prompts.py                       |        9 |        0 |    100% |
+| agents/structured\_output/structured\_output.py |        6 |        0 |    100% |
+| agents/tools/tools.py                           |       56 |        5 |     91% |
+| agents/urls.py                                  |        4 |        0 |    100% |
+| agents/views.py                                 |      133 |       28 |     79% |
+| businessdata/admin.py                           |        3 |        0 |    100% |
+| businessdata/apps.py                            |        4 |        0 |    100% |
+| businessdata/forms.py                           |       14 |        0 |    100% |
+| businessdata/mixins.py                          |       14 |        0 |    100% |
+| businessdata/models.py                          |       15 |        0 |    100% |
+| businessdata/urls.py                            |        4 |        0 |    100% |
+| businessdata/views.py                           |      172 |       67 |     61% |
+| chatbotAI/settings.py                           |       30 |        0 |    100% |
+| chatbotAI/urls.py                               |        5 |        0 |    100% |
+| chatbotsettings/admin.py                        |        3 |        0 |    100% |
+| chatbotsettings/apps.py                         |        4 |        0 |    100% |
+| chatbotsettings/forms.py                        |       13 |        0 |    100% |
+| chatbotsettings/models.py                       |       34 |       11 |     68% |
+| chatbotsettings/urls.py                         |        4 |        0 |    100% |
+| chatbotsettings/views.py                        |      103 |       73 |     29% |
+| clientchat/admin.py                             |        3 |        0 |    100% |
+| clientchat/apps.py                              |        4 |        0 |    100% |
+| clientchat/forms.py                             |       10 |        0 |    100% |
+| clientchat/models.py                            |       11 |        0 |    100% |
+| clientchat/urls.py                              |        4 |        0 |    100% |
+| clientchat/views.py                             |      159 |       37 |     77% |
+| common/admin.py                                 |        3 |        0 |    100% |
+| common/apps.py                                  |        4 |        0 |    100% |
+| common/discord\_notifications.py                |       70 |       56 |     20% |
+| common/logs\_filters.py                         |        7 |        0 |    100% |
+| common/middleware\_logs\_custom.py              |       14 |        0 |    100% |
+| common/models.py                                |        8 |        0 |    100% |
+| common/record\_to\_db.py                        |       32 |        1 |     97% |
+| common/templatetags/form\_tags.py               |       11 |        0 |    100% |
+| common/urls.py                                  |        4 |        0 |    100% |
+| common/views.py                                 |       57 |        0 |    100% |
+| users/admin.py                                  |        3 |        0 |    100% |
+| users/apps.py                                   |        4 |        0 |    100% |
+| users/forms.py                                  |       62 |        1 |     98% |
+| users/models.py                                 |       10 |        0 |    100% |
+| users/urls.py                                   |        4 |        0 |    100% |
+| users/views.py                                  |      155 |       40 |     74% |
+|                                       **TOTAL** | **1592** |  **392** | **75%** |
 

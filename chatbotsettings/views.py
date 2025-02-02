@@ -49,6 +49,7 @@ def addChatBotSettings(request):
       chatbotsettings_data = form.save(commit=False)
       chatbotsettings_data.business_user = request.user
 
+
       # Check if the avatar already exists for this user
       avatar = request.FILES.get('avatar')
       if avatar:
@@ -142,7 +143,6 @@ def updateChatBotSettings(request, pk):
       )
   context = {'form': form}
   return render(request, "chatbotsettings/updatechatbotsettings.html", context)
-
 
 # delete chatbot settings
 @login_required(login_url="users:loginbusinessuser")

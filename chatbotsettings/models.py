@@ -1,7 +1,10 @@
 import os
+import hashlib
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.core.exceptions import ValidationError
+
 
 class ChatBotSettings(models.Model):
   # maybe one to one to user here
@@ -47,14 +50,17 @@ class ChatBotSettings(models.Model):
     # Call the superclass delete method to delete the model instance
     super().delete(*args, **kwargs)
 
-  # this will check that file doesn't exist already for the picture
   def clean_avatar(self):
-    avatar = self.cleaned_data.get('avatar')
+    """Ensure the uploaded avatar filename is unique."""
+    if self.avatar:
+      filename = os.path.basename(self.avatar.name)
 
-    if avatar:
-      # Check if there's an existing ChatBotSettings with the same avatar filename
-      existing_avatar = ChatBotSettings.objects.filter(avatar=avatar.name).first()
+      # Check if another chatbot is using the same filename
+      existing_avatar = ChatBotSettings.objects.filter(
+        avatar__icontains=filename
+        ).exclude(id=self.id).exists()
+
       if existing_avatar:
         raise ValidationError("This image filename is already being used by another ChatBot. Please upload a unique image.")
 
-    return avatar
+    return self.avatar

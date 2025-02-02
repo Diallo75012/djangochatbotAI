@@ -1,61 +1,16 @@
-{"time": "2025-01-30 03:48:16,923", "level": "INFO", "name": "businessdata", "message": "Business user: business_user", "user_id": "2"}
-{"time": "2025-01-30 03:48:41,972", "level": "INFO", "name": "businessdata", "message": "Error making the request: HTTPConnectionPool(host='testserver', port=80): Max retries exceeded with url: /agents/embed-data/1/ (Caused by NameResolutionError("<urllib3.connection.HTTPConnection object at 0x7ee147c2ce00>: Failed to resolve 'testserver' ([Errno -3] Temporary failure in name resolution)"))", "user_id": "2"}
-{"time": "2025-01-30 03:48:43,871", "level": "INFO", "name": "businessdata", "message": "Data has been updated successfully without embedding changes.", "user_id": "3"}
-{"time": "2025-01-30 03:48:44,815", "level": "INFO", "name": "businessdata", "message": "business_data_to_delete: Doc: To Be Deleted | Data length: 1 | Legal: 1744b89e-7dc4-4936-bcec-d999e1781c23", "user_id": "4"}
-{"time": "2025-01-30 03:49:04,846", "level": "INFO", "name": "businessdata", "message": "Error making the request: HTTPConnectionPool(host='testserver', port=80): Max retries exceeded with url: /agents/delete-embedding-collection/3/ (Caused by NameResolutionError("<urllib3.connection.HTTPConnection object at 0x7ee14792fa40>: Failed to resolve 'testserver' ([Errno -3] Temporary failure in name resolution)"))", "user_id": "4"}
-{"time": "2025-01-30 03:51:47,001", "level": "INFO", "name": "businessdata", "message": "Business user: business_user", "user_id": "2"}
-{"time": "2025-01-30 03:51:47,014", "level": "INFO", "name": "businessdata", "message": "Embedding created successfully: True", "user_id": "2"}
-{"time": "2025-01-30 03:51:47,970", "level": "INFO", "name": "businessdata", "message": "Data has been updated successfully without embedding changes.", "user_id": "3"}
-{"time": "2025-01-30 03:51:48,980", "level": "INFO", "name": "businessdata", "message": "business_data_to_delete: Doc: To Be Deleted | Data length: 1 | Legal: fc0a0859-5631-4423-8e59-d8f50c6a79fb", "user_id": "4"}
-{"time": "2025-01-30 03:51:48,983", "level": "INFO", "name": "businessdata", "message": "Embedding deleted successfully: True", "user_id": "4"}
-{"time": "2025-01-30 03:51:48,990", "level": "INFO", "name": "businessdata", "message": "Database data have been successfully deleted.", "user_id": "4"}
-{"time": "2025-01-30 03:51:48,990", "level": "INFO", "name": "businessdata", "message": "Full business data deletion confirmation status: 'successfully deleted'.", "user_id": "4"}
-{"time": "2025-01-30 03:51:49,863", "level": "INFO", "name": "businessdata", "message": "Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format).", "user_id": "5"}
-{"time": "2025-01-30 03:53:45,811", "level": "INFO", "name": "businessdata", "message": "Business user: business_user", "user_id": "2"}
-{"time": "2025-01-30 03:53:45,824", "level": "INFO", "name": "businessdata", "message": "Embedding created successfully: True", "user_id": "2"}
-{"time": "2025-01-30 03:53:46,783", "level": "INFO", "name": "businessdata", "message": "Embedding updated successfully: True", "user_id": "3"}
-{"time": "2025-01-30 03:53:47,690", "level": "INFO", "name": "businessdata", "message": "business_data_to_delete: Doc: To Be Deleted | Data length: 1 | Legal: aa8ecf3f-8dd8-4a27-a9ac-e4d600fd433a", "user_id": "4"}
-{"time": "2025-01-30 03:53:47,693", "level": "INFO", "name": "businessdata", "message": "Embedding deleted successfully: True", "user_id": "4"}
-{"time": "2025-01-30 03:53:47,699", "level": "INFO", "name": "businessdata", "message": "Database data have been successfully deleted.", "user_id": "4"}
-{"time": "2025-01-30 03:53:47,699", "level": "INFO", "name": "businessdata", "message": "Full business data deletion confirmation status: 'successfully deleted'.", "user_id": "4"}
-{"time": "2025-01-30 03:53:48,610", "level": "INFO", "name": "businessdata", "message": "Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format).", "user_id": "5"}
-{"time": "2025-01-30 04:08:08,616", "level": "INFO", "name": "businessdata", "message": "Business user: business_user", "user_id": "16"}
-{"time": "2025-01-30 04:08:08,625", "level": "INFO", "name": "businessdata", "message": "Embedding created successfully: True", "user_id": "16"}
-{"time": "2025-01-30 04:08:09,592", "level": "INFO", "name": "businessdata", "message": "Embedding updated successfully: True", "user_id": "17"}
-{"time": "2025-01-30 04:08:10,511", "level": "INFO", "name": "businessdata", "message": "business_data_to_delete: Doc: To Be Deleted | Data length: 1 | Legal: ba6ef895-8e5e-4bba-97f5-10dd6ffee589", "user_id": "18"}
-{"time": "2025-01-30 04:08:10,514", "level": "INFO", "name": "businessdata", "message": "Embedding deleted successfully: True", "user_id": "18"}
-{"time": "2025-01-30 04:08:10,528", "level": "INFO", "name": "businessdata", "message": "Database data have been successfully deleted.", "user_id": "18"}
-{"time": "2025-01-30 04:08:10,528", "level": "INFO", "name": "businessdata", "message": "Full business data deletion confirmation status: 'successfully deleted'.", "user_id": "18"}
-{"time": "2025-01-30 04:08:11,432", "level": "INFO", "name": "businessdata", "message": "Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format).", "user_id": "19"}
-{"time": "2025-01-30 05:14:20,642", "level": "INFO", "name": "businessdata", "message": "Business user: business_user", "user_id": "16"}
-{"time": "2025-01-30 05:14:20,659", "level": "INFO", "name": "businessdata", "message": "Embedding created successfully: True", "user_id": "16"}
-{"time": "2025-01-30 05:14:21,417", "level": "INFO", "name": "businessdata", "message": "Embedding updated successfully: True", "user_id": "17"}
-{"time": "2025-01-30 05:14:22,129", "level": "INFO", "name": "businessdata", "message": "business_data_to_delete: Doc: To Be Deleted | Data length: 1 | Legal: 241a0f2a-b462-4cf6-847e-93f1e7a74475", "user_id": "18"}
-{"time": "2025-01-30 05:14:22,131", "level": "INFO", "name": "businessdata", "message": "Embedding deleted successfully: True", "user_id": "18"}
-{"time": "2025-01-30 05:14:22,135", "level": "INFO", "name": "businessdata", "message": "Database data have been successfully deleted.", "user_id": "18"}
-{"time": "2025-01-30 05:14:22,136", "level": "INFO", "name": "businessdata", "message": "Full business data deletion confirmation status: 'successfully deleted'.", "user_id": "18"}
-{"time": "2025-01-30 05:14:22,827", "level": "INFO", "name": "businessdata", "message": "Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format).", "user_id": "19"}
-{"time": "2025-01-30 05:44:21,908", "level": "INFO", "name": "businessdata", "message": "Business user: business_user", "user_id": "16"}
-{"time": "2025-01-30 05:44:21,918", "level": "INFO", "name": "businessdata", "message": "Embedding created successfully: True", "user_id": "16"}
-{"time": "2025-01-30 05:44:22,666", "level": "INFO", "name": "businessdata", "message": "Embedding updated successfully: True", "user_id": "17"}
-{"time": "2025-01-30 05:44:23,391", "level": "INFO", "name": "businessdata", "message": "business_data_to_delete: Doc: To Be Deleted | Data length: 1 | Legal: 403c5f70-e34e-4782-8b5e-ce9b07297898", "user_id": "18"}
-{"time": "2025-01-30 05:44:23,393", "level": "INFO", "name": "businessdata", "message": "Embedding deleted successfully: True", "user_id": "18"}
-{"time": "2025-01-30 05:44:23,399", "level": "INFO", "name": "businessdata", "message": "Database data have been successfully deleted.", "user_id": "18"}
-{"time": "2025-01-30 05:44:23,399", "level": "INFO", "name": "businessdata", "message": "Full business data deletion confirmation status: 'successfully deleted'.", "user_id": "18"}
-{"time": "2025-01-30 05:44:24,105", "level": "INFO", "name": "businessdata", "message": "Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format).", "user_id": "19"}
-{"time": "2025-01-30 05:50:28,906", "level": "INFO", "name": "businessdata", "message": "Business user: business_user", "user_id": "16"}
-{"time": "2025-01-30 05:50:28,915", "level": "INFO", "name": "businessdata", "message": "Embedding created successfully: True", "user_id": "16"}
-{"time": "2025-01-30 05:50:29,718", "level": "INFO", "name": "businessdata", "message": "Embedding updated successfully: True", "user_id": "17"}
-{"time": "2025-01-30 05:50:30,453", "level": "INFO", "name": "businessdata", "message": "business_data_to_delete: Doc: To Be Deleted | Data length: 1 | Legal: 8c82c734-0942-42d3-9724-ad2b86334e13", "user_id": "18"}
-{"time": "2025-01-30 05:50:30,456", "level": "INFO", "name": "businessdata", "message": "Embedding deleted successfully: True", "user_id": "18"}
-{"time": "2025-01-30 05:50:30,461", "level": "INFO", "name": "businessdata", "message": "Database data have been successfully deleted.", "user_id": "18"}
-{"time": "2025-01-30 05:50:30,461", "level": "INFO", "name": "businessdata", "message": "Full business data deletion confirmation status: 'successfully deleted'.", "user_id": "18"}
-{"time": "2025-01-30 05:50:31,200", "level": "INFO", "name": "businessdata", "message": "Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format).", "user_id": "19"}
-{"time": "2025-01-30 05:53:15,951", "level": "INFO", "name": "businessdata", "message": "Business user: business_user", "user_id": "16"}
-{"time": "2025-01-30 05:53:15,959", "level": "INFO", "name": "businessdata", "message": "Embedding created successfully: True", "user_id": "16"}
-{"time": "2025-01-30 05:53:16,720", "level": "INFO", "name": "businessdata", "message": "Embedding updated successfully: True", "user_id": "17"}
-{"time": "2025-01-30 05:53:17,556", "level": "INFO", "name": "businessdata", "message": "business_data_to_delete: Doc: To Be Deleted | Data length: 1 | Legal: 1bd490fa-7f0b-43ef-9ae5-7b1926332009", "user_id": "18"}
-{"time": "2025-01-30 05:53:17,558", "level": "INFO", "name": "businessdata", "message": "Embedding deleted successfully: True", "user_id": "18"}
-{"time": "2025-01-30 05:53:17,563", "level": "INFO", "name": "businessdata", "message": "Database data have been successfully deleted.", "user_id": "18"}
-{"time": "2025-01-30 05:53:17,564", "level": "INFO", "name": "businessdata", "message": "Full business data deletion confirmation status: 'successfully deleted'.", "user_id": "18"}
-{"time": "2025-01-30 05:53:18,264", "level": "INFO", "name": "businessdata", "message": "Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format).", "user_id": "19"}
+{"time": "2025-02-02 09:44:39,118", "level": "INFO", "name": "businessdata", "message": "Business user: business_user", "user_id": "16"}
+{"time": "2025-02-02 09:44:39,127", "level": "INFO", "name": "businessdata", "message": "Embedding created successfully: True", "user_id": "16"}
+{"time": "2025-02-02 09:44:39,948", "level": "INFO", "name": "businessdata", "message": "Embedding updated successfully: True", "user_id": "17"}
+{"time": "2025-02-02 09:44:40,615", "level": "INFO", "name": "businessdata", "message": "business_data_to_delete: Doc: To Be Deleted | Data length: 1 | Legal: 7c1b2841-c822-4b39-a111-c80f118abfe1", "user_id": "18"}
+{"time": "2025-02-02 09:44:40,617", "level": "INFO", "name": "businessdata", "message": "Embedding deleted successfully: True", "user_id": "18"}
+{"time": "2025-02-02 09:44:40,621", "level": "INFO", "name": "businessdata", "message": "Database data have been successfully deleted.", "user_id": "18"}
+{"time": "2025-02-02 09:44:40,621", "level": "INFO", "name": "businessdata", "message": "Full business data deletion confirmation status: 'successfully deleted'.", "user_id": "18"}
+{"time": "2025-02-02 09:44:41,282", "level": "INFO", "name": "businessdata", "message": "Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format).", "user_id": "19"}
+{"time": "2025-02-02 10:12:35,822", "level": "INFO", "name": "businessdata", "message": "Business user: business_user", "user_id": "16"}
+{"time": "2025-02-02 10:12:35,831", "level": "INFO", "name": "businessdata", "message": "Embedding created successfully: True", "user_id": "16"}
+{"time": "2025-02-02 10:12:36,639", "level": "INFO", "name": "businessdata", "message": "Embedding updated successfully: True", "user_id": "17"}
+{"time": "2025-02-02 10:12:37,318", "level": "INFO", "name": "businessdata", "message": "business_data_to_delete: Doc: To Be Deleted | Data length: 1 | Legal: caf5538b-4d26-4de6-ac2c-ea69eac4a2fa", "user_id": "18"}
+{"time": "2025-02-02 10:12:37,321", "level": "INFO", "name": "businessdata", "message": "Embedding deleted successfully: True", "user_id": "18"}
+{"time": "2025-02-02 10:12:37,325", "level": "INFO", "name": "businessdata", "message": "Database data have been successfully deleted.", "user_id": "18"}
+{"time": "2025-02-02 10:12:37,326", "level": "INFO", "name": "businessdata", "message": "Full business data deletion confirmation status: 'successfully deleted'.", "user_id": "18"}
+{"time": "2025-02-02 10:12:38,006", "level": "INFO", "name": "businessdata", "message": "Form submission incorrect. Please enter correct information (e.g., valid JSON in {'question':'answer'} format).", "user_id": "19"}

@@ -130,3 +130,71 @@ users/urls.py                                            4      0   100%
 users/views.py                                         155     40    74%
 ------------------------------------------------------------------------
 TOTAL                                                 2472   1226    50%
+
+
+# third run after full coverage done even the ones that i had forgotten in the second run
+- This time we asked for markdown format and also we omitted the files that are agents so too complicated to cover test and other ones thta we want to keep in codebase but are nto used like the django rest-framework ones formt he beginning of the project
+  we just want to keep trace of those as experience of done before.
+```bash
+# command or put the `--omit` file path in `.coveragerc` file: 
+coverage report --format=markdown --omit=log_analysis_center/*,users/serializers.py,chatbotAI/asgi.py,chatbotAI/wsgi.py,agents/graph/*
+```
+| Name                                            |    Stmts |     Miss |   Cover |
+|------------------------------------------------ | -------: | -------: | ------: |
+| agents/admin.py                                 |        3 |        0 |    100% |
+| agents/app\_utils/ai\_personality.py            |       32 |       17 |     47% |
+| agents/app\_utils/beautiful\_graph\_output.py   |       17 |        3 |     82% |
+| agents/app\_utils/call\_llm.py                  |       41 |       14 |     66% |
+| agents/app\_utils/delete\_embeddings.py         |       11 |        0 |    100% |
+| agents/app\_utils/embed\_data.py                |       37 |        0 |    100% |
+| agents/app\_utils/formatters.py                 |       20 |        1 |     95% |
+| agents/app\_utils/json\_dumps\_manager.py       |        8 |        0 |    100% |
+| agents/app\_utils/prompt\_creation.py           |       10 |        0 |    100% |
+| agents/app\_utils/retrieve\_answer.py           |      114 |       38 |     67% |
+| agents/app\_utils/token\_count\_helper.py       |       11 |        0 |    100% |
+| agents/apps.py                                  |        4 |        0 |    100% |
+| agents/llms/llms.py                             |       11 |        0 |    100% |
+| agents/models.py                                |        4 |        0 |    100% |
+| agents/prompts/prompts.py                       |        9 |        0 |    100% |
+| agents/structured\_output/structured\_output.py |        6 |        0 |    100% |
+| agents/tools/tools.py                           |       56 |        5 |     91% |
+| agents/urls.py                                  |        4 |        0 |    100% |
+| agents/views.py                                 |      133 |       28 |     79% |
+| businessdata/admin.py                           |        3 |        0 |    100% |
+| businessdata/apps.py                            |        4 |        0 |    100% |
+| businessdata/forms.py                           |       14 |        0 |    100% |
+| businessdata/mixins.py                          |       14 |        0 |    100% |
+| businessdata/models.py                          |       15 |        0 |    100% |
+| businessdata/urls.py                            |        4 |        0 |    100% |
+| businessdata/views.py                           |      172 |       67 |     61% |
+| chatbotAI/settings.py                           |       30 |        0 |    100% |
+| chatbotAI/urls.py                               |        5 |        0 |    100% |
+| chatbotsettings/admin.py                        |        3 |        0 |    100% |
+| chatbotsettings/apps.py                         |        4 |        0 |    100% |
+| chatbotsettings/forms.py                        |       13 |        0 |    100% |
+| chatbotsettings/models.py                       |       34 |       11 |     68% |
+| chatbotsettings/urls.py                         |        4 |        0 |    100% |
+| chatbotsettings/views.py                        |      103 |       73 |     29% |
+| clientchat/admin.py                             |        3 |        0 |    100% |
+| clientchat/apps.py                              |        4 |        0 |    100% |
+| clientchat/forms.py                             |       10 |        0 |    100% |
+| clientchat/models.py                            |       11 |        0 |    100% |
+| clientchat/urls.py                              |        4 |        0 |    100% |
+| clientchat/views.py                             |      159 |       37 |     77% |
+| common/admin.py                                 |        3 |        0 |    100% |
+| common/apps.py                                  |        4 |        0 |    100% |
+| common/discord\_notifications.py                |       70 |       56 |     20% |
+| common/logs\_filters.py                         |        7 |        0 |    100% |
+| common/middleware\_logs\_custom.py              |       14 |        0 |    100% |
+| common/models.py                                |        8 |        0 |    100% |
+| common/record\_to\_db.py                        |       32 |        1 |     97% |
+| common/templatetags/form\_tags.py               |       11 |        0 |    100% |
+| common/urls.py                                  |        4 |        0 |    100% |
+| common/views.py                                 |       57 |        0 |    100% |
+| users/admin.py                                  |        3 |        0 |    100% |
+| users/apps.py                                   |        4 |        0 |    100% |
+| users/forms.py                                  |       62 |        1 |     98% |
+| users/models.py                                 |       10 |        0 |    100% |
+| users/urls.py                                   |        4 |        0 |    100% |
+| users/views.py                                  |      155 |       40 |     74% |
+|                                       **TOTAL** | **1592** |  **392** | **75%** |
