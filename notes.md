@@ -2647,5 +2647,45 @@ See if we can use `crictl` so `containerd` instead of `docker` as everything is 
 
 
 
+# Git Credentials
+- Enable credential caching to not have to authenticate everytime I push:
+`git config --global credential.helper cache`
+- Or use a credential store:
+`git config --global credential.helper store`
 
+# Docker Replacement
+- will install containerd instead of `docker` to run containers
+- will use `crictl` for commands instead of `docker`
+- will use `nerdctl` for `docker-compose` support as `crictl` doesn't
+- commands for `crictl` vs `docker`:
+Docker Command		|crictl Equivalent
+------------------------+-------------------------------
+docker ps 		|crictl ps
+docker images		|crictl images
+docker pull nginx	|crictl pull docker.io/library/nginx
+docker run -d nginx	|crictl run (requires a config file)
+docker exec -it <id> sh	|crictl exec -it <id> sh
+docker logs <id>	|crictl logs <id>
 
+- commands for `nerdctl` vs `docker compose`:
+Docker Command		|nerdctl Equivalent
+------------------------+--------------------------------
+docker run -d nginx	|nerdctl run -d nginx
+docker ps		|nerdctl ps
+docker images		|nerdctl images
+docker-compose up -d	|nerdctl compose up -d
+
+# using `nerdctl` to replace `docker` as it supports all docker commands
+```bash
+# compose
+nerdctl compose up -d
+# OR Dockerfile
+nerdctl build -t django_app -f <dockerfile_name> .
+# sudo nerdctl build -t django_app -f Dockerfile .
+nerdctl run --rm --env-file .env -v "$(pwd)/.env:/app/.env" -p 8000:8000 django_app
+# sudo nerdctl run --rm --env-file .env --env-file .vars.env -v "$(pwd)/.env:/home/creditizens/djangochatAI/chatbotAI/.env" -v "$(pwd)/.vars.env:/home/creditizens/djangochatAI/chatbotAI/.vars.env" -p 8000:8000 django_app
+
+```
+- info: `nerdctl` needs `buildkit` to be installed and `buildctl` service to be running. otherwhise you won't be able to build images
+- info: I have put all in one script that will install `crictl`, `containerd`, `nerdctl`, `buildkit`, `buildctl`, `cni pluggins for networking` (otherwise can't run containers)
+- create a `.dockerignore` file and put what we need to ignore..

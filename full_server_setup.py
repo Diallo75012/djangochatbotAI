@@ -600,27 +600,37 @@ def create_dockerfile():
     PROJECT_DIR = os.getenv("PROJECT_DIR", "/home/creditizens/djangochatAI/chatbotAI")
     GUNICORN_BINARY = os.getenv("GUNICORN_BINARY", "/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/gunicorn")
     PROJECT_WSGI = os.getenv("PROJECT_WSGI", "chatbotAI.wsgi")
+    VIRTUAL_ENV_PATH_FROM_USER_HOME = os.getenv("VIRTUAL_ENV_PATH_FROM_USER_HOME")
+    PROJECT_RUST_LIB_DIR = os.getnev("PROJECT_RUST_LIB_DIR")
 
     # Define the Dockerfile content dynamically using environment variables
     dockerfile_content = f"""# Stage 1: Builder
-FROM python:3.12-slim as builder
+FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
 # Install build tools and dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \\
     build-essential \\
-    python3.12-dev \\
+    python3-dev \\
     libpq-dev \\
+    libjpeg-dev \\
+    zlib1g-dev \\
+    cargo \\
+    rustc \\
+    graphviz \\
+    graphviz-dev \\
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set up the virtual environment
-RUN python3 -m venv /home/{USER}/{VIRTUAL_ENV_PATH_FROM_USER_HOME}
-ENV PATH="/home/{USER}/{VIRTUAL_ENV_PATH_FROM_USER_HOME}/bin:$PATH"
+RUN python3 -m venv {VIRTUAL_ENV_PATH_FROM_USER_HOME}
+ENV PATH="{VIRTUAL_ENV_PATH_FROM_USER_HOME}/bin:$PATH"
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN {VIRTUAL_ENV_PATH_FROM_USER_HOME}/bin/pip install --no-cache-dir -r requirements.txt
+# Build rust
+RUN cd {PROJECT_RUST_LIB_DIR} && {VIRTUAL_ENV_PATH_FROM_USER_HOME}/bin/maturin develop
 
 # Stage 2: Final Image
 FROM python:3.12-slim
@@ -631,16 +641,16 @@ WORKDIR /app
 RUN groupadd -r {GROUP} && useradd --no-log-init -r -g {GROUP} {USER}
 
 # Copy virtual environment from the builder stage
-COPY --from=builder /home/{USER}/{VIRTUAL_ENV_PATH_FROM_USER_HOME} /home/{USER}/{VIRTUAL_ENV_PATH_FROM_USER_HOME}
+COPY --from=builder {VIRTUAL_ENV_PATH_FROM_USER_HOME} {VIRTUAL_ENV_PATH_FROM_USER_HOME}
 
 # Update PATH to use the virtual environment
-ENV PATH="/home/{USER}/{VIRTUAL_ENV_PATH_FROM_USER_HOME}/bin:$PATH"
+ENV PATH="{VIRTUAL_ENV_PATH_FROM_USER_HOME}/bin:$PATH"
 
 # Copy project files
 COPY . {PROJECT_DIR}
 
 # Set permissions
-RUN chown -R {USER}:{GROUP} {PROJECT_DIR}
+RUN chown -R {USER}:{GROUP} /home
 
 USER {USER}
 
@@ -671,8 +681,9 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - .env # so env vars are injected int he docker environment
     volumes:
+      - .env:/app/.env  # Mount the .env file at the right location socan be changed by updating .env file in server
       - ./gunicorn:{GUNICORN_CENTRAL_DIR}
     networks:
       - app_network
