@@ -2462,7 +2462,7 @@ coverage report >> coverage_report.md
 ```
 
 # Next
-- [] check that the github action works fine
+- [x] check that the github action works fine
 - [] create container of app and also a docker-compose and see if it wokrs in local docker so that we can kubernetize it...
 - [] then use this app for any devops workflow that we want to do (push enhancement of app and have the ci/cd work by itself and do all necessary notifications (Dicord: the webhook stuff is simple and works fine so we will be using that)
 
@@ -2615,3 +2615,37 @@ cb rust_lib
 # compile the rust library into a Python one
 maturin develop
 ```
+
+# Isuues with `Github Action` secrets:
+Had the rust PyO3 lib trying to pull some env vars but couldn't has have considered the entry in the env var files as not well formatted.
+Initially i have just added the vars just as those are, but apparently the Rust dotenv is more strict than the Python one.
+So i have just to go to that env var and add single qotes:
+```bash
+# Error
+`❌ Rust function failed: Failed to load .env file from path '.vars.env': Error parsing line: 'What is Purikura Skin Effect?', error at line index: 5
+=========================== short test summary info ============================
+FAILED tests/agents/test_ai_personality.py::TestAIPersonality::test_personality_trait_formatting - AssertionError: Rust function failed unexpectedly: Failed to load .env file from path '.vars.env': Error parsing line: 'What is Purikura Skin Effect?', error at line index: 5
+======================== 1 failed, 122 passed in 26.77s ========================
+Error: Process completed with exit code 1`
+
+# Fix
+saved `What is Purikura Skin Effect?` with single quotes: `'What is Purikura Skin Effect?'`
+might need to do it for all other vars, but there are so many that i didn;t do it. 
+```
+
+# Lesson
+**JUST PUT ENV VAR BETWEEN QUOTES ALWAYS!** : as Rust interpreter might parse it at the space character is there is a sentence without quotes and consider the rest as malformation of the file
+
+# Next
+- [] create container of app and also a docker-compose and see if it wokrs in local docker so that we can kubernetize it...
+- [] then use this app for any devops workflow that we want to do (push enhancement of app and have the ci/cd work by itself and do all necessary notifications (Discord: the webhook stuff is simple and works fine so we will be using that)
+
+
+So now we need to check those `Dockerfiles` and `docker-compose` files created but the full server setup script and see if those work as it is through `docker`. Fix the errors, enhance the files until it works fine. Then we will consider that the app is `Kubernetizable` potentially. So don't forget to update those `Dockerfile` and `docker-compose` only through the script so the script will be creating what works formt he begin.
+
+See if we can use `crictl` so `containerd` instead of `docker` as everything is moving away from it and be opensource.
+
+
+
+
+
