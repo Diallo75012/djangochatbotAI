@@ -2678,14 +2678,59 @@ docker-compose up -d	|nerdctl compose up -d
 # using `nerdctl` to replace `docker` as it supports all docker commands
 ```bash
 # compose
-nerdctl compose up -d
+sudo nerdctl compose up -d
 # OR Dockerfile
-nerdctl build -t django_app -f <dockerfile_name> .
-# sudo nerdctl build -t django_app -f Dockerfile .
-nerdctl run --rm --env-file .env -v "$(pwd)/.env:/app/.env" -p 8000:8000 django_app
-# sudo nerdctl run --rm --env-file .env --env-file .vars.env -v "$(pwd)/.env:/home/creditizens/djangochatAI/chatbotAI/.env" -v "$(pwd)/.vars.env:/home/creditizens/djangochatAI/chatbotAI/.vars.env" -p 8000:8000 django_app
-
+# sudo nerdctl build -t django_app -f <dockerfile_name> .
+sudo nerdctl build -t django_app -f Dockerfile .
+# nerdctl run --rm --env-file .env -v "$(pwd)/.env:/app/.env" -p 8000:8000 django_app
+sudo nerdctl run --rm --env-file .env --env-file .vars.env -v "$(pwd)/.env:/home/creditizens/djangochatAI/chatbotAI/.env" -v "$(pwd)/.vars.env:/home/creditizens/djangochatAI/chatbotAI/.vars.env" -p 8000:8000 django_app
 ```
+- debug: use `exec` to debug image creation issues by creating a container and going inside of it to check files and run commands to debug. `sudo nerdctl run -it <name_of_image> bash`
 - info: `nerdctl` needs `buildkit` to be installed and `buildctl` service to be running. otherwhise you won't be able to build images
 - info: I have put all in one script that will install `crictl`, `containerd`, `nerdctl`, `buildkit`, `buildctl`, `cni pluggins for networking` (otherwise can't run containers)
 - create a `.dockerignore` file and put what we need to ignore..
+
+
+# Issue Containerd container running and Gunicorn running but can;t reach from host
+- debugging commands:
+```bash
+sudo nerdctl ps -a
+CONTAINER ID    IMAGE                                  COMMAND                   CREATED           STATUS                         PORTS                     NAMES
+0b9527c2e427    docker.io/library/django_app:latest    "/home/creditizens/d…"    2 minutes ago     Up                             0.0.0.0:8000->8000/tcp    django_app-0b952
+```
+```bash
+curl -I http://localhost:8000
+curl: (7) Failed to connect to localhost port 8000 after 3067 ms: No route to host
+```
+
+```bash
+sudo ufw status
+Status: active
+
+To                         Action      From
+--                         ------      ----
+Nginx Full                 ALLOW       Anywhere                  
+Nginx Full (v6)            ALLOW       Anywhere (v6)             
+```
+
+```bash
+sudo ufw allow 8000/tcp
+Rule added
+Rule added (v6)
+
+sudo ufw status
+Status: active
+
+To                         Action      From
+--                         ------      ----
+Nginx Full                 ALLOW       Anywhere                  
+8000/tcp                   ALLOW       Anywhere                  
+Nginx Full (v6)            ALLOW       Anywhere (v6)             
+8000/tcp (v6)              ALLOW       Anywhere (v6)             
+```
+
+```bash
+sudo nerdctl exec -it 0b9527c2e427 sh
+FATA[0000] no such container 0b9527c2e427
+```
+

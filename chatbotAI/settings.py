@@ -23,7 +23,7 @@ SITE_ID = 1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'creditizens.local']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'creditizens.local', '0.0.0.0', '192.168.186.130']
 
 
 # Application definition

@@ -43,6 +43,16 @@ RUN maturin develop && \
 # Stage 2: Final Image
 FROM python:3.12-slim
 
+# Install runtime dependencies needed for Django, PostgreSQL, and other packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libssl-dev \
+    graphviz \
+    curl \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Create user and group for running the application
@@ -63,7 +73,10 @@ COPY --from=builder /app/rust_lib /home/creditizens/djangochatAI/chatbotAI/rust_
 # Set permissions
 RUN chown -R creditizens:creditizens /home
 
+
 USER creditizens
 
-# Define the command to run the application
-CMD ["/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/gunicorn", "-b", "0.0.0.0:8000", "chatbotAI.wsgi:application"]
+WORKDIR /home/creditizens/djangochatAI/chatbotAI
+
+# Define the command to run the application `"--log-level=debug"` can be moved out for prod when it works, `--preload` to make sure app loads before starting workers
+CMD ["/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/python", "-m", "gunicorn", "--workers=3","--log-level=debug", "-b", "0.0.0.0:8000", "chatbotAI.wsgi:application", "--timeout", "300", "--preload",  "--forwarded-allow-ips='*'",  "--proxy-allow-from='*'"]
