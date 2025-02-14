@@ -598,9 +598,11 @@ def create_dockerfile():
     USER = os.getenv("USER", "creditizens")
     GROUP = os.getenv("GROUP", "creditizens")
     PROJECT_DIR = os.getenv("PROJECT_DIR", "/home/creditizens/djangochatAI/chatbotAI")
-    GUNICORN_BINARY = os.getenv("GUNICORN_BINARY", "/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/gunicorn")
+    GUNICORN_BINARY = os.getenv("GUNICORN_BINARY", "gunicorn")
+    IP_PORT = os.getenv("IP_PORT")
     PROJECT_WSGI = os.getenv("PROJECT_WSGI", "chatbotAI.wsgi")
     VIRTUAL_ENV_PATH_FROM_USER_HOME = os.getenv("VIRTUAL_ENV_PATH_FROM_USER_HOME")
+    VURTUAL_ENV_NAME = os.getenv("VIRTUAL_ENV_NAME")
     PROJECT_RUST_LIB_DIR = os.getnev("PROJECT_RUST_LIB_DIR")
 
     # Define the Dockerfile content dynamically using environment variables
@@ -616,24 +618,48 @@ RUN apt-get update && apt-get install -y --no-install-recommends \\
     libpq-dev \\
     libjpeg-dev \\
     zlib1g-dev \\
-    cargo \\
-    rustc \\
+    curl \\
     graphviz \\
     graphviz-dev \\
+    pkg-config \\
+    libssl-dev \\
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Set up the virtual environment
-RUN python3 -m venv {VIRTUAL_ENV_PATH_FROM_USER_HOME}
-ENV PATH="{VIRTUAL_ENV_PATH_FROM_USER_HOME}/bin:$PATH"
+# Install the latest Rust toolchain using rustup
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:$PATH"
+# Verify Rust and Cargo versions (should be latest)
+RUN rustc --version && cargo --version
+
+# Set up the virtual environment (be carefull here we are in `app/` folder)
+RUN python3 -m venv {VIRTUAL_ENV_NAME}
+ENV PATH="/app/{VIRTUAL_ENV_NAME}/bin:$PATH"
+ENV VIRTUAL_ENV="/app/{VIRTUAL_ENV_NAME}"
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN {VIRTUAL_ENV_PATH_FROM_USER_HOME}/bin/pip install --no-cache-dir -r requirements.txt
+RUN /app/{VIRTUAL_ENV_NAME}/bin/pip install --no-cache-dir -r requirements.txt
+
 # Build rust
-RUN cd {PROJECT_RUST_LIB_DIR} && {VIRTUAL_ENV_PATH_FROM_USER_HOME}/bin/maturin develop
+# Copy the Rust library source code
+COPY ./{PROJECT_RUST_LIB_DIR} /app/{PROJECT_RUST_LIB_DIR}
+# Build the Rust library using Maturin
+WORKDIR /app/{PROJECT_RUST_LIB_DIR}
+RUN maturin develop && \
+    rm -rf /app/{PROJECT_RUST_LIB_DIR}/target /app/{PROJECT_RUST_LIB_DIR}/venv /app/{PROJECT_RUST_LIB_DIR}/__pycache__
 
 # Stage 2: Final Image
 FROM python:3.12-slim
+
+# Install runtime dependencies needed for Django, PostgreSQL, and other packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libssl-dev \
+    graphviz \
+    curl \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -641,21 +667,28 @@ WORKDIR /app
 RUN groupadd -r {GROUP} && useradd --no-log-init -r -g {GROUP} {USER}
 
 # Copy virtual environment from the builder stage
-COPY --from=builder {VIRTUAL_ENV_PATH_FROM_USER_HOME} {VIRTUAL_ENV_PATH_FROM_USER_HOME}
+COPY --from=builder /app/{VIRTUAL_ENV_NAME} {VIRTUAL_ENV_PATH_FROM_USER_HOME}
 
 # Update PATH to use the virtual environment
 ENV PATH="{VIRTUAL_ENV_PATH_FROM_USER_HOME}/bin:$PATH"
 
 # Copy project files
 COPY . {PROJECT_DIR}
+# replace the rust_lib folder with the one that we have built in previous stage
+# so we delete the one that we have copied and replace it with the one built fresh from previous stage
+RUN rm -rf {PROJECT_DIR}/{PROJECT_RUST_LIB_DIR}
+# we copy from `/app` folder to `home`
+COPY --from=builder /app/{PROJECT_RUST_LIB_DIR} {PROJECT_DIR}/{PROJECT_RUST_LIB_DIR}
 
-# Set permissions
+# Then we set permissions on home to `1000` uid user
 RUN chown -R {USER}:{GROUP} /home
 
 USER {USER}
 
-# Define the command to run the application
-CMD ["{GUNICORN_BINARY}", "-b", "0.0.0.0:8000", "{PROJECT_WSGI}:application"]"""
+WORKDIR {PROJECT_DIR}
+
+# Define the command to run the application `"--log-level=debug"` can be moved out for prod when it works, `--preload` to make sure app loads before starting workers
+CMD ["{VIRTUAL_ENV_PATH_FROM_USER_HOME}/bin/python", "-m", "{GUNICORN_BINARY}", "--workers=3","--log-level=debug", "-b", "{IP_PORT}", "{PROJECT_WSGI}:application", "--timeout", "300", "--preload",  "--forwarded-allow-ips='*'",  "--proxy-allow-from='*'"]"""
 
     # Write the Dockerfile to the project directory
     dockerfile_path = os.path.join(PROJECT_DIR, "Dockerfile")

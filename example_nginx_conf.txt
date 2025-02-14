@@ -1,4 +1,5 @@
 ### NGINX CONF
+# this nginx conf is for when you setup server on ubuntu with all installed in, another exist for the docker compose version of it
 # Redirect HTTP traffic to HTTPS
 upstream creditizens.local {
     server unix:/run/gunicorn/gunicorn.sock fail_timeout=0;
