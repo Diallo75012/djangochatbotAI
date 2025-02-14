@@ -2734,3 +2734,106 @@ sudo nerdctl exec -it 0b9527c2e427 sh
 FATA[0000] no such container 0b9527c2e427
 ```
 
+# Issue when testing Dockerfile with entrypoint to run migration and create superuser
+- nerdctl containerd is running but the postgres is in the host system so got issues:
+  - Solutions:
+    - go in postgresql config files to allow remote connection and another config file to md5 and allow all 0.0.0.0:5432
+    - then change the postgresql host in the .env file to the gateway address where `nerdctl` is bridging to `10.4.0.1` instead of `0.0.0.0`
+
+```bash
+# get the gateway address where nerdctl is bridging from containerd to host
+sudo nerdctl network inspect bridge
+Outputs:
+[
+    {
+        "Name": "bridge",
+        "Id": "17f29b073143d8cd97b5bbe492bdeffec1c5fee55cc1fe2112c8b9335f8b6121",
+        "IPAM": {
+            "Config": [
+                {
+                    "Subnet": "10.4.0.0/24",
+                    "Gateway": "10.4.0.1"
+                }
+            ]
+        },
+        "Labels": {
+            "nerdctl/default-network": "true"
+        }
+    }
+]
+
+# change in .env file
+DBHOST=10.4.0.1 # 0.0.0.0
+DATABASE_HOST=10.4.0.1 # works as well if `DATABASE_HOST=<server_ip>`
+
+# optional if it doesn't work change the config files of postgresql
+sudo nano /etc/postgresql/17/main/pg_hba.conf
+# add at the end of the file
+# this to allow remote connections (we need this for docker app to connect to host postgresql)
+# host    all             all             10.4.0.0/24               md5
+host    all             all             0.0.0.0/0               md5
+host    all             all             ::/0                    md5
+
+# here permist to listen broader addresses
+sudo nano /etc/postgresql/17/main/postgresql.conf
+listen_addresses = '*'
+
+# maybe but not sure allow port 5432 to be open on ufw
+sudo ufw allow 5432/tcp
+sudo ufw reload
+```
+
+- finally didn't need to change the postgresql conf files:
+  - then build images if not yet built: `sudo nerdctl build -t django_app -f Dockerfile .`
+  - then run container providing the bridge address: `sudo nerdctl run --rm --env-file .env --env-file .vars.env -v "$(pwd)/.env:/home/creditizens/djangochatAI/chatbotAI/.env" -v "$(pwd)/.vars.env:/home/creditizens/djangochatAI/chatbotAI/.vars.env" -p 8000:8000 django_app`
+
+## therefore for **containerd** running the `django` app behind `gunicorn`
+- get the bridge address: `sudo nerdctl network inspect bridge`
+- modify `.env` using that bridge address modifying the `DBHOST` and adding the `DATABASE_HOST`
+```bash
+# change in .env file
+DBHOST=10.4.0.1 # 0.0.0.0
+DATABASE_HOST=10.4.0.1 
+```
+- run the container using: `sudo nerdctl run --rm --env-file .env --env-file .vars.env -v "$(pwd)/.env:/home/creditizens/djangochatAI/chatbotAI/.env" -v "$(pwd)/.vars.env:/home/creditizens/djangochatAI/chatbotAI/.vars.env" -p 8000:8000 django_app`
+
+
+## therefore for **docker-compose** with all running in containerd
+- add those env vars in `.env` file so the secrets are nto exposed in the `docker-compose.yaml` file
+```bash
+# add those for docker-compose,yaml secrets
+POSTGRES_USER=creditizens
+POSTGRES_PASSWORD=metaverse
+POSTGRES_DB=chatbotaidb
+```
+- consider buiding directly the `Dockerfile` when running the `compose up` OR get the image that you have already built
+```yaml
+  web:
+    # this when the image is not build yet and we have a `Dockerfile` in the same folder as this `docker-compose.yaml` file	
+    build: .
+    # this if image already been built, we can just get it by referencing the image (Use existing pre-built image)
+    # image: django_app:latest
+```
+- add in /etc/hosts: `127.0.0.1 creditizens.local` Or `<server_ip> creditizens.local`
+
+- dont forget `/etc/hosts`, add those lines:
+```bash
+127.0.0.1 creditizens.local
+192.168.186.130 creditizens.local
+127.0.0.1 host.containers.internal
+```
+- some permissions have beed set in `entrypoint.sh` as those have to be set at runtime, i did it in the `Dockerfile`
+  but static file for example need correct permission for it to work.
+- have changed the `nginx.conf` file to be adaptated to the nerdclt containerd as the one i had was for Ubuntu server setup.
+
+- works fine but still need to correct the styling collection as the static are not responding as in local envrionment:
+```bash
+sudo nerdctl compose down
+sudo nerdctl compose up --build
+```
+
+
+
+
+
+

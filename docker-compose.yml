@@ -1,13 +1,24 @@
 version: '3.8'
 services:
   web:
+    # this when the image is not build yet and we have a `Dockerfile` in the same folder as this `docker-compose.yaml` file	
     build: .
+    # this if image already been built, we can just get it by referencing the image (Use existing pre-built image)
+    # image: django_app:latest
     ports:
       - "8000:8000"
     env_file:
       - .env
+      - .vars.env
+    depends_on:
+      - db
+      #db:
+        # Wait for DB to be ready before Django starts
+        #condition: service_healthy
+    entrypoint: ["/home/creditizens/djangochatAI/chatbotAI/entrypoint.sh"]
     volumes:
-      - ./gunicorn:/run/gunicorn
+      - static_volume:/home/creditizens/djangochatAI/chatbotAI/static
+      - media_volume:/home/creditizens/djangochatAI/chatbotAI/media
     networks:
       - app_network
 
@@ -15,26 +26,34 @@ services:
     image: nginx:1.26.2
     ports:
       - "80:80"
-    volumes:
-      - /home/creditizens/djangochatAI/chatbotAI/logs:/var/log/nginx
+      - "443:443"
     depends_on:
       - web
+    volumes:
+      - ./nginx/nginx_conf:/etc/nginx/nginx.conf:ro  # Inject custom Nginx config
+      - ./nginx/certs:/etc/nginx/certs:ro  # Inject SSL certificates
+      - ./nginx/logs:/var/log/nginx  # Logging
     networks:
       - app_network
 
   db:
     image: postgres:17
-    environment:
-      POSTGRES_USER: creditizens
-      POSTGRES_PASSWORD: metaverse
-      POSTGRES_DB: chatbotaidb
+    env_file:
+      - .env
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
       - app_network
+    #healthcheck:
+    #  test: ["CMD", "pg_isready", "-U", "creditizens"]
+    #  interval: 10s
+    #  retries: 5
 
 volumes:
   pgdata:
+  static_volume:
+  media_volume:
 
 networks:
   app_network:
+

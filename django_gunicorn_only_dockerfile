@@ -1,3 +1,4 @@
+
 # Stage 1: Builder
 FROM python:3.12-slim AS builder
 
@@ -71,17 +72,13 @@ RUN rm -rf /home/creditizens/djangochatAI/chatbotAI/rust_lib
 # we copy from `/app` folder to `home`
 COPY --from=builder /app/rust_lib /home/creditizens/djangochatAI/chatbotAI/rust_lib
 
-# Copy and use entrypoint script
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /home/creditizens/djangochatAI/chatbotAI/entrypoint.sh
-
 # Then we set permissions on home to `1000` uid user
 RUN chown -R creditizens:creditizens /home
+
 
 USER creditizens
 
 WORKDIR /home/creditizens/djangochatAI/chatbotAI
 
-ENTRYPOINT ["/home/creditizens/djangochatAI/chatbotAI/entrypoint.sh"]
 # Define the command to run the application `"--log-level=debug"` can be moved out for prod when it works, `--preload` to make sure app loads before starting workers
-# CMD ["/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/python", "-m", "gunicorn", "--workers=3","--log-level=debug", "-b", "0.0.0.0:8000", "chatbotAI.wsgi:application", "--timeout", "300", "--preload",  "--forwarded-allow-ips='*'",  "--proxy-allow-from='*'"]
+CMD ["/home/creditizens/djangochatAI/djangochatbotAI_venv/bin/python", "-m", "gunicorn", "--workers=3","--log-level=debug", "-b", "0.0.0.0:8000", "chatbotAI.wsgi:application", "--timeout", "300", "--preload",  "--forwarded-allow-ips='*'",  "--proxy-allow-from='*'"]
