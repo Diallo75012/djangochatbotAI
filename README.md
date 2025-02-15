@@ -26,80 +26,350 @@ Then Client can login and talk to that ChatBotAI which is using AI agents and RA
 **my rely on the general knowledge of an LLM and supplement it with domain-specific answers.**
 **This can indeed significantly reduce complexity and costs while providing high-quality, accurate responses.**
 
-## Stack to install and have ready
-Django
-Memcache
-Postgresql
-LangChain
-Rust
 
-# install maturin and build the Rust module
-(I use **python3.12.7** for the virtualenv)
+## Read Me From Here
+A Django-powered, business-specific chatbot platform leveraging AI agents and retrieval-augmented generation (RAG)
+
+**Table of Contents**
+1. [Overview](#overview)
+2. [Features](#features)
+3. [Architecture](#architecture)
+4. [Prerequisites & Dependencies](#prerequisites)
+5. [Installation & Setup](#installs)
+    - [Python & Virtual Environment Setup](#pythonvirtenv)
+    - [PostgreSQL Installation & Configuration](#postgresql)
+    - [Environment Files](#envfiles)
+    - [Dependency Installation](#dependency)
+    - [Rust Module Integration](#rustmodule)
+6. [Local Development](#localdev)
+7. [Deployment Options](#deployment)
+    - [Full Server Setup](#fullserver)
+    - [Containerized Deployment](#containerized)
+8. [Configuration Details](#configuration)
+    - [Caching with Memcached](#caching)
+    - [Logging & Debugging](#logging)
+9. [Testing & CI/CD](#testing)
+10. [Future Enhancements](#future)
+11. [Developer Notes](#notes)
+12. [License]
+13. [Contact]
+
+## Overview <a name="overview"></a>
+ChatBoTAI is designed to help businesses deploy a custom chatbot quickly and effectively. It fuses the general knowledge of large language models with business-specific Q&A data in JSON format, using retrieval-augmented generation for enhanced accuracy and efficiency. This hybrid approach minimizes complexity and cost while delivering tailored responses.
+
+### Key Use Cases:
+
+- Automating business-specific Q&A.
+- Providing AI-driven, personalized client support.
+- Seamlessly integrating domain-specific data with LLM capabilities.
+- A high-level diagram (refer to Diagram V1 in the repository’s Excalidraw assets) illustrates the core components and data flows of the system.
+
+
+## Features <a name="features"></a>
+- Business-Specific Responses: Utilize custom JSON Q&A data to tailor chatbot responses.
+- Retrieval-Augmented Generation: Dual-layer retrieval logic enhances answer accuracy.
+- AI Agent Integration: Dynamically processes user queries using integrated AI agents.
+- Rust Module Integration: Critical performance functions are optimized using Rust (via maturin and PyO3).
+- Robust Django Backend: Fully powered by Django with support for Django REST Framework.
+- Comprehensive Testing & Logging: Extensive unit tests, coverage reports, and detailed logging ensure reliability.
+
+
+## Architecture <a name="architecture"></a>
+
+### High-Level Overview:
+
+- Data Embedding & Retrieval: Business data is embedded and indexed by document collections. Users select the relevant collection via a sidebar dropdown, and the chatbot adapts its settings accordingly.
+- User Flow: The chatbot dynamically adjusts based on selected business data and associated configurations.
+- Deployment Components: The design includes plans for using Gunicorn, Nginx, and container orchestration tools (Docker/nerdctl) in production environments.
+
+A diagram in the repository (Diagram V1) visually represents the system’s architecture and interactions.
+
+
+## Prerequisites & Dependencies <a name="prerequisites"></a>
+
+### Software Requirements:
+
+- Python 3.12: (Detailed installation and version-switching instructions provided below)
+- PostgreSQL 17: (Includes purge/reinstall steps and configuration guidance)
+- Memcached
+- Rust: (along with maturin for Python integration)
+- Optional: NodeJS (if additional frontend build tools are required)
+
+### Environment Files:
+.env and .vars.env contain necessary environment variables. Refer to the examples in the repository for full details.
+
+- Python Packages:
+  - Django, Django REST Framework, psycopg2/psycopg2-binary
+  - Testing libraries: pytest, pytest-django, coverage
+  - Others: markdown, django-filter, python-memcached
+
+
+## Installation & Setup <a name="installs"></a>
+
+### Python & Virtual Environment Setup <a name="pythonvirtenv"></a>
+Install Python 3.12:
 ```bash
+sudo apt install software-properties-common -y
+sudo add-apt-repository ppa:deadsnakes/ppa -y
+sudo apt update -y
+sudo apt install python3.12 -y
+sudo apt install curl -y
+sudo apt install python3-pip -y
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
+```
+
+Set Up Alternatives (if needed):
+```bash
+sudo cp /usr/bin/python3.12 /usr/local/bin/python3.12
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.12 2
+sudo update-alternatives --config python3
+```
+
+Create & Activate a Virtual Environment:
+```bash
+python3.12 -m venv venv
+source venv/bin/activate  # For Unix/MacOS
+# For Windows: venv\Scripts\activate
+```
+Note: On Ubuntu 22, ensure the default Python3.10 installation remains undisturbed.
+
+### PostgreSQL Installation & Configuration <a name="postgresql"></a>
+
+Purge Existing Installations:
+
+```bash
+sudo apt purge postgresql* -y
+sudo apt autoremove --purge -y
+sudo rm -rf /etc/postgresql /var/lib/postgresql /var/log/postgresql
+sudo rm -f /etc/apt/sources.list.d/pgdg.list
+```
+
+Add PostgreSQL Repository & Install PostgreSQL 17:
+
+```bash
+echo "deb [arch=amd64] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+sudo apt update
+sudo apt install postgresql-17 postgresql-contrib -y
+```
+
+Start & Enable PostgreSQL:
+
+```bash
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+psql --version  # Verify installation
+```
+
+Install psycopg2 dependencies:
+
+```bash
+sudo apt install -y build-essential python3.12-dev libpq-dev
+pip install psycopg2-binary psycopg2
+```
+
+### Environment Files <a name="envfiles"></a>
+Create two key configuration files in the project root:
+
+.env
+
+```ini
+DEBUG=True
+SECRET_KEY=your-secret-key
+DATABASE_URL=postgres://user:password@localhost:5432/yourdb
+CACHE_LOCATION=127.0.0.1:11211
+```
+
+.vars.env
+
+```ini
+VARIABLE_1=value1
+VARIABLE_2=value2
+```
+Refer to the repository examples for complete details.
+
+### Dependency Installation <a name="dependencies"></a>
+Install the required Python packages:
+
+```bash
+pip install -r requirements.txt
+# OR, if using chill_requirements.txt:
+pip install -r chill_requirements.txt
+```
+
+Additionally, install:
+
+```bash
+pip install djangorestframework markdown django-filter
+```
+
+### Rust Module Integration <a name="rustmodule"></a>
+Install Rust & maturin:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+rustc --version
 pip install maturin
+```
+
+Create and Build the Rust Project:
+
+```bash
+maturin new --bindings pyo3 rust_lib
+cd rust_lib
+cargo add pyo3 --features "extension-module"
+# Update pyproject.toml and Cargo.toml with dependencies (e.g., reqwest, serde)
 maturin develop
 ```
-# install requirements
+
+Import and Test in Python:
+
+```python
+import rust_lib
+# or from rust_lib import <function_name>
+```
+Tip: Use eprintln! for debug logging in Rust modules as println! might not display output when integrated with Python.
+
+
+## Local Development <a name="localdev"></a>
+
+Database Setup:
+
 ```bash
-pip install -r chill_requirements.txt
-OR
-pip install -r requirements.txt
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
 ```
 
-# make sure that's you have postgresql installed and have a .env file at the root directory with env vars (check /chatbotAI/settings.py)
+Run the Development Server:
+
 ```bash
-# after having installed postgresql and created the user and the database,check that everything is running
-sudo systemctl status postgresql
+python manage.py runserver
 ```
-# make sure memcached is running
+
+Testing:
+
+Install testing libraries if not already done:
+
 ```bash
+pip install pytest pytest-django coverage
+```
+
+Run tests and generate coverage reports:
+
+```bash
+coverage run --source='.' -m pytest --ds=chatbotAI.settings
+coverage report
+coverage html
+```
+
+API Testing with cURL:
+
+```bash
+curl -v -X POST http://127.0.0.1:8000/your_api_endpoint/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer yourtoken" \
+  -d '{"key": "value"}'
+```
+
+## Deployment Options <a name="deployment"></a>
+
+### Full Server Setup <a name="fullserver"></a>
+
+Production Server Requirements:
+
+- Gunicorn & Nginx:
+Configure Gunicorn to serve your Django app and set up Nginx as a reverse proxy. (Self-signed certificates can be used initially for domains such as creditizens.local.)
+
+- Bash Startup Scripts:
+Include scripts to start the server, monitor logs, and handle service restarts.
+
+- Manual Deployment:
+Follow detailed step-by-step instructions for deploying on a dedicated production server.
+
+
+### Containerized Deployment <a name="containerized"></a>
+
+Docker Deployment (Planned):
+Create a Dockerfile and optionally a Docker Compose file for containerizing the application.
+
+- Containerd / nerdctl Deployment:
+Follow provided instructions/scripts for deploying with containerd-based tools (e.g., nerdctl or nerdctl compose).
+
+
+## Configuration Details
+
+### Caching with Memcached <a name="caching"></a>
+Install & Start Memcached:
+
+```bash
+sudo apt update
+sudo apt install memcached
 sudo systemctl start memcached
-# OR manual start 
+# Alternatively, run manually:
 memcached -d -m 64 -l 127.0.0.1 -p 11211
 ```
-# before starting, run migrations
-```bash
-python3 manage.py makemigrations
-python3 manage.py migrate
-```
-# then create a superuser
-```bash
-python3 manage.py createsuperuser # and follow prompt
-```
-# then start the server
-```bash
-python3 manage.py runserver
-```
-# check routes available
-```bash
-127.0.0.1:8000/ # this will display error page with route available or dig in the code `urls.py` files
+
+Django Cache Configuration (in settings.py):
+
+```python
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
 ```
 
-# To install the `rust_lib` we need to:
+### Logging & Debugging <a name="logging"></a>
+
+- Logs Directory:
+All logs are stored in the /logs folder.
+
+- Rust Module Debugging:
+Consult rust_debug.log for output from the Rust integration.
+
+- CI/CD Logs:
+GitHub Actions and supplementary scripts are used for automated log monitoring and analysis.
+
+
+## Testing & CI/CD <a name="testing"></a>
+
+- Test Coverage:
+Aim for a minimum of 80% coverage with unit and integration tests covering views, URLs, forms, mixins, templates, and models.
+
+- CI/CD Pipeline:
+  - Configured via GitHub Actions (see .github/workflows).
+
+Tip: To skip CI for a commit, include [skip ci] or [ci skip] in your commit message.
+
+Generating Test Reports:
 ```bash
-# get all install including maturin
-pip install -r requiremnts.txt
-# go in the rust_lib
-cb rust_lib
-# compile the rust library into a Python one
-maturin develop
+coverage html
 ```
 
 
-## Next
-- [ ] Debug application boilerplate
-- [ ] keep it pure Django/Jinja/Vanilla Javascript/CSS
-- [ ] Continue coding and at each step make unit tests (github action already set but need updates along the way)
-- [ ] Finish all CRUDs
-- [ ] Make UI coherent (as it is still very messy)
-- [ ] Create logs and plan how it going to be so that we can use Agent to analyze those in a predictable way
-- [ ] Move cards on the Trello Board and adjust some cards as we have refactored the code to be full Django
-- [ ] Create agents for ChatBot
-- [ ] Create agent for app logs analysis
-- [ ] Create Rust modules
-- [ ] Create Gunicorn configs
-- [ ] Create Nginx configs
-- [ ] Create Bash script to start server
-- [ ] Create Dockerfile of app (see if Docker-Compose or not)
-- [ ] See if Langfuse can be added for Agent LLM logs UI interface
-- [ ] and more...
+## Future Enhancements <a name="future"></a>
+
+- Feature Roadmap:
+  - Finalize CRUD operations and refine UI/UX.
+  - Expand AI agent functionality for real-time log analysis.
+  - Infrastructure Upgrades:
+  - Dockerization, Kubernetes orchestration, and Infrastructure as Code using Terraform/Ansible.
+  - Advanced CI/CD integration with tools like SonarQube, Trivy, and ArgoCD.
+
+
+## Developer Notes <a name="notes"></a>
+
+- Personal Retrospection:
+Refer to the personal_retrospection folder for insights on project improvements.
+
+- Usage & Integration:
+See notes.md for detailed instructions on installation, caching strategies, embedding/retrieval flows, and code references (e.g., cURL examples, JavaScript integration tips).
+
+- Rust & Python:
+Detailed explanations on the Rust module’s setup, dependency management, and troubleshooting are provided in the repository.
+
+
+@Creditizens
